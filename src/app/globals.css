@@ -1,0 +1,10 @@
+@import "../styles/theme.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base layout uses theme tokens only; no hardcoded colors or fonts */
+body {
+  @apply bg-background text-foreground font-sans antialiased min-h-screen;
+}

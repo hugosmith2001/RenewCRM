@@ -1,0 +1,346 @@
+// Safekeep CRM - Prisma Schema
+// Phase 1: Tenant, User, Role. Customers/policies in later phases.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 1: Auth, Tenants, Roles
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN   // full access within tenant
+  BROKER  // manage customers, policies, activities, tasks
+  STAFF   // limited read/write
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users          User[]
+  customers      Customer[]
+  contacts       CustomerContact[]
+  insuredObjects InsuredObject[]
+  insurers       Insurer[]
+  policies       Policy[]
+  documents      Document[]
+  activities     Activity[]
+  tasks          Task[]
+  auditEvents    AuditEvent[]
+}
+
+// ---------------------------------------------------------------------------
+// Phase 8: Audit
+// ---------------------------------------------------------------------------
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  UPLOAD
+  DELETE
+}
+
+model AuditEvent {
+  id         String     @id @default(cuid())
+  tenantId   String
+  userId     String
+  action     AuditAction
+  entityType String     // e.g. Customer, Policy, Document
+  entityId   String
+  metadata   Json?      // optional summary (e.g. { name, policyNumber })
+  createdAt  DateTime   @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, entityType, entityId])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String
+  passwordHash String
+  name         String?
+  isActive     Boolean  @default(true)
+  role         Role     @default(STAFF)
+  tenantId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customersOwned   Customer[] @relation("CustomerOwner")
+  assignedTasks    Task[]     @relation("TaskAssignee")
+  createdActivities Activity[] @relation("ActivityCreator")
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([email])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2: Customers
+// ---------------------------------------------------------------------------
+
+enum CustomerType {
+  PRIVATE
+  COMPANY
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  PROSPECT
+}
+
+model Customer {
+  id             String         @id @default(cuid())
+  tenantId       String
+  name           String
+  type           CustomerType   @default(PRIVATE)
+  email          String?
+  phone          String?
+  address        String?
+  ownerBrokerId  String?
+  status         CustomerStatus @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  owner          User?          @relation("CustomerOwner", fields: [ownerBrokerId], references: [id], onDelete: SetNull)
+  contacts       CustomerContact[]
+  insuredObjects InsuredObject[]
+  policies       Policy[]
+  documents      Document[]
+  activities    Activity[]
+  tasks         Task[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, name])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 7: Activities and Tasks
+// ---------------------------------------------------------------------------
+
+enum ActivityType {
+  CALL
+  MEETING
+  EMAIL
+  NOTE
+  ADVICE
+}
+
+model Activity {
+  id           String        @id @default(cuid())
+  tenantId     String
+  customerId   String
+  type         ActivityType
+  subject      String?
+  body         String?       @db.Text
+  createdAt    DateTime      @default(now())
+  createdById  String?
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdBy  User?    @relation("ActivityCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([tenantId, createdAt(sort: Desc)])
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+model Task {
+  id               String        @id @default(cuid())
+  tenantId         String
+  customerId       String
+  title            String
+  description      String?       @db.Text
+  dueDate          DateTime?     @db.Date
+  priority         TaskPriority  @default(MEDIUM)
+  status           TaskStatus    @default(PENDING)
+  assignedToUserId String?
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  assignedTo User?    @relation("TaskAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([tenantId, status])
+  @@index([assignedToUserId])
+  @@index([dueDate])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3: Contact Persons
+// ---------------------------------------------------------------------------
+
+model CustomerContact {
+  id         String   @id @default(cuid())
+  tenantId   String
+  customerId String
+  name       String
+  email      String?
+  phone      String?
+  title      String?
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([customerId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4: Insured Objects
+// ---------------------------------------------------------------------------
+
+enum InsuredObjectType {
+  PROPERTY
+  VEHICLE
+  PERSON
+  BUSINESS
+  EQUIPMENT
+  OTHER
+}
+
+model InsuredObject {
+  id          String            @id @default(cuid())
+  tenantId    String
+  customerId  String
+  type        InsuredObjectType
+  name        String
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  policies PolicyInsuredObject[]
+
+  @@index([tenantId])
+  @@index([customerId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5: Policies & Insurers
+// ---------------------------------------------------------------------------
+
+model Insurer {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  policies Policy[]
+
+  @@index([tenantId])
+  @@index([tenantId, name])
+}
+
+enum PolicyStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+model Policy {
+  id           String       @id @default(cuid())
+  tenantId     String
+  customerId   String
+  insurerId    String
+  policyNumber String
+  premium      Decimal?     @db.Decimal(12, 2)
+  startDate    DateTime     @db.Date
+  endDate      DateTime     @db.Date
+  renewalDate  DateTime?    @db.Date
+  status       PolicyStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  insurer  Insurer  @relation(fields: [insurerId], references: [id], onDelete: Restrict)
+  insuredObjects PolicyInsuredObject[]
+  documents      Document[]
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([tenantId, status])
+  @@index([tenantId, renewalDate])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6: Documents
+// ---------------------------------------------------------------------------
+
+enum DocumentType {
+  POLICY_DOCUMENT
+  CONTRACT
+  ID_DOCUMENT
+  CORRESPONDENCE
+  OTHER
+}
+
+model Document {
+  id          String       @id @default(cuid())
+  tenantId    String
+  customerId  String
+  policyId    String?
+  name        String       // display name
+  documentType DocumentType @default(OTHER)
+  storageKey  String       // path in object storage (e.g. tenantId/documentId/filename)
+  mimeType    String
+  sizeBytes   Int
+  createdAt   DateTime     @default(now())
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  policy   Policy?  @relation(fields: [policyId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([policyId])
+}
+
+model PolicyInsuredObject {
+  policyId        String
+  insuredObjectId String
+
+  policy        Policy        @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  insuredObject InsuredObject @relation(fields: [insuredObjectId], references: [id], onDelete: Cascade)
+
+  @@id([policyId, insuredObjectId])
+  @@index([insuredObjectId])
+}

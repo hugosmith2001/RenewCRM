@@ -1,0 +1,61 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { getCustomerById } from "@/modules/customers";
+import { listActivitiesByCustomerId, createActivity } from "@/modules/activities";
+import { logAuditEvent } from "@/modules/audit";
+import { createActivitySchema } from "@/lib/validations/activities";
+import { handleApiError } from "@/lib/api-error";
+import { Role } from "@prisma/client";
+
+type Params = { params: Promise<{ id: string }> };
+
+export async function GET(_request: NextRequest, { params }: Params) {
+  try {
+    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const { id: customerId } = await params;
+    const customer = await getCustomerById(user.tenantId, customerId);
+    if (!customer) {
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    }
+    assertTenantAccess(user, customer.tenantId);
+    const activities = await listActivitiesByCustomerId(user.tenantId, customerId);
+    return NextResponse.json(activities);
+  } catch (err) {
+    return handleApiError(err);
+  }
+}
+
+export async function POST(request: NextRequest, { params }: Params) {
+  try {
+    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const { id: customerId } = await params;
+    const customer = await getCustomerById(user.tenantId, customerId);
+    if (!customer) {
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    }
+    assertTenantAccess(user, customer.tenantId);
+    const body = await request.json();
+    const parsed = createActivitySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const activity = await createActivity(user.tenantId, customerId, parsed.data, user.id);
+    if (!activity) {
+      return NextResponse.json({ error: "Failed to create activity" }, { status: 400 });
+    }
+    await logAuditEvent({
+      tenantId: user.tenantId,
+      userId: user.id,
+      action: "CREATE",
+      entityType: "Activity",
+      entityId: activity.id,
+      metadata: { type: activity.type, subject: activity.subject },
+    });
+    return NextResponse.json(activity, { status: 201 });
+  } catch (err) {
+    return handleApiError(err);
+  }
+}

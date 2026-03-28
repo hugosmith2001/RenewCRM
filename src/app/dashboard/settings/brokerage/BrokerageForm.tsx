@@ -11,10 +11,9 @@ import {
 
 type BrokerageFormProps = {
   initialName: string;
-  slug: string;
 };
 
-export function BrokerageForm({ initialName, slug }: BrokerageFormProps) {
+export function BrokerageForm({ initialName }: BrokerageFormProps) {
   const [name, setName] = useState(initialName);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,16 +62,6 @@ export function BrokerageForm({ initialName, slug }: BrokerageFormProps) {
             {success}
           </p>
         )}
-        <FormField id="brokerage-slug" label="Slug">
-          <input
-            id="brokerage-slug"
-            type="text"
-            value={slug}
-            readOnly
-            disabled
-            className={formInputClasses}
-          />
-        </FormField>
         <FormField id="brokerage-name" label="Brokerage name" required>
           <input
             id="brokerage-name"

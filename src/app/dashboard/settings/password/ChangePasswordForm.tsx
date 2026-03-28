@@ -57,7 +57,7 @@ export function ChangePasswordForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <FormLayout variant="stacked">
+      <FormLayout variant="embedded">
         {error && <FormError message={error} />}
         {success && (
           <p className="text-sm font-medium text-emerald-600">{success}</p>

@@ -3,11 +3,12 @@
  * Reuses Policy + customer/insurer/owner/insuredObject from policies service.
  */
 import { prisma } from "@/lib/db";
+import type { PolicyStatus, Prisma } from "@prisma/client";
 
 export type RenewalItem = {
   id: string;
   policyNumber: string;
-  status: string;
+  status: PolicyStatus;
   renewalDate: Date | null;
   customerId: string;
   customerName: string;
@@ -28,7 +29,7 @@ export type RenewalsBuckets = {
 
 export type RenewalsQuery = {
   brokerId?: string;
-  status?: string;
+  status?: PolicyStatus;
 };
 
 function startOfDay(d: Date): Date {
@@ -40,7 +41,7 @@ function startOfDay(d: Date): Date {
 function toRenewalItem(row: {
   id: string;
   policyNumber: string;
-  status: string;
+  status: PolicyStatus;
   renewalDate: Date | null;
   customer: { id: string; name: string; owner: { name: string | null; email: string } | null };
   insurer: { name: string };
@@ -72,11 +73,7 @@ export async function listRenewalsBucketed(
   const day90 = new Date(today);
   day90.setUTCDate(day90.getUTCDate() + 90);
 
-  const where: {
-    tenantId: string;
-    status?: string;
-    customer?: { ownerBrokerId?: string | null };
-  } = { tenantId };
+  const where: Prisma.PolicyWhereInput = { tenantId };
   if (query.status) where.status = query.status;
   if (query.brokerId !== undefined && query.brokerId !== "") {
     where.customer = { ownerBrokerId: query.brokerId };

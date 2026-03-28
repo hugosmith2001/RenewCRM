@@ -11,7 +11,7 @@ import type {
 } from "@/lib/validations/policies";
 import type {
   CreateInsurerInput,
-  UpdateInsurerBodyInput,
+  UpdateInsurerInput,
 } from "@/lib/validations/insurers";
 
 // ---------------------------------------------------------------------------
@@ -130,12 +130,13 @@ export async function createInsurer(
 export async function updateInsurer(
   tenantId: string,
   insurerId: string,
-  data: UpdateInsurerBodyInput
+  data: UpdateInsurerInput
 ): Promise<Insurer | null> {
   const existing = await prisma.insurer.findFirst({
     where: { id: insurerId, tenantId },
   });
   if (!existing) return null;
+  if (data.name === undefined) return existing;
   return prisma.insurer.update({
     where: { id: insurerId },
     data: { name: data.name.trim() },

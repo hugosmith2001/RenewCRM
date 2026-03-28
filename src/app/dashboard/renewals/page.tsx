@@ -19,6 +19,7 @@ import {
 import { POLICY_STATUS_LABELS } from "@/lib/constants/labels";
 import type { RenewalItem } from "@/modules/renewals";
 import { RenewalsFilterForm } from "./RenewalsFilterForm";
+import { PolicyStatus } from "@prisma/client";
 
 function formatDate(d: Date | string): string {
   return new Date(d).toLocaleDateString(undefined, {
@@ -32,6 +33,10 @@ function statusTone(status: string): "success" | "warning" | "neutral" {
   if (status === "ACTIVE") return "success";
   if (status === "PENDING") return "warning";
   return "neutral";
+}
+
+function isPolicyStatus(value: string): value is PolicyStatus {
+  return (Object.values(PolicyStatus) as string[]).includes(value);
 }
 
 function brokerDisplay(item: RenewalItem): string {
@@ -137,9 +142,13 @@ export default async function RenewalsPage({ searchParams }: Props) {
   const sp = await searchParams;
   const brokerId = sp.brokerId ?? "";
   const status = sp.status ?? "";
+  const statusFilter = isPolicyStatus(status) ? status : undefined;
 
   const [buckets, brokers] = await Promise.all([
-    listRenewalsBucketed(user.tenantId, { brokerId: brokerId || undefined, status: status || undefined }),
+    listRenewalsBucketed(user.tenantId, {
+      brokerId: brokerId || undefined,
+      status: statusFilter,
+    }),
     listTenantUsers(user.tenantId),
   ]);
 

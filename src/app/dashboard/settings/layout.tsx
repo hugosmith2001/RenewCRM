@@ -59,12 +59,6 @@ export default async function SettingsLayout({ children }: SettingsLayoutProps) 
               >
                 Brokerage
               </Link>
-              <Link
-                href="/dashboard/settings/team"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Team
-              </Link>
             </div>
           )}
         </nav>

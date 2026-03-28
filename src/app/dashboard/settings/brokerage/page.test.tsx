@@ -79,7 +79,6 @@ describe("BrokerageSettingsPage access control", () => {
 
     expect(html).toContain("Brokerage");
     expect(html).toContain("Acme Brokerage");
-    expect(html).toContain("acme-brokerage");
     expect(mockRedirect).not.toHaveBeenCalled();
   });
 });

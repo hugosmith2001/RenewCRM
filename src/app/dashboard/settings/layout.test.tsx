@@ -69,8 +69,8 @@ describe("SettingsLayout (Phase 0)", () => {
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).toContain("/dashboard/settings/brokerage");
     expect(html).toContain("Brokerage");
-    expect(html).toContain("/dashboard/settings/team");
-    expect(html).toContain("Team");
+    expect(html).not.toContain("/dashboard/settings/team");
+    expect(html).not.toContain("Team");
   });
 
   it("does not show Organization nav links for BROKER", async () => {

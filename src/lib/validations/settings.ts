@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Role } from "@prisma/client";
 
 export const changePasswordSchema = z
   .object({
@@ -42,39 +41,3 @@ export const updateTenantSchema = z.object({
 });
 
 export type UpdateTenantInput = z.infer<typeof updateTenantSchema>;
-
-export const createUserSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Invalid email address"),
-  role: z.nativeEnum(Role, {
-    errorMap: () => ({ message: "Invalid role" }),
-  }),
-  name: z
-    .string()
-    .trim()
-    .min(1, "Name is required")
-    .max(100, "Name must be at most 100 characters")
-    .optional(),
-});
-
-export type CreateUserInput = z.infer<typeof createUserSchema>;
-
-export const updateUserSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Name is required")
-    .max(100, "Name must be at most 100 characters")
-    .optional(),
-  role: z
-    .nativeEnum(Role, {
-      errorMap: () => ({ message: "Invalid role" }),
-    })
-    .optional(),
-  isActive: z.boolean().optional(),
-});
-
-export type UpdateUserInput = z.infer<typeof updateUserSchema>;
-

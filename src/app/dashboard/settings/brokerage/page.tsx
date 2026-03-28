@@ -23,7 +23,6 @@ export default async function BrokerageSettingsPage() {
       <DetailSection title="Brokerage">
         <BrokerageForm
           initialName={tenant?.name ?? ""}
-          slug={tenant?.slug ?? ""}
         />
       </DetailSection>
     </div>

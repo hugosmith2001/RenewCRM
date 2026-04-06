@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/modules/auth";
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
+import { handleApiError } from "@/lib/api-error";
 
 /**
  * List users in the current tenant (for dropdowns, e.g. customer owner).
@@ -16,9 +17,6 @@ export async function GET() {
     });
     return NextResponse.json(users);
   } catch (err) {
-    if (err instanceof Error && (err.message === "Unauthorized" || err.message === "Forbidden")) {
-      return NextResponse.json({ error: err.message }, { status: err.message === "Unauthorized" ? 401 : 403 });
-    }
-    throw err;
+    return handleApiError(err);
   }
 }

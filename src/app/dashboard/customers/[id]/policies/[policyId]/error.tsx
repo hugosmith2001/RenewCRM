@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { PageHeader } from "@/components/layout";
 import { EmptyState } from "@/components/ui";
+import { logger } from "@/lib/logger";
 
 export default function PolicyDetailError({
   error,
@@ -12,7 +13,7 @@ export default function PolicyDetailError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    logger.error("UI error boundary: policy detail", { error, digest: error.digest });
   }, [error]);
 
   return (

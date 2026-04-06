@@ -86,7 +86,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         action: "UPDATE",
         entityType: "Policy",
         entityId: policyId,
-        metadata: { policyNumber: updated.policyNumber },
+        metadata: { customerId },
       });
     }
     return NextResponse.json(serializePolicy(updated!));
@@ -120,7 +120,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       action: "DELETE",
       entityType: "Policy",
       entityId: policyId,
-      metadata: { policyNumber: policy.policyNumber },
+      metadata: { customerId },
     });
     return new NextResponse(null, { status: 204 });
   } catch (err) {

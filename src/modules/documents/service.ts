@@ -50,11 +50,12 @@ export async function listDocumentsForTenant(
 
   const where: {
     tenantId: string;
+    deletedAt?: null;
     customerId?: string;
     documentType?: DocumentType;
     createdAt?: { gte?: Date; lte?: Date };
     name?: { contains: string; mode: "insensitive" };
-  } = { tenantId };
+  } = { tenantId, deletedAt: null };
 
   if (customerId) where.customerId = customerId;
   if (documentType) where.documentType = documentType;
@@ -89,13 +90,13 @@ export async function listDocumentsByCustomerId(
   customerId: string
 ): Promise<DocumentWithPolicy[]> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return [];
 
   return prisma.document.findMany({
-    where: { customerId, tenantId },
+    where: { customerId, tenantId, deletedAt: null },
     include: {
       policy: { select: { id: true, policyNumber: true } },
     },
@@ -114,7 +115,7 @@ export async function listDocumentsByPolicyId(
   if (!policy) return [];
 
   return prisma.document.findMany({
-    where: { policyId, tenantId },
+    where: { policyId, tenantId, deletedAt: null },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -124,7 +125,7 @@ export async function getDocumentById(
   documentId: string
 ): Promise<DocumentWithPolicy | null> {
   return prisma.document.findFirst({
-    where: { id: documentId, tenantId },
+    where: { id: documentId, tenantId, deletedAt: null },
     include: {
       policy: { select: { id: true, policyNumber: true } },
     },
@@ -182,13 +183,15 @@ export async function deleteDocument(
   documentId: string
 ): Promise<boolean> {
   const doc = await prisma.document.findFirst({
-    where: { id: documentId, tenantId },
+    where: { id: documentId, tenantId, deletedAt: null },
   });
   if (!doc) return false;
 
-  await storageDelete(doc.storageKey);
-  await prisma.document.delete({
+  // Phase 4 retention: user-initiated deletes are soft deletes.
+  // Blob removal is executed by the retention purge job once eligible.
+  await prisma.document.update({
     where: { id: documentId },
+    data: { deletedAt: new Date() },
   });
   return true;
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireRole } from "@/modules/auth";
 import { Role } from "@prisma/client";
 import { updateTenantSchema } from "@/lib/validations/settings";
+import { handleApiError } from "@/lib/api-error";
 
 export async function GET() {
   try {
@@ -25,17 +26,7 @@ export async function GET() {
 
     return NextResponse.json(tenant);
   } catch (err) {
-    if (
-      err instanceof Error &&
-      (err.message === "Unauthorized" || err.message === "Forbidden")
-    ) {
-      return NextResponse.json(
-        { error: err.message },
-        { status: err.message === "Unauthorized" ? 401 : 403 }
-      );
-    }
-
-    throw err;
+    return handleApiError(err);
   }
 }
 
@@ -65,17 +56,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(updated);
   } catch (err) {
-    if (
-      err instanceof Error &&
-      (err.message === "Unauthorized" || err.message === "Forbidden")
-    ) {
-      return NextResponse.json(
-        { error: err.message },
-        { status: err.message === "Unauthorized" ? 401 : 403 }
-      );
-    }
-
-    throw err;
+    return handleApiError(err);
   }
 }
 

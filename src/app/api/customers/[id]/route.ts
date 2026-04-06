@@ -4,6 +4,7 @@ import { getCustomerById, updateCustomer, deleteCustomer } from "@/modules/custo
 import { logAuditEvent } from "@/modules/audit";
 import { updateCustomerSchema } from "@/lib/validations/customers";
 import { handleApiError } from "@/lib/api-error";
+import { isBlockedByRestriction } from "@/lib/restriction";
 import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string }> };
@@ -17,6 +18,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, customer.tenantId);
+    if (isBlockedByRestriction(user.role, customer)) {
+      return NextResponse.json({ error: "Customer is restricted" }, { status: 423 });
+    }
     return NextResponse.json(customer);
   } catch (err) {
     return handleApiError(err);
@@ -32,6 +36,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, existing.tenantId);
+    if (isBlockedByRestriction(user.role, existing)) {
+      return NextResponse.json({ error: "Customer is restricted" }, { status: 423 });
+    }
     const body = await request.json();
     const parsed = updateCustomerSchema.safeParse(body);
     if (!parsed.success) {
@@ -45,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         action: "UPDATE",
         entityType: "Customer",
         entityId: id,
-        metadata: { name: customer.name },
+        metadata: {},
       });
     }
     return NextResponse.json(customer);
@@ -63,6 +70,9 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, existing.tenantId);
+    if (isBlockedByRestriction(user.role, existing)) {
+      return NextResponse.json({ error: "Customer is restricted" }, { status: 423 });
+    }
     await deleteCustomer(user.tenantId, id);
     await logAuditEvent({
       tenantId: user.tenantId,
@@ -70,7 +80,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       action: "DELETE",
       entityType: "Customer",
       entityId: id,
-      metadata: { name: existing.name },
+      metadata: {},
     });
     return new NextResponse(null, { status: 204 });
   } catch (err) {

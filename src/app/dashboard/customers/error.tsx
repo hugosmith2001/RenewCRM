@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { PageHeader } from "@/components/layout";
 import { EmptyState } from "@/components/ui";
+import { logger } from "@/lib/logger";
 
 export default function Error({
   error,
@@ -13,7 +14,7 @@ export default function Error({
 }) {
   useEffect(() => {
     // Intentionally minimal: this is internal SaaS, logs are handled by hosting.
-    console.error(error);
+    logger.error("UI error boundary: customers", { error, digest: error.digest });
   }, [error]);
 
   return (

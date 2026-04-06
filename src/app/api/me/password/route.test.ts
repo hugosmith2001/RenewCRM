@@ -32,6 +32,8 @@ const mockHash = vi.mocked(hash);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Ensure rate limiting state doesn't leak between tests.
+  (globalThis as unknown as Record<string, unknown>).__safekeep_rate_limit_buckets__ = new Map();
 });
 
 function makeRequest(body: unknown) {
@@ -96,7 +98,7 @@ describe("POST /api/me/password", () => {
 
     expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body.error).toBe("Invalid current password");
+    expect(body.error).toBe("Invalid credentials");
     expect(mockPrismaUserUpdate).not.toHaveBeenCalled();
   });
 
@@ -127,7 +129,7 @@ describe("POST /api/me/password", () => {
     expect(body).toEqual({ success: true });
     expect(mockPrismaUserUpdate).toHaveBeenCalledWith({
       where: { id: "user-1" },
-      data: { passwordHash: "hashed-new" },
+      data: { passwordHash: "hashed-new", sessionVersion: { increment: 1 } },
     });
   });
 });

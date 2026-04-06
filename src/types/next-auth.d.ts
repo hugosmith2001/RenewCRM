@@ -17,5 +17,6 @@ declare module "next-auth/jwt" {
     id: string;
     tenantId: string;
     role: Role;
+    sessionVersion?: number;
   }
 }

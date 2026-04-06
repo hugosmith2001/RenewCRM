@@ -66,7 +66,7 @@ describe("listContactsByCustomerId", () => {
     const result = await listContactsByCustomerId(tenantId, "bad-customer");
 
     expect(mockCustomerFindFirst).toHaveBeenCalledWith({
-      where: { id: "bad-customer", tenantId },
+      where: { id: "bad-customer", tenantId, deletedAt: null },
       select: { id: true },
     });
     expect(mockContactFindMany).not.toHaveBeenCalled();

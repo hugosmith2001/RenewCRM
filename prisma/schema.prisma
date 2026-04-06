@@ -37,6 +37,10 @@ model Tenant {
   activities     Activity[]
   tasks          Task[]
   auditEvents    AuditEvent[]
+  dsarRequests   DsarRequest[]
+  dsarActions    DsarRequestAction[]
+  dsarExports    DsarExport[]
+  retentionOverrides RetentionPolicyOverride[]
 }
 
 // ---------------------------------------------------------------------------
@@ -48,6 +52,58 @@ enum AuditAction {
   UPDATE
   UPLOAD
   DELETE
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4: Retention + purge foundations
+// ---------------------------------------------------------------------------
+
+enum RetentionCategory {
+  INACTIVE_CUSTOMER
+  DOCUMENT_POST_POLICY_END
+  AUDIT_EVENT
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3A: DSAR workflow foundation
+// ---------------------------------------------------------------------------
+
+enum DsarRequestType {
+  EXPORT
+  ERASE
+  RESTRICT
+}
+
+enum DsarSubjectType {
+  CUSTOMER
+  CONTACT
+  USER
+}
+
+enum DsarStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  PROCESSING
+  COMPLETED
+  FAILED
+  REJECTED
+}
+
+enum DsarActionType {
+  CREATED
+  STATUS_CHANGED
+  NOTE_ADDED
+  EXECUTION_STARTED
+  EXECUTION_COMPLETED
+  EXECUTION_FAILED
+}
+
+enum DsarExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 model AuditEvent {
@@ -67,14 +123,102 @@ model AuditEvent {
   @@index([tenantId, entityType, entityId])
 }
 
+model DsarRequest {
+  id              String          @id @default(cuid())
+  tenantId        String
+  requestType     DsarRequestType
+  subjectType     DsarSubjectType
+  subjectRefId    String
+  status          DsarStatus      @default(PENDING)
+  createdByUserId String
+  updatedByUserId String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  /**
+   * Operational-only notes. Avoid personal data; do not mirror subject content here.
+   * Used to track operator reasoning and non-PII processing details.
+   */
+  notes String? @db.Text
+
+  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actions DsarRequestAction[]
+  export  DsarExport?
+
+  @@index([tenantId])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, status])
+  @@index([tenantId, subjectType, subjectRefId])
+}
+
+model DsarRequestAction {
+  id            String          @id @default(cuid())
+  tenantId      String
+  dsarRequestId String
+  operatorUserId String
+  actionType    DsarActionType
+  fromStatus    DsarStatus?
+  toStatus      DsarStatus?
+  note          String?         @db.Text
+  createdAt     DateTime        @default(now())
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  dsarRequest DsarRequest @relation(fields: [dsarRequestId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, dsarRequestId, createdAt(sort: Desc)])
+}
+
+model DsarExport {
+  id             String           @id @default(cuid())
+  tenantId       String
+  dsarRequestId  String           @unique
+  status         DsarExportStatus @default(PENDING)
+  formatVersion  Int              @default(1)
+  includeFiles   Boolean          @default(false)
+  /**
+   * Export payload (structured, shaped; not raw DB rows).
+   * Keep stable keys to support portability.
+   */
+  exportJson     Json?
+  /**
+   * Optional CSV summaries keyed by filename (e.g. "tasks.csv").
+   * Stored as JSON: { [filename]: csvString }.
+   */
+  exportCsv      Json?
+  error          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  completedAt    DateTime?
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  dsarRequest DsarRequest @relation(fields: [dsarRequestId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, completedAt(sort: Desc)])
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String
   passwordHash String
   name         String?
   isActive     Boolean  @default(true)
+  /**
+   * Restriction of processing (GDPR Art. 18) / legal hold marker for DSAR workflows.
+   * When set, non-admin access and processing should be limited.
+   */
+  restrictedAt       DateTime?
+  restrictedByUserId String?
+  restrictionReason  String?  @db.Text
   role         Role     @default(STAFF)
   tenantId     String
+  /**
+   * Session invalidation version.
+   * Increment to invalidate existing JWT sessions (e.g. after password change).
+   */
+  sessionVersion Int    @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -113,6 +257,23 @@ model Customer {
   address        String?
   ownerBrokerId  String?
   status         CustomerStatus @default(ACTIVE)
+  /**
+   * Soft delete marker. Records are excluded from standard list/get flows.
+   * Purge is performed by the retention job once eligible.
+   */
+  deletedAt      DateTime?
+  /**
+   * Legal hold blocks purge and destructive retention actions.
+   * Use for litigation/regulatory holds beyond DSAR restriction of processing.
+   */
+  legalHold      Boolean        @default(false)
+  /**
+   * Restriction of processing (GDPR Art. 18) / legal hold marker for DSAR workflows.
+   * When set, non-admin access and processing should be limited.
+   */
+  restrictedAt       DateTime?
+  restrictedByUserId String?
+  restrictionReason  String?  @db.Text
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -128,6 +289,8 @@ model Customer {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, name])
+  @@index([tenantId, deletedAt])
+  @@index([tenantId, legalHold])
 }
 
 // ---------------------------------------------------------------------------
@@ -148,7 +311,7 @@ model Activity {
   customerId   String
   type         ActivityType
   subject      String?
-  body         String?       @db.Text
+  body         String?       @db.Text // TODO(GDPR Phase 2): consider an optional "sensitive" flag / restricted visibility mode
   createdAt    DateTime      @default(now())
   createdById  String?
 
@@ -179,7 +342,7 @@ model Task {
   tenantId         String
   customerId       String
   title            String
-  description      String?       @db.Text
+  description      String?       @db.Text // TODO(GDPR Phase 2): consider an optional "sensitive" flag / restricted visibility mode
   dueDate          DateTime?     @db.Date
   priority         TaskPriority  @default(MEDIUM)
   status           TaskStatus    @default(PENDING)
@@ -209,6 +372,13 @@ model CustomerContact {
   phone      String?
   title      String?
   isPrimary  Boolean  @default(false)
+  /**
+   * Restriction of processing (GDPR Art. 18) / legal hold marker for DSAR workflows.
+   * When set, non-admin access and processing should be limited.
+   */
+  restrictedAt       DateTime?
+  restrictedByUserId String?
+  restrictionReason  String?  @db.Text
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -324,6 +494,14 @@ model Document {
   mimeType    String
   sizeBytes   Int
   createdAt   DateTime     @default(now())
+  /**
+   * Soft delete marker. Purge job is responsible for deleting blob + DB row.
+   */
+  deletedAt   DateTime?
+  /**
+   * Legal hold blocks purge and blob deletion.
+   */
+  legalHold   Boolean      @default(false)
 
   tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -332,6 +510,26 @@ model Document {
   @@index([tenantId])
   @@index([customerId])
   @@index([policyId])
+  @@index([tenantId, deletedAt])
+  @@index([tenantId, legalHold])
+}
+
+model RetentionPolicyOverride {
+  id            String            @id @default(cuid())
+  tenantId      String
+  category      RetentionCategory
+  /**
+   * Retention duration in days. Used as "keep for at least N days" from the
+   * category's anchor date (see retention service).
+   */
+  retentionDays Int
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, category])
+  @@index([tenantId])
 }
 
 model PolicyInsuredObject {

@@ -6,6 +6,7 @@ import {
   FormField,
   FormError,
   FormActions,
+  SensitiveDataWarning,
   formInputClasses,
   formSelectClasses,
 } from "@/components/forms";
@@ -164,6 +165,7 @@ export function InsuredObjectForm({
             }
             className={formInputClasses}
           />
+          <SensitiveDataWarning />
         </FormField>
         <FormActions
           submitLabel={isEdit ? "Save changes" : "Add insured object"}

@@ -65,7 +65,7 @@ describe("getCustomerById", () => {
     const result = await getCustomerById(tenantId, customerId);
 
     expect(mockFindFirst).toHaveBeenCalledWith({
-      where: { id: customerId, tenantId },
+      where: { id: customerId, tenantId, deletedAt: null },
       include: { owner: { select: { id: true, name: true, email: true } } },
     });
     expect(result).toEqual(withOwner);
@@ -85,7 +85,7 @@ describe("getCustomerById", () => {
     const result = await getCustomerById("other-tenant", customerId);
 
     expect(mockFindFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: customerId, tenantId: "other-tenant" } })
+      expect.objectContaining({ where: { id: customerId, tenantId: "other-tenant", deletedAt: null } })
     );
     expect(result).toBeNull();
   });
@@ -106,13 +106,13 @@ describe("listCustomers", () => {
 
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { tenantId },
+        where: { tenantId, deletedAt: null },
         skip: 0,
         take: 20,
         orderBy: { name: "asc" },
       })
     );
-    expect(mockCount).toHaveBeenCalledWith({ where: { tenantId } });
+    expect(mockCount).toHaveBeenCalledWith({ where: { tenantId, deletedAt: null } });
     expect(customers).toEqual(list);
     expect(total).toBe(1);
   });
@@ -131,6 +131,7 @@ describe("listCustomers", () => {
       expect.objectContaining({
         where: {
           tenantId,
+          deletedAt: null,
           OR: [
             { name: { contains: "acme", mode: "insensitive" } },
             { email: { contains: "acme", mode: "insensitive" } },
@@ -153,7 +154,7 @@ describe("listCustomers", () => {
 
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { tenantId, status: "PROSPECT", type: "COMPANY" },
+        where: { tenantId, deletedAt: null, status: "PROSPECT", type: "COMPANY" },
         skip: 0,
         take: 10,
       })
@@ -270,17 +271,20 @@ describe("deleteCustomer", () => {
 
     const result = await deleteCustomer(tenantId, "bad-id");
 
-    expect(mockDelete).not.toHaveBeenCalled();
+    expect(mockUpdate).not.toHaveBeenCalled();
     expect(result).toBe(false);
   });
 
-  it("deletes and returns true when customer exists", async () => {
+  it("soft-deletes and returns true when customer exists", async () => {
     mockFindFirst.mockResolvedValue(baseCustomer);
-    mockDelete.mockResolvedValue(baseCustomer);
+    mockUpdate.mockResolvedValue({ ...baseCustomer, deletedAt: new Date() });
 
     const result = await deleteCustomer(tenantId, customerId);
 
-    expect(mockDelete).toHaveBeenCalledWith({ where: { id: customerId } });
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: customerId },
+      data: { deletedAt: expect.any(Date) },
+    });
     expect(result).toBe(true);
   });
 });

@@ -35,7 +35,7 @@ export async function listTasksByCustomerId(
   customerId: string
 ): Promise<TaskWithAssignee[]> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return [];
@@ -67,7 +67,7 @@ export async function createTask(
   data: CreateTaskInput
 ): Promise<Task | null> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return null;

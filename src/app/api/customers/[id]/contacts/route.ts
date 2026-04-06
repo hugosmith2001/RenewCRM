@@ -55,7 +55,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       action: "CREATE",
       entityType: "CustomerContact",
       entityId: contact.id,
-      metadata: { name: contact.name, customerId },
+      metadata: { customerId },
     });
     return NextResponse.json(contact, { status: 201 });
   } catch (err) {

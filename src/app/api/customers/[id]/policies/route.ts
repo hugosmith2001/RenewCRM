@@ -72,7 +72,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       action: "CREATE",
       entityType: "Policy",
       entityId: policy.id,
-      metadata: { policyNumber: policy.policyNumber, customerId },
+      metadata: { customerId },
     });
     return NextResponse.json(serializePolicy(policy), { status: 201 });
   } catch (err) {

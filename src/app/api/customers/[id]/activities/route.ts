@@ -52,7 +52,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       action: "CREATE",
       entityType: "Activity",
       entityId: activity.id,
-      metadata: { type: activity.type, subject: activity.subject },
+      metadata: { customerId, type: activity.type },
     });
     return NextResponse.json(activity, { status: 201 });
   } catch (err) {

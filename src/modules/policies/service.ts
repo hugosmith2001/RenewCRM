@@ -171,7 +171,7 @@ export async function listPoliciesByCustomerId(
   customerId: string
 ): Promise<PolicyWithInsurerAndObjects[]> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return [];
@@ -215,7 +215,7 @@ export async function createPolicy(
   data: CreatePolicyInput
 ): Promise<Policy | null> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return null;

@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         action: "UPDATE",
         entityType: "Activity",
         entityId: activityId,
-        metadata: { type: updated.type, subject: updated.subject },
+        metadata: { customerId, type: updated.type },
       });
     }
     return NextResponse.json(updated);

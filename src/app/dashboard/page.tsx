@@ -58,7 +58,7 @@ export default async function DashboardPage() {
   const [buckets, allTasks, { activities }, { documents }] = await Promise.all([
     listRenewalsBucketed(user.tenantId),
     listTasksForTenant(user.tenantId),
-    listActivitiesForTenant(user.tenantId, { limit: ACTIVITIES_PREVIEW }),
+    listActivitiesForTenant(user.tenantId, { limit: ACTIVITIES_PREVIEW, viewerRole: user.role }),
     listDocumentsForTenant(user.tenantId, { limit: DOCUMENTS_PREVIEW }),
   ]);
 

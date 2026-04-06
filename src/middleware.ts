@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 const publicPaths = ["/", "/login"];
 const authApiPrefix = "/api/auth";
@@ -12,7 +13,54 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   if (path.startsWith(authApiPrefix)) {
+    // Basic brute-force protection for Auth.js endpoints (Credentials callback, etc).
+    // Generic error messaging; keyed by IP.
+    if (req.method === "POST") {
+      const ip = getClientIp(req);
+      const rl = rateLimit({
+        key: `auth:post:${ip}`,
+        limit: 10,
+        windowMs: 60_000,
+      });
+      if (!rl.ok) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
     return;
+  }
+
+  // Best-effort abuse protection for sensitive actions.
+  // Note: runs at the Edge and is per-instance (documented in docs).
+  if (path === "/api/me/password" && req.method === "POST") {
+    const ip = getClientIp(req);
+    const rl = rateLimit({
+      key: `me:password:${ip}`,
+      limit: 5,
+      windowMs: 10 * 60_000,
+    });
+    if (!rl.ok) {
+      return new Response(JSON.stringify({ error: "Too Many Requests" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+  if (path === "/api/tenant" && req.method === "PATCH") {
+    const ip = getClientIp(req);
+    const rl = rateLimit({
+      key: `tenant:patch:${ip}`,
+      limit: 20,
+      windowMs: 10 * 60_000,
+    });
+    if (!rl.ok) {
+      return new Response(JSON.stringify({ error: "Too Many Requests" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   }
   if (publicPaths.some((p) => path === p || path.startsWith(p + "/"))) {
     if (isLoggedIn && path === "/login") {

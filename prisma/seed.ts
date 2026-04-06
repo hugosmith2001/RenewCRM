@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { logger } from "../src/lib/logger";
 
 const prisma = new PrismaClient();
 
@@ -21,22 +22,29 @@ async function main() {
         email: "admin@demo.safekeep.local",
       },
     },
-    update: {},
+    update: {
+      passwordHash,
+      sessionVersion: 0,
+      isActive: true,
+      role: "ADMIN",
+      name: "Demo Admin",
+    },
     create: {
       tenantId: tenant.id,
       email: "admin@demo.safekeep.local",
       passwordHash,
+      sessionVersion: 0,
       name: "Demo Admin",
       role: "ADMIN",
     },
   });
 
-  console.log("Seed complete. Login with admin@demo.safekeep.local / demo-password");
+  logger.info("Seed complete.");
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    logger.error("Seed failed", { err: e });
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());

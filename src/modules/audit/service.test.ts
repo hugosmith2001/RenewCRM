@@ -62,12 +62,12 @@ describe("logAuditEvent", () => {
       action: "UPDATE",
       entityType: "Policy",
       entityId: "pol-1",
-      metadata: { policyNumber: "POL-123", name: "Acme" },
+      metadata: { customerId: "cust-1", status: "ACTIVE" },
     });
 
     expect(mockCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        metadata: { policyNumber: "POL-123", name: "Acme" },
+        metadata: { customerId: "cust-1", status: "ACTIVE" },
       }),
     });
   });
@@ -115,7 +115,7 @@ describe("listAuditEvents", () => {
         action: "CREATE" as const,
         entityType: "Customer",
         entityId: "c1",
-        metadata: { name: "Acme" },
+        metadata: {},
         createdAt: new Date(),
       },
     ];

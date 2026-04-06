@@ -1,9 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { handleApiError } from "@/lib/api-error";
 
 /**
  * Phase 8: Central API error handling.
- * Covers: 401 for Unauthorized, 403 for Forbidden, re-throw for other errors.
+ * Covers: 401 for Unauthorized, 403 for Forbidden, 500 for other errors.
  * Does not cover: NextResponse internals, or routes that use handleApiError.
  */
 describe("handleApiError", () => {
@@ -25,19 +25,27 @@ describe("handleApiError", () => {
     expect(body).toEqual({ error: "Forbidden" });
   });
 
-  it("re-throws when error message is something else", () => {
+  it("returns 500 when error message is something else", async () => {
     const err = new Error("Something went wrong");
-
-    expect(() => handleApiError(err)).toThrow("Something went wrong");
+    const res = handleApiError(err);
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body).toEqual({ error: "Internal Server Error" });
   });
 
-  it("re-throws when value is not an Error instance", () => {
-    expect(() => handleApiError("string error")).toThrow("string error");
-    expect(() => handleApiError(null)).toThrow();
-    expect(() => handleApiError(404)).toThrow();
+  it("returns 500 when value is not an Error instance", async () => {
+    for (const err of ["string error", null, 404] as const) {
+      const res = handleApiError(err);
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body).toEqual({ error: "Internal Server Error" });
+    }
   });
 
-  it("re-throws when err is undefined (edge case)", () => {
-    expect(() => handleApiError(undefined)).toThrow();
+  it("returns 500 when err is undefined (edge case)", async () => {
+    const res = handleApiError(undefined);
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body).toEqual({ error: "Internal Server Error" });
   });
 });

@@ -146,7 +146,11 @@ export function CustomerForm(props: Props) {
             />
           </FormField>
         </div>
-        <FormField id="address" label="Address">
+        <FormField
+          id="address"
+          label="Address"
+          description="Postal address only. Avoid adding notes or sensitive details."
+        >
           <textarea
             id="address"
             rows={2}

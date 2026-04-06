@@ -14,7 +14,7 @@ export async function getCustomerById(
   id: string
 ): Promise<CustomerWithOwner | null> {
   const customer = await prisma.customer.findFirst({
-    where: { id, tenantId },
+    where: { id, tenantId, deletedAt: null },
     include: {
       owner: { select: { id: true, name: true, email: true } },
     },
@@ -31,10 +31,11 @@ export async function listCustomers(
 
   const where: {
     tenantId: string;
+    deletedAt?: null;
     status?: CustomerStatus;
     type?: CustomerType;
     OR?: Array<{ name?: { contains: string; mode: "insensitive" }; email?: { contains: string; mode: "insensitive" } }>;
-  } = { tenantId };
+  } = { tenantId, deletedAt: null };
 
   if (status) where.status = status;
   if (type) where.type = type;
@@ -88,7 +89,7 @@ export async function updateCustomer(
   data: UpdateCustomerInput
 ): Promise<Customer | null> {
   const existing = await prisma.customer.findFirst({
-    where: { id, tenantId },
+    where: { id, tenantId, deletedAt: null },
   });
   if (!existing) return null;
 
@@ -111,9 +112,12 @@ export async function deleteCustomer(
   id: string
 ): Promise<boolean> {
   const existing = await prisma.customer.findFirst({
-    where: { id, tenantId },
+    where: { id, tenantId, deletedAt: null },
   });
   if (!existing) return false;
-  await prisma.customer.delete({ where: { id } });
+  await prisma.customer.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
   return true;
 }

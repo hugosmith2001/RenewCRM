@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/modules/auth";
 import { prisma } from "@/lib/db";
 import { updateProfileSchema } from "@/lib/validations/settings";
+import { handleApiError } from "@/lib/api-error";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -28,16 +29,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(updated);
   } catch (err) {
-    if (
-      err instanceof Error &&
-      (err.message === "Unauthorized" || err.message === "Forbidden")
-    ) {
-      return NextResponse.json(
-        { error: err.message },
-        { status: err.message === "Unauthorized" ? 401 : 403 }
-      );
-    }
-    throw err;
+    return handleApiError(err);
   }
 }
 

@@ -6,6 +6,7 @@ import {
   FormField,
   FormError,
   FormActions,
+  SensitiveDataWarning,
   formInputClasses,
   formSelectClasses,
 } from "@/components/forms";
@@ -127,6 +128,7 @@ export function ActivityForm({ customerId, activity, onSuccess, onCancel }: Prop
             placeholder="Brief subject"
             className={formInputClasses}
           />
+          <SensitiveDataWarning />
         </FormField>
         <FormField id="activity-body" label="Notes">
           <textarea
@@ -137,6 +139,7 @@ export function ActivityForm({ customerId, activity, onSuccess, onCancel }: Prop
             placeholder="Details of the call, meeting, or note…"
             className={formInputClasses}
           />
+          <SensitiveDataWarning />
         </FormField>
         <FormActions
           submitLabel={isEdit ? "Save changes" : "Add activity"}

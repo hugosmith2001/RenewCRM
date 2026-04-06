@@ -6,6 +6,7 @@ import {
   FormField,
   FormError,
   FormActions,
+  SensitiveDataWarning,
   formInputClasses,
   formSelectClasses,
 } from "@/components/forms";
@@ -150,6 +151,7 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
             placeholder="e.g. Follow up on quote"
             className={formInputClasses}
           />
+          <SensitiveDataWarning />
         </FormField>
         <FormField id="task-description" label="Description">
           <textarea
@@ -160,6 +162,7 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
             placeholder="Optional details"
             className={formInputClasses}
           />
+          <SensitiveDataWarning />
         </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField id="task-due" label="Due date">

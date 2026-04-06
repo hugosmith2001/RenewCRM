@@ -27,7 +27,7 @@ export async function POST(_request: NextRequest, { params }: Params) {
         action: "UPDATE",
         entityType: "CustomerContact",
         entityId: contactId,
-        metadata: { name: updated.name, isPrimary: true },
+        metadata: { customerId, isPrimary: true },
       });
     }
     return NextResponse.json(updated);

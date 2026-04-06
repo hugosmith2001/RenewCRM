@@ -3,6 +3,7 @@
  * Logs create, update, upload (and delete) actions for compliance and debugging.
  */
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import type { AuditAction as PrismaAuditAction } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
@@ -14,7 +15,8 @@ export type AuditEntityType =
   | "Policy"
   | "Document"
   | "Activity"
-  | "Task";
+  | "Task"
+  | "DsarRequest";
 
 export type LogAuditInput = {
   tenantId: string;
@@ -25,12 +27,57 @@ export type LogAuditInput = {
   metadata?: Record<string, unknown>;
 };
 
+type AllowedAuditMetadataValue = string | number | boolean | null;
+
+const ALLOWED_AUDIT_METADATA_KEYS = new Set([
+  // IDs
+  "tenantId",
+  "userId",
+  "customerId",
+  "contactId",
+  "policyId",
+  "documentId",
+  "taskId",
+  "activityId",
+  "insurerId",
+  "objectId",
+  "dsarRequestId",
+  "subjectId",
+  // Non-PII enums/flags
+  "status",
+  "type",
+  "documentType",
+  "isPrimary",
+  "requestType",
+  "subjectType",
+  "actionType",
+]);
+
+function sanitizeAuditMetadata(metadata: Record<string, unknown> | undefined): Record<string, AllowedAuditMetadataValue> | undefined {
+  if (!metadata) return undefined;
+  const out: Record<string, AllowedAuditMetadataValue> = {};
+
+  for (const [k, v] of Object.entries(metadata)) {
+    if (!ALLOWED_AUDIT_METADATA_KEYS.has(k)) continue;
+    if (v === null) {
+      out[k] = null;
+      continue;
+    }
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+      out[k] = v;
+    }
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 /**
  * Log an audit event. Does not throw; failures are logged to console.
  * Call after successful create/update/upload/delete in API routes.
  */
 export async function logAuditEvent(input: LogAuditInput): Promise<void> {
   try {
+    const safeMetadata = sanitizeAuditMetadata(input.metadata);
     await prisma.auditEvent.create({
       data: {
         tenantId: input.tenantId,
@@ -38,11 +85,18 @@ export async function logAuditEvent(input: LogAuditInput): Promise<void> {
         action: input.action,
         entityType: input.entityType,
         entityId: input.entityId,
-        metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
+        metadata: (safeMetadata ?? undefined) as Prisma.InputJsonValue | undefined,
       },
     });
   } catch (err) {
-    console.error("[audit] Failed to log audit event:", err);
+    logger.error("Failed to write audit event", {
+      tenantId: input.tenantId,
+      userId: input.userId,
+      action: input.action,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      err,
+    });
   }
 }
 

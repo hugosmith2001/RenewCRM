@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         action: "UPDATE",
         entityType: "CustomerContact",
         entityId: contactId,
-        metadata: { name: updated.name },
+        metadata: { customerId },
       });
     }
     return NextResponse.json(updated);
@@ -64,7 +64,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       action: "DELETE",
       entityType: "CustomerContact",
       entityId: contactId,
-      metadata: { name: contact.name },
+      metadata: { customerId },
     });
     return new NextResponse(null, { status: 204 });
   } catch (err) {

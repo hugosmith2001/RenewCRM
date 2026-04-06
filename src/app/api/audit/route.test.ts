@@ -92,7 +92,7 @@ describe("GET /api/audit", () => {
         action: "CREATE" as const,
         entityType: "Customer",
         entityId: "cust-1",
-        metadata: { name: "Acme" },
+        metadata: {},
         createdAt: new Date(),
       },
     ];

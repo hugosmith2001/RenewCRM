@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireRole, assertTenantAccess } from "@/modules/auth";
 import { getDocumentById, getDocumentStream } from "@/modules/documents";
 import { handleApiError } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
 import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string; documentId: string }> };
@@ -34,6 +35,14 @@ export async function GET(_request: NextRequest, { params }: Params) {
     headers.set("Content-Disposition", disposition);
     headers.set("Content-Length", String(doc.sizeBytes));
 
+    logger.info("Document download served", {
+      tenantId: user.tenantId,
+      userId: user.id,
+      customerId,
+      documentId: doc.id,
+      ok: true,
+    });
+
     return new NextResponse(webStream, {
       status: 200,
       headers,
@@ -45,6 +54,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
         { status: 404 }
       );
     }
+    logger.warn("Document download failed", { err });
     return handleApiError(err);
   }
 }

@@ -3,7 +3,7 @@
  * Activity CRUD scoped by tenant and customer (calls, meetings, notes, etc.).
  */
 import { prisma } from "@/lib/db";
-import type { Activity, ActivityType } from "@prisma/client";
+import type { Activity, ActivityType, Role } from "@prisma/client";
 import type { CreateActivityInput, UpdateActivityInput } from "@/lib/validations/activities";
 
 export type ActivityWithCreator = Activity & {
@@ -21,13 +21,14 @@ export type ListActivitiesForTenantFilters = {
   to?: Date;
   limit?: number;
   offset?: number;
+  viewerRole?: Role;
 };
 
 export async function listActivitiesForTenant(
   tenantId: string,
   filters: ListActivitiesForTenantFilters = {}
 ): Promise<{ activities: ActivityForFeed[]; total: number }> {
-  const { type, createdById, from, to, limit = 100, offset = 0 } = filters;
+  const { type, createdById, from, to, limit = 100, offset = 0, viewerRole } = filters;
   const where = {
     tenantId,
     ...(type && { type }),
@@ -53,7 +54,15 @@ export async function listActivitiesForTenant(
     }) as Promise<ActivityForFeed[]>,
     prisma.activity.count({ where }),
   ]);
-  return { activities, total };
+
+  // Phase 2 (GDPR): Reduce broad exposure of free-text in tenant-wide feeds for STAFF.
+  // Staff can still view activity content in the customer workspace where it's typically necessary.
+  const safeActivities =
+    viewerRole === "STAFF"
+      ? activities.map((a) => ({ ...a, subject: null }))
+      : activities;
+
+  return { activities: safeActivities, total };
 }
 
 export async function listActivitiesByCustomerId(
@@ -61,7 +70,7 @@ export async function listActivitiesByCustomerId(
   customerId: string
 ): Promise<ActivityWithCreator[]> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return [];
@@ -94,7 +103,7 @@ export async function createActivity(
   createdById?: string | null
 ): Promise<Activity | null> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return null;

@@ -124,7 +124,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       action: "UPLOAD",
       entityType: "Document",
       entityId: doc.id,
-      metadata: { name: doc.name, documentType: doc.documentType, customerId },
+      metadata: { documentType: doc.documentType, customerId },
     });
 
     return NextResponse.json(serializeDocument(doc), { status: 201 });

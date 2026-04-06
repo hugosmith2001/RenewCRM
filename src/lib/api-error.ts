@@ -3,6 +3,7 @@
  * Maps known errors to consistent JSON responses and status codes.
  */
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 export function handleApiError(err: unknown): NextResponse {
   if (err instanceof Error) {
@@ -13,6 +14,8 @@ export function handleApiError(err: unknown): NextResponse {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
-  throw err;
+
+  logger.error("Unhandled API error", { err });
+  return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
 }
 

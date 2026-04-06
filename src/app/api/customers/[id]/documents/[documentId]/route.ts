@@ -56,7 +56,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       action: "DELETE",
       entityType: "Document",
       entityId: documentId,
-      metadata: { name: doc.name },
+      metadata: { customerId },
     });
     return new NextResponse(null, { status: 204 });
   } catch (err) {

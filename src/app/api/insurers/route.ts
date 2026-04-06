@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       action: "CREATE",
       entityType: "Insurer",
       entityId: insurer.id,
-      metadata: { name: insurer.name },
+      metadata: {},
     });
     return NextResponse.json(insurer, { status: 201 });
   } catch (err) {

@@ -194,7 +194,7 @@ describe("POST /api/customers", () => {
     expect(mockCreateCustomer).toHaveBeenCalledWith("tenant-1", expect.any(Object));
   });
 
-  it("calls logAuditEvent with CREATE and customer id/name after successful create (Phase 8 audit)", async () => {
+  it("calls logAuditEvent with CREATE after successful create (Phase 8 audit)", async () => {
     mockRequireRole.mockResolvedValue(authUser);
     const created = {
       id: "cust-audit-test",
@@ -225,7 +225,7 @@ describe("POST /api/customers", () => {
       action: "CREATE",
       entityType: "Customer",
       entityId: "cust-audit-test",
-      metadata: { name: "Audit Test Corp" },
+      metadata: {},
     });
   });
 });

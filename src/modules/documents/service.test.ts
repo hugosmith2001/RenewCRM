@@ -82,7 +82,7 @@ describe("listDocumentsByCustomerId", () => {
     const result = await listDocumentsByCustomerId(tenantId, "bad-customer");
     expect(result).toEqual([]);
     expect(mockCustomerFindFirst).toHaveBeenCalledWith({
-      where: { id: "bad-customer", tenantId },
+      where: { id: "bad-customer", tenantId, deletedAt: null },
       select: { id: true },
     });
   });
@@ -95,7 +95,7 @@ describe("listDocumentsByCustomerId", () => {
     expect(result[0].name).toBe("Policy PDF");
     expect(mockDocumentFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { customerId, tenantId },
+        where: { customerId, tenantId, deletedAt: null },
       })
     );
   });
@@ -109,7 +109,7 @@ describe("getDocumentById", () => {
     expect(result?.id).toBe(documentId);
     expect(mockDocumentFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: documentId, tenantId },
+        where: { id: documentId, tenantId, deletedAt: null },
       })
     );
   });
@@ -144,7 +144,7 @@ describe("listDocumentsByPolicyId", () => {
     expect(result[0].policyId).toBe(policyId);
     expect(mockDocumentFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { policyId, tenantId },
+        where: { policyId, tenantId, deletedAt: null },
       })
     );
   });
@@ -314,18 +314,19 @@ describe("deleteDocument", () => {
     mockDocumentFindFirst.mockResolvedValue(null);
     const result = await deleteDocument(tenantId, "bad-id");
     expect(result).toBe(false);
-    expect(mockDocumentDelete).not.toHaveBeenCalled();
+    expect(mockDocumentUpdate).not.toHaveBeenCalled();
     expect(mockStorageDelete).not.toHaveBeenCalled();
   });
 
-  it("deletes document and storage when found", async () => {
+  it("soft-deletes document when found (retention purge removes blob later)", async () => {
     mockDocumentFindFirst.mockResolvedValue(baseDocument);
-    mockDocumentDelete.mockResolvedValue(undefined);
+    mockDocumentUpdate.mockResolvedValue({ ...baseDocument, deletedAt: new Date() });
     const result = await deleteDocument(tenantId, documentId);
     expect(result).toBe(true);
-    expect(mockStorageDelete).toHaveBeenCalledWith(baseDocument.storageKey);
-    expect(mockDocumentDelete).toHaveBeenCalledWith({
+    expect(mockStorageDelete).not.toHaveBeenCalled();
+    expect(mockDocumentUpdate).toHaveBeenCalledWith({
       where: { id: documentId },
+      data: { deletedAt: expect.any(Date) },
     });
   });
 });

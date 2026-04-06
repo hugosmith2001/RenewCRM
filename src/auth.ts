@@ -40,6 +40,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name,
           tenantId: user.tenantId,
           role: user.role,
+          sessionVersion: user.sessionVersion,
         };
       },
     }),
@@ -47,13 +48,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     jwt: async ({ token, user }) => {
+      // On sign-in, populate the minimal JWT payload.
       if (user) {
         token.id = user.id as string;
         token.tenantId = (user as { tenantId: string }).tenantId;
         token.role = (user as { role: string }).role;
-        token.email = user.email ?? undefined;
-        token.name = user.name ?? undefined;
+        token.sessionVersion = (user as { sessionVersion: number }).sessionVersion;
+        return token;
       }
+
+      // On subsequent requests, validate that the user is still active and that
+      // the sessionVersion hasn't changed (e.g. password change invalidation).
+      if (typeof token.id === "string") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: {
+            isActive: true,
+            tenantId: true,
+            role: true,
+            sessionVersion: true,
+          },
+        });
+
+        if (!dbUser || dbUser.isActive !== true) {
+          return {};
+        }
+        if (typeof token.sessionVersion === "number" && dbUser.sessionVersion !== token.sessionVersion) {
+          return {};
+        }
+
+        // Keep tenant/role authoritative from DB to avoid stale privilege.
+        token.tenantId = dbUser.tenantId;
+        token.role = dbUser.role;
+        token.sessionVersion = dbUser.sessionVersion;
+      }
+
       return token;
     },
   },

@@ -67,7 +67,7 @@ describe("listTasksByCustomerId", () => {
     const result = await listTasksByCustomerId(tenantId, "bad-customer");
 
     expect(mockCustomerFindFirst).toHaveBeenCalledWith({
-      where: { id: "bad-customer", tenantId },
+      where: { id: "bad-customer", tenantId, deletedAt: null },
       select: { id: true },
     });
     expect(mockTaskFindMany).not.toHaveBeenCalled();

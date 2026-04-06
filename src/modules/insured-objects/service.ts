@@ -14,7 +14,7 @@ export async function listInsuredObjectsByCustomerId(
   customerId: string
 ): Promise<InsuredObject[]> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return [];
@@ -40,7 +40,7 @@ export async function createInsuredObject(
   data: CreateInsuredObjectInput
 ): Promise<InsuredObject | null> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return null;

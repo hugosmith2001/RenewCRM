@@ -58,6 +58,7 @@ export default async function ActivitiesPage({ searchParams }: Props) {
       to,
       limit: query.limit,
       offset,
+      viewerRole: user.role,
     }),
   ]);
 
@@ -192,7 +193,7 @@ function ActivityRow({ activity }: { activity: ActivityForFeed }) {
           {ACTIVITY_TYPE_LABELS[activity.type] ?? activity.type}
         </Badge>
       </TD>
-      <TD className="font-medium text-foreground max-w-[200px] truncate" title={activity.subject ?? undefined}>
+      <TD className="font-medium text-foreground max-w-[200px] truncate">
         {activity.subject || "—"}
       </TD>
       <TD>

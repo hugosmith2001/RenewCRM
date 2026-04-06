@@ -11,7 +11,7 @@ export async function listContactsByCustomerId(
   customerId: string
 ): Promise<CustomerContact[]> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return [];
@@ -37,7 +37,7 @@ export async function createContact(
   data: CreateContactInput
 ): Promise<CustomerContact | null> {
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, tenantId },
+    where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
   });
   if (!customer) return null;

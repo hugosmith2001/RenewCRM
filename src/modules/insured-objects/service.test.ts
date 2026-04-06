@@ -64,7 +64,7 @@ describe("listInsuredObjectsByCustomerId", () => {
     );
 
     expect(mockCustomerFindFirst).toHaveBeenCalledWith({
-      where: { id: "bad-customer", tenantId },
+      where: { id: "bad-customer", tenantId, deletedAt: null },
       select: { id: true },
     });
     expect(mockInsuredObjectFindMany).not.toHaveBeenCalled();

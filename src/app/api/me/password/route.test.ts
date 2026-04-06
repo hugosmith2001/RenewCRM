@@ -36,9 +36,10 @@ beforeEach(() => {
   (globalThis as unknown as Record<string, unknown>).__safekeep_rate_limit_buckets__ = new Map();
 });
 
-function makeRequest(body: unknown) {
+function makeRequest(body: unknown, headers?: Record<string, string>) {
   return new NextRequest("http://localhost/api/me/password", {
     method: "POST",
+    headers,
     body: JSON.stringify(body),
   });
 }
@@ -76,6 +77,31 @@ describe("POST /api/me/password", () => {
     const body = await res.json();
     expect(body.error).toBe("Validation failed");
     expect(body.details).toBeDefined();
+  });
+
+  it("returns 429 when rate limit exceeded for same user and IP", async () => {
+    mockRequireAuth.mockResolvedValue({
+      id: "user-1",
+      email: "user@example.com",
+      name: "User",
+      tenantId: "tenant-1",
+      role: "ADMIN",
+    });
+
+    // The endpoint rate-limits before it parses/validates JSON, so use intentionally bad bodies.
+    const headers = { "x-forwarded-for": "203.0.113.9" };
+    for (let i = 0; i < 5; i++) {
+      const res = await POST(makeRequest({ currentPassword: "", newPassword: "", confirmNewPassword: "" }, headers));
+      expect(res.status).not.toBe(429);
+    }
+
+    const blocked = await POST(makeRequest({ currentPassword: "", newPassword: "", confirmNewPassword: "" }, headers));
+    expect(blocked.status).toBe(429);
+    const body = await blocked.json();
+    expect(body.error).toBe("Too Many Requests");
+
+    expect(mockPrismaUserFindUnique).not.toHaveBeenCalled();
+    expect(mockPrismaUserUpdate).not.toHaveBeenCalled();
   });
 
   it("returns 400 when current password is invalid", async () => {

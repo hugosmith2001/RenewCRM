@@ -72,6 +72,34 @@ describe("logAuditEvent", () => {
     });
   });
 
+  it("sanitizes metadata to IDs/enums only (drops PII/free-text-ish keys and non-primitives)", async () => {
+    mockCreate.mockResolvedValue({});
+
+    await logAuditEvent({
+      tenantId,
+      userId,
+      action: "UPDATE",
+      entityType: "Customer",
+      entityId: "cust-1",
+      metadata: {
+        customerId: "cust-1",
+        status: "INACTIVE",
+        email: "person@example.com",
+        name: "Person",
+        notes: "free text should not be stored",
+        extra: "not allowed key",
+        nested: { any: "object values are dropped" },
+        ok: true,
+      },
+    });
+
+    expect(mockCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        metadata: { customerId: "cust-1", status: "INACTIVE" },
+      }),
+    });
+  });
+
   it("does not throw when prisma.auditEvent.create throws (swallows and logs)", async () => {
     mockCreate.mockRejectedValue(new Error("DB connection failed"));
 

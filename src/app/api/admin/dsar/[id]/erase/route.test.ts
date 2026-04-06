@@ -29,6 +29,18 @@ beforeEach(() => {
 });
 
 describe("POST /api/admin/dsar/:id/erase", () => {
+  it("returns 403 when requireRole throws Forbidden", async () => {
+    mockRequireRole.mockRejectedValue(new Error("Forbidden"));
+    const res = await POST(
+      new NextRequest("http://localhost/api/admin/dsar/dsar-1/erase", {
+        method: "POST",
+        body: JSON.stringify({ reason: "x" }),
+      }),
+      { params: Promise.resolve({ id: "dsar-1" }) }
+    );
+    expect(res.status).toBe(403);
+  });
+
   it("returns 409 when DSAR is not approved", async () => {
     mockRequireRole.mockResolvedValue(adminUser);
     mockExecute.mockRejectedValue(new Error("DsarRequestNotApproved"));

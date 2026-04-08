@@ -18,12 +18,12 @@ export default function PolicyDetailError({
 
   return (
     <>
-      <PageHeader title="Policy" backLabel="Customer" />
+      <PageHeader title="Försäkring" backLabel="Kund" />
       <EmptyState
-        title="Couldn’t load policy"
-        description="The policy may not exist or you may not have access. Try again or return to the customer."
-        primaryAction={{ label: "Try again", onClick: reset }}
-        secondaryAction={{ label: "Back to customers", href: "/dashboard/customers" }}
+        title="Det gick inte att läsa in försäkringen"
+        description="Försäkringen kanske inte finns eller så saknar du åtkomst. Försök igen eller gå tillbaka till kunden."
+        primaryAction={{ label: "Försök igen", onClick: reset }}
+        secondaryAction={{ label: "Tillbaka till kunder", href: "/dashboard/customers" }}
       />
     </>
   );

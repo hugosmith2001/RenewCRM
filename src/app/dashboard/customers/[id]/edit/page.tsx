@@ -17,7 +17,7 @@ export default async function EditCustomerPage({ params }: Props) {
   return (
     <>
       <PageHeader
-        title="Edit customer"
+        title="Redigera kund"
         backHref={`/dashboard/customers/${id}`}
         backLabel={customer.name}
       />

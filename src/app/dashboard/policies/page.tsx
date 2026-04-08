@@ -64,11 +64,11 @@ export default async function PoliciesPage({ searchParams }: Props) {
   return (
     <>
       <PageHeader
-        title="Policies"
-        description="All policies across your book. Search by policy number, customer, or insurer."
+        title="Försäkringar"
+        description="Alla försäkringar i ditt bestånd. Sök på försäkringsnummer, kund eller försäkringsbolag."
         actions={
           <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
-            Customers
+            Kunder
           </ButtonLink>
         }
       />
@@ -91,19 +91,19 @@ export default async function PoliciesPage({ searchParams }: Props) {
         <TableShell>
           {policies.length === 0 ? (
             <InlineState
-              title={query.search || query.status ? "No matches" : "No policies yet"}
+              title={query.search || query.status ? "Inga träffar" : "Inga försäkringar ännu"}
               description={
                 query.search || query.status ? (
                   <span>
-                    Try adjusting your search or filters, or{" "}
+                    Prova att justera din sökning eller dina filter, eller{" "}
                     <Link href="/dashboard/policies" className="text-primary hover:underline">
-                      clear filters
+                      rensa filter
                     </Link>
                     .
                   </span>
                 ) : (
                   <span>
-                    Add policies from a customer workspace to see them here.
+                    Lägg till försäkringar från en kundsida för att se dem här.
                   </span>
                 )
               }
@@ -112,16 +112,16 @@ export default async function PoliciesPage({ searchParams }: Props) {
             <Table>
               <THead>
                 <tr>
-                  <TH>Customer</TH>
-                  <TH>Policy number</TH>
-                  <TH>Insurer</TH>
+                  <TH>Kund</TH>
+                  <TH>Försäkringsnummer</TH>
+                  <TH>Försäkringsbolag</TH>
                   <TH>Status</TH>
-                  <TH className="text-right">Premium</TH>
+                  <TH className="text-right">Premie</TH>
                   <TH>Start</TH>
-                  <TH>End</TH>
-                  <TH>Renewal</TH>
-                  <TH>Broker</TH>
-                  <TH className="min-w-[5rem] text-right">Action</TH>
+                  <TH>Slut</TH>
+                  <TH>Förnyelse</TH>
+                  <TH>Mäklare</TH>
+                  <TH className="min-w-[5rem] text-right">Åtgärd</TH>
                 </tr>
               </THead>
               <TBody>
@@ -169,7 +169,7 @@ export default async function PoliciesPage({ searchParams }: Props) {
                         href={`/dashboard/customers/${p.customer.id}/policies/${p.id}`}
                         className="text-sm text-primary hover:underline"
                       >
-                        View
+                        Visa
                       </Link>
                     </TD>
                   </TR>
@@ -183,7 +183,7 @@ export default async function PoliciesPage({ searchParams }: Props) {
       {totalPages > 1 && (
         <div className="mt-content-top flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Page {query.page} of {totalPages} ({total} total)
+            Sida {query.page} av {totalPages} ({total} totalt)
           </p>
           <div className="flex gap-2">
             {query.page > 1 && (
@@ -196,7 +196,7 @@ export default async function PoliciesPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Previous
+                Föregående
               </ButtonLink>
             )}
             {query.page < totalPages && (
@@ -209,7 +209,7 @@ export default async function PoliciesPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Next
+                Nästa
               </ButtonLink>
             )}
           </div>

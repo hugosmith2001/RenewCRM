@@ -8,10 +8,10 @@ import { FormError } from "@/components/forms";
 import { Badge, Button, ButtonLink, ConfirmDialog } from "@/components/ui";
 
 const STATUS_LABELS: Record<string, string> = {
-  ACTIVE: "Active",
-  PENDING: "Pending",
-  EXPIRED: "Expired",
-  CANCELLED: "Cancelled",
+  ACTIVE: "Aktiv",
+  PENDING: "Pågående",
+  EXPIRED: "Utgången",
+  CANCELLED: "Avbruten",
 };
 
 type InsuredObject = {
@@ -131,10 +131,10 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
   return (
     <DetailSection
       id="policies"
-      title="Policies"
+      title="Försäkringar"
       actions={
         <Button type="button" onClick={openAdd} variant="primary" size="sm">
-          Add policy
+          Lägg till försäkring
         </Button>
       }
     >
@@ -154,14 +154,13 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
       )}
       {loading ? (
         <p className="text-sm text-muted-foreground">
-          Loading policies…
+          Laddar försäkringar…
         </p>
       ) : error ? (
         <FormError message={error} />
       ) : policies.length === 0 && !showForm ? (
         <p className="text-sm text-muted-foreground">
-          No policies yet. Add a policy to link an insurer, dates, and
-          optional insured objects.
+          Inga försäkringar ännu. Lägg till en försäkring för att koppla försäkringsbolag, datum och eventuella försäkrade objekt.
         </p>
       ) : (
         <ul className={sectionListClasses}>
@@ -200,11 +199,11 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
                     {formatDate(p.startDate)} – {formatDate(p.endDate)}
                   </span>
                   {p.premium != null && (
-                    <span>Premium: {Number(p.premium).toLocaleString()}</span>
+                    <span>Premie: {Number(p.premium).toLocaleString()}</span>
                   )}
                   {p.insuredObjects?.length > 0 && (
                     <span>
-                      Objects:{" "}
+                      Objekt:{" "}
                       {p.insuredObjects
                         .map((o) => o.insuredObject.name)
                         .join(", ")}
@@ -218,7 +217,7 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
                   variant="ghost"
                   size="sm"
                 >
-                  View
+                  Visa
                 </ButtonLink>
                 <Button
                   type="button"
@@ -226,7 +225,7 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
                   variant="ghost"
                   size="sm"
                 >
-                  Edit
+                  Redigera
                 </Button>
                 <Button
                   type="button"
@@ -235,7 +234,7 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
                   size="sm"
                   className="text-danger hover:text-danger"
                 >
-                  Delete
+                  Ta bort
                 </Button>
               </div>
             </li>
@@ -244,9 +243,9 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
       )}
       <ConfirmDialog
         open={deleteId !== null}
-        title="Delete policy"
-        message="Delete this policy record? This cannot be undone."
-        confirmLabel="Delete"
+        title="Ta bort försäkring"
+        message="Ta bort den här försäkringen? Detta kan inte ångras."
+        confirmLabel="Ta bort"
         variant="danger"
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}

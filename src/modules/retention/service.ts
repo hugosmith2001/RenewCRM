@@ -19,6 +19,61 @@ function isBlockedByHold(entity: { legalHold: boolean; restrictedAt: Date | null
   return null;
 }
 
+export type PurgeCustomerNowResult =
+  | { ok: true }
+  | { ok: false; reason: "not_found" | "legal_hold" | "restricted" | "document_legal_hold" | "storage_delete_failed" | "db_delete_failed" };
+
+/**
+ * Purge a single customer immediately (hard delete) using the same safety invariants as the
+ * scheduled retention purge:
+ * - Block on legal hold / restriction
+ * - Delete customer document blobs first
+ * - Never delete DB row if storage deletion fails
+ */
+export async function purgeCustomerNow(input: { tenantId: string; customerId: string }): Promise<PurgeCustomerNowResult> {
+  const customer = await prisma.customer.findFirst({
+    where: { tenantId: input.tenantId, id: input.customerId },
+    select: { id: true, legalHold: true, restrictedAt: true },
+  });
+  if (!customer) return { ok: false, reason: "not_found" };
+
+  const hold = isBlockedByHold({ legalHold: customer.legalHold, restrictedAt: customer.restrictedAt });
+  if (hold === "legal_hold") return { ok: false, reason: "legal_hold" };
+  if (hold === "restricted") return { ok: false, reason: "restricted" };
+
+  const docsForCustomer = await prisma.document.findMany({
+    where: { tenantId: input.tenantId, customerId: customer.id },
+    select: { id: true, storageKey: true, legalHold: true },
+  });
+  if (docsForCustomer.some((d) => d.legalHold)) return { ok: false, reason: "document_legal_hold" };
+
+  for (const d of docsForCustomer) {
+    try {
+      await storageDelete(d.storageKey);
+    } catch (err) {
+      logger.error("Purge customer now: document storage delete failed", {
+        tenantId: input.tenantId,
+        customerId: customer.id,
+        documentId: d.id,
+        err,
+      });
+      return { ok: false, reason: "storage_delete_failed" };
+    }
+  }
+
+  try {
+    await prisma.customer.delete({ where: { id: customer.id } });
+    return { ok: true };
+  } catch (err) {
+    logger.error("Purge customer now: customer DB delete failed", {
+      tenantId: input.tenantId,
+      customerId: customer.id,
+      err,
+    });
+    return { ok: false, reason: "db_delete_failed" };
+  }
+}
+
 async function getCustomerAnchorAt(tenantId: string, customerId: string): Promise<Date | null> {
   // "Inactivity" anchor is the most recent of:
   // - customer.updatedAt (edits)
@@ -282,55 +337,25 @@ export async function executePurgeForTenant(input: {
     const eligibleAt = addDays(anchorAt, inactiveCustomerPolicy.retentionDays);
     if (!isOnOrBefore(eligibleAt, asOf)) continue;
 
-    // Safety: delete all document blobs for this customer before cascading delete.
-    const docsForCustomer = await prisma.document.findMany({
-      where: { tenantId: input.tenantId, customerId: c.id },
-      select: { id: true, storageKey: true, legalHold: true },
-    });
+    result.attempted += 1;
+    const purge = await purgeCustomerNow({ tenantId: input.tenantId, customerId: c.id });
+    if (purge.ok) {
+      result.deleted += 1;
+      continue;
+    }
 
-    if (docsForCustomer.some((d) => d.legalHold)) {
+    if (purge.reason === "legal_hold" || purge.reason === "restricted" || purge.reason === "document_legal_hold" || purge.reason === "not_found") {
       result.blocked += 1;
       continue;
     }
 
-    result.attempted += 1;
-
-    let storageOk = true;
-    for (const d of docsForCustomer) {
-      try {
-        await storageDelete(d.storageKey);
-      } catch (err) {
-        storageOk = false;
-        logger.error("Retention purge: customer document storage delete failed", {
-          tenantId: input.tenantId,
-          customerId: c.id,
-          documentId: d.id,
-          err,
-        });
-        result.failed += 1;
-        result.failures.push({
-          kind: "customer",
-          tenantId: input.tenantId,
-          id: c.id,
-          reason: "storage_delete_failed",
-        });
-        break;
-      }
-    }
-    if (!storageOk) continue;
-
-    try {
-      await prisma.customer.delete({ where: { id: c.id } });
-      result.deleted += 1;
-    } catch (err) {
-      result.failed += 1;
-      result.failures.push({ kind: "customer", tenantId: input.tenantId, id: c.id, reason: "db_delete_failed" });
-      logger.error("Retention purge: customer DB delete failed", {
-        tenantId: input.tenantId,
-        customerId: c.id,
-        err,
-      });
-    }
+    result.failed += 1;
+    result.failures.push({
+      kind: "customer",
+      tenantId: input.tenantId,
+      id: c.id,
+      reason: purge.reason,
+    });
   }
 
   // 3) Purge audit events by cutoff.

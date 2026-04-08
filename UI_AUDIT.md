@@ -61,9 +61,9 @@ Adding a small set of section/card/table tokens and using them in these componen
 
 | File | Issue |
 |------|--------|
-| **`src/app/page.tsx`** | Centered hero layout with large title ("Safekeep CRM") and single CTA "Sign in". For an internal B2B app this can feel like a marketing landing; consider a minimal, operational entry (e.g. small title + sign-in, or redirect to login when unauthenticated). |
+| **`src/app/page.tsx`** | Centered hero layout with large title ("Renew CRM") and single CTA "Sign in". For an internal B2B app this can feel like a marketing landing; consider a minimal, operational entry (e.g. small title + sign-in, or redirect to login when unauthenticated). |
 | **`src/app/page.tsx`** | Subtitle "Insurance Broker CRM – Phase 1 auth ready." is dev/MVP language; for production, neutral operational copy is better. |
-| **`src/app/dashboard/page.tsx`** | Description "Welcome to Safekeep CRM. Manage your customers from the Customers section." is welcoming/marketing; for internal tooling, a short operational line (e.g. "Use the sidebar to open Customers, Policies, or Settings.") fits better. |
+| **`src/app/dashboard/page.tsx`** | Description "Welcome to Renew CRM. Manage your customers from the Customers section." is welcoming/marketing; for internal tooling, a short operational line (e.g. "Use the sidebar to open Customers, Policies, or Settings.") fits better. |
 
 **Fix:** Shorten and neutralise copy; avoid "welcome" and phase labels; keep layout minimal and information-oriented.
 

@@ -6,11 +6,11 @@ import { Badge, Button, ConfirmDialog } from "@/components/ui";
 import { FormError, FormField, FormLayout, formInputClasses, formSelectClasses } from "@/components/forms";
 
 const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  POLICY_DOCUMENT: "Policy document",
-  CONTRACT: "Contract",
-  ID_DOCUMENT: "ID document",
-  CORRESPONDENCE: "Correspondence",
-  OTHER: "Other",
+  POLICY_DOCUMENT: "Försäkringsdokument",
+  CONTRACT: "Avtal",
+  ID_DOCUMENT: "ID-handling",
+  CORRESPONDENCE: "Korrespondens",
+  OTHER: "Annat",
 };
 
 type Policy = { id: string; policyNumber: string };
@@ -42,11 +42,11 @@ export function DocumentsSection({ customerId }: Props) {
     setError(null);
     try {
       const res = await fetch(`/api/customers/${customerId}/documents`);
-      if (!res.ok) throw new Error("Failed to load documents");
+      if (!res.ok) throw new Error("Det gick inte att läsa in dokument");
       const data = await res.json();
       setDocuments(data);
     } catch {
-      setError("Couldn’t load documents.");
+      setError("Det gick inte att läsa in dokument.");
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export function DocumentsSection({ customerId }: Props) {
     const formData = new FormData(form);
     const file = formData.get("file") as File | null;
     if (!file || file.size === 0) {
-      setError("Please select a file.");
+      setError("Välj en fil.");
       return;
     }
     setUploading(true);
@@ -86,14 +86,14 @@ export function DocumentsSection({ customerId }: Props) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Upload failed");
+        setError(data.error ?? "Uppladdningen misslyckades");
         return;
       }
       await fetchDocuments();
       setShowForm(false);
       form.reset();
     } catch {
-      setError("Upload failed");
+      setError("Uppladdningen misslyckades");
     } finally {
       setUploading(false);
     }
@@ -125,7 +125,7 @@ export function DocumentsSection({ customerId }: Props) {
   return (
     <DetailSection
       id="documents"
-      title="Documents"
+      title="Dokument"
       actions={
         <Button
           type="button"
@@ -133,7 +133,7 @@ export function DocumentsSection({ customerId }: Props) {
           variant={showForm ? "secondary" : "primary"}
           size="sm"
         >
-          {showForm ? "Cancel" : "Upload document"}
+          {showForm ? "Avbryt" : "Ladda upp dokument"}
         </Button>
       }
     >
@@ -141,7 +141,7 @@ export function DocumentsSection({ customerId }: Props) {
           <form onSubmit={handleSubmit} className={sectionInnerGapClass}>
             <FormLayout variant="embedded">
               {error && <FormError message={error} />}
-              <FormField id="doc-file" label="File" required description="PDF, images, Word, text, CSV. Max 20 MB.">
+              <FormField id="doc-file" label="Fil" required description="PDF, bilder, Word, text, CSV. Max 20 MB.">
                 <input
                   id="doc-file"
                   name="file"
@@ -150,16 +150,16 @@ export function DocumentsSection({ customerId }: Props) {
                   className="block w-full text-sm text-foreground file:mr-4 file:rounded-sm file:border-0 file:bg-primary-muted file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20"
                 />
               </FormField>
-              <FormField id="doc-name" label="Display name">
+              <FormField id="doc-name" label="Visningsnamn">
                 <input
                   id="doc-name"
                   name="name"
                   type="text"
-                  placeholder="e.g. Policy schedule 2024"
+                  placeholder="t.ex. Försäkringsbrev 2024"
                   className={formInputClasses}
                 />
               </FormField>
-              <FormField id="doc-type" label="Type">
+              <FormField id="doc-type" label="Typ">
                 <select
                   id="doc-type"
                   name="documentType"
@@ -173,13 +173,13 @@ export function DocumentsSection({ customerId }: Props) {
                 </select>
               </FormField>
               {policies.length > 0 && (
-                <FormField id="doc-policy" label="Link to policy (optional)">
+                <FormField id="doc-policy" label="Koppla till försäkring (valfritt)">
                   <select
                     id="doc-policy"
                     name="policyId"
                     className={formSelectClasses}
                   >
-                    <option value="">— None —</option>
+                    <option value="">— Ingen —</option>
                     {policies.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.policyNumber}
@@ -190,10 +190,10 @@ export function DocumentsSection({ customerId }: Props) {
               )}
               <div className="flex flex-wrap items-center gap-form-actions">
                 <Button type="submit" variant="primary" disabled={uploading}>
-                  {uploading ? "Uploading…" : "Upload"}
+                  {uploading ? "Laddar upp…" : "Ladda upp"}
                 </Button>
                 <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
-                  Cancel
+                  Avbryt
                 </Button>
               </div>
             </FormLayout>
@@ -201,14 +201,13 @@ export function DocumentsSection({ customerId }: Props) {
         )}
         {loading ? (
           <p className="text-sm text-muted-foreground">
-            Loading documents…
+            Laddar dokument…
           </p>
         ) : error ? (
           <FormError message={error} />
         ) : documents.length === 0 && !showForm ? (
           <p className="text-sm text-muted-foreground">
-            No documents yet. Upload policy PDFs, contracts, or other files and
-            optionally link them to a policy.
+            Inga dokument ännu. Ladda upp försäkrings-PDF:er, avtal eller andra filer och koppla dem vid behov till en försäkring.
           </p>
         ) : (
           <ul className={sectionListClasses}>
@@ -230,7 +229,7 @@ export function DocumentsSection({ customerId }: Props) {
                       {new Date(d.createdAt).toLocaleDateString()}
                     </span>
                     {d.policy && (
-                      <span>Policy: {d.policy.policyNumber}</span>
+                      <span>Försäkring: {d.policy.policyNumber}</span>
                     )}
                   </div>
                 </div>
@@ -241,7 +240,7 @@ export function DocumentsSection({ customerId }: Props) {
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline"
                   >
-                    Download
+                    Ladda ner
                   </a>
                   <Button
                     type="button"
@@ -250,7 +249,7 @@ export function DocumentsSection({ customerId }: Props) {
                     size="sm"
                     className="text-danger hover:text-danger"
                   >
-                    Delete
+                    Ta bort
                   </Button>
                 </div>
               </li>
@@ -259,9 +258,9 @@ export function DocumentsSection({ customerId }: Props) {
         )}
       <ConfirmDialog
         open={deleteId !== null}
-        title="Delete document"
-        message="Delete this document? This cannot be undone."
-        confirmLabel="Delete"
+        title="Ta bort dokument"
+        message="Ta bort det här dokumentet? Detta kan inte ångras."
+        confirmLabel="Ta bort"
         variant="danger"
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}

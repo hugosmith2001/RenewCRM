@@ -1,10 +1,10 @@
-# Cookie notice (SafekeepCRM)
+# Cookie notice (Renew CRM)
 
 This notice describes cookie usage that is **actually implemented in this repository**.
 
-## What cookies SafekeepCRM uses today
+## What cookies Renew CRM uses today
 
-SafekeepCRM uses **essential cookies** to support authentication and session security via Auth.js / NextAuth v5.
+Renew CRM uses **essential cookies** to support authentication and session security via Auth.js / NextAuth v5.
 
 - **Session cookie**: `authjs.session-token`
   - **Purpose**: keep the user signed in and authorize authenticated requests
@@ -16,7 +16,7 @@ SafekeepCRM uses **essential cookies** to support authentication and session sec
 
 The password-change route also clears `__Secure-authjs.session-token` as a best-effort sign-out (`src/app/api/me/password/route.ts`) because Auth.js may apply the `__Secure-` prefix automatically when `Secure` cookies are enabled.
 
-## What SafekeepCRM does not include by default
+## What Renew CRM does not include by default
 
 Based on the current `package.json` dependencies and `src/` code:
 

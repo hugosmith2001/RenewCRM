@@ -7,16 +7,16 @@ import { FormError } from "@/components/forms";
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
 
 const TASK_PRIORITY_LABELS: Record<string, string> = {
-  LOW: "Low",
-  MEDIUM: "Medium",
-  HIGH: "High",
+  LOW: "Låg",
+  MEDIUM: "Medel",
+  HIGH: "Hög",
 };
 
 const TASK_STATUS_LABELS: Record<string, string> = {
-  PENDING: "Pending",
-  IN_PROGRESS: "In progress",
-  DONE: "Done",
-  CANCELLED: "Cancelled",
+  PENDING: "Pågående",
+  IN_PROGRESS: "Pågår",
+  DONE: "Klar",
+  CANCELLED: "Avbruten",
 };
 
 type Task = {
@@ -47,7 +47,7 @@ export function TasksSection({ customerId }: Props) {
       const data = await res.json();
       setTasks(data);
     } catch {
-      setError("Couldn’t load tasks.");
+      setError("Det gick inte att läsa in att göra.");
     } finally {
       setLoading(false);
     }
@@ -98,7 +98,7 @@ export function TasksSection({ customerId }: Props) {
     today.setHours(0, 0, 0, 0);
     d.setHours(0, 0, 0, 0);
     if (d.getTime() < today.getTime()) {
-      return `${d.toLocaleDateString()} (overdue)`;
+      return `${d.toLocaleDateString()} (försenad)`;
     }
     return d.toLocaleDateString();
   }
@@ -106,10 +106,10 @@ export function TasksSection({ customerId }: Props) {
   return (
     <DetailSection
       id="tasks"
-      title="Tasks & reminders"
+      title="Att göra & påminnelser"
       actions={
         <Button type="button" onClick={openAdd} variant="primary" size="sm">
-          Add task
+          Lägg till att göra
         </Button>
       }
     >
@@ -128,13 +128,13 @@ export function TasksSection({ customerId }: Props) {
       )}
       {loading ? (
         <p className="text-sm text-muted-foreground">
-          Loading tasks…
+          Laddar att göra…
         </p>
       ) : error ? (
         <FormError message={error} />
       ) : tasks.length === 0 && !showForm ? (
         <p className="text-sm text-muted-foreground">
-          No tasks yet. Add a task or reminder.
+          Inget att göra ännu. Lägg till något att göra eller en påminnelse.
         </p>
       ) : (
         <ul className={sectionListClasses}>
@@ -166,7 +166,7 @@ export function TasksSection({ customerId }: Props) {
                     {TASK_STATUS_LABELS[t.status] ?? t.status}
                   </Badge>
                   {t.priority === "HIGH" && (
-                    <Badge tone="danger">High</Badge>
+                    <Badge tone="danger">Hög</Badge>
                   )}
                 </div>
                 {t.description && (
@@ -175,7 +175,7 @@ export function TasksSection({ customerId }: Props) {
                   </p>
                 )}
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0 text-xs text-muted-foreground">
-                  <span>Due: {formatDueDate(t.dueDate)}</span>
+                  <span>Förfallodatum: {formatDueDate(t.dueDate)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -185,7 +185,7 @@ export function TasksSection({ customerId }: Props) {
                   variant="ghost"
                   size="sm"
                 >
-                  Edit
+                  Redigera
                 </Button>
                 <Button
                   type="button"
@@ -194,7 +194,7 @@ export function TasksSection({ customerId }: Props) {
                   size="sm"
                   className="text-danger hover:text-danger"
                 >
-                  Delete
+                  Ta bort
                 </Button>
               </div>
             </li>
@@ -203,9 +203,9 @@ export function TasksSection({ customerId }: Props) {
       )}
       <ConfirmDialog
         open={deleteId !== null}
-        title="Delete task"
-        message="Delete this task? This cannot be undone."
-        confirmLabel="Delete"
+        title="Ta bort att göra"
+        message="Ta bort det här att göra? Detta kan inte ångras."
+        confirmLabel="Ta bort"
         variant="danger"
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}

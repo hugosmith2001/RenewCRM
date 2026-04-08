@@ -10,9 +10,9 @@ export default async function NewCustomerPage() {
   return (
     <>
       <PageHeader
-        title="Add customer"
+        title="Lägg till kund"
         backHref="/dashboard/customers"
-        backLabel="Customers"
+        backLabel="Kunder"
       />
       <CustomerForm mode="create" />
     </>

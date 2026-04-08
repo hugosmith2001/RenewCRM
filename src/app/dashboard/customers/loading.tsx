@@ -4,9 +4,9 @@ import { InlineState, TableShell } from "@/components/ui";
 export default function Loading() {
   return (
     <>
-      <PageHeader title="Customers" />
+      <PageHeader title="Kunder" />
       <TableShell className="mt-content-top">
-        <InlineState title="Loading customers" description="Fetching the latest customer list…" />
+        <InlineState title="Laddar kunder" description="Hämtar den senaste kundlistan…" />
       </TableShell>
     </>
   );

@@ -30,17 +30,17 @@ export default async function DataProcessingSettingsPage() {
         <div className="space-y-4 text-sm text-muted-foreground">
           <p className="text-foreground">
             This page is a practical transparency overview for tenant administrators. It is grounded in the current
-            SafekeepCRM repository and is not a substitute for your organization’s own privacy notices to your customers.
+            Renew CRM repository and is not a substitute for your organization’s own privacy notices to your customers.
           </p>
           <div className="space-y-2">
             <p>
               <span className="font-medium text-foreground">Your organization as controller:</span>{" "}
-              when you store and manage your customers’ data in SafekeepCRM (customers, contacts, policies, documents,
+              when you store and manage your customers’ data in Renew CRM (customers, contacts, policies, documents,
               tasks, and activities), your organization generally determines the purposes and means of that processing.
             </p>
             <p>
-              <span className="font-medium text-foreground">SafekeepCRM operator as processor (where applicable):</span>{" "}
-              the SafekeepCRM operator processes tenant data to provide the service, maintain availability, and protect
+              <span className="font-medium text-foreground">Renew CRM operator as processor (where applicable):</span>{" "}
+              the Renew CRM operator processes tenant data to provide the service, maintain availability, and protect
               the platform (security and audit).
             </p>
             <p>

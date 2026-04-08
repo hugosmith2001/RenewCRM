@@ -34,13 +34,13 @@ export function CustomerSearchForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-filter-control">
       <div className="min-w-[220px]">
-        <FormField id="search" label="Search">
+        <FormField id="search" label="Sök">
           <input
             id="search"
             name="search"
             type="text"
             defaultValue={initialSearch}
-            placeholder="Name, email, phone…"
+            placeholder="Namn, e-post, telefon…"
             className={formInputClasses}
           />
         </FormField>
@@ -53,33 +53,33 @@ export function CustomerSearchForm({
             defaultValue={initialStatus}
             className={formSelectClasses}
           >
-            <option value="">All</option>
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-            <option value="PROSPECT">Prospect</option>
+            <option value="">Alla</option>
+            <option value="ACTIVE">Aktiv</option>
+            <option value="INACTIVE">Inaktiv</option>
+            <option value="PROSPECT">Prospekt</option>
           </select>
         </FormField>
       </div>
       <div className="min-w-[120px]">
-        <FormField id="type" label="Type">
+        <FormField id="type" label="Typ">
           <select
             id="type"
             name="type"
             defaultValue={initialType}
             className={formSelectClasses}
           >
-            <option value="">All</option>
-            <option value="PRIVATE">Private</option>
-            <option value="COMPANY">Company</option>
+            <option value="">Alla</option>
+            <option value="PRIVATE">Privat</option>
+            <option value="COMPANY">Företag</option>
           </select>
         </FormField>
       </div>
       <Button type="submit" variant="secondary" size="md">
-        Apply
+        Använd
       </Button>
       {(initialSearch || initialStatus || initialType) && (
         <ButtonLink href="/dashboard/customers" variant="secondary" size="md">
-          Clear
+          Rensa
         </ButtonLink>
       )}
     </form>

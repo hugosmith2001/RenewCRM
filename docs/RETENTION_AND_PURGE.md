@@ -1,6 +1,6 @@
 # Retention and purge (Phase 4)
 
-SafekeepCRM implements **default retention policies** with optional **tenant/controller overrides**, plus an enforceable **scheduled purge** workflow.
+Renew CRM implements **default retention policies** with optional **tenant/controller overrides**, plus an enforceable **scheduled purge** workflow.
 
 This document covers:
 
@@ -61,7 +61,7 @@ API:
 
 ### Soft delete
 
-SafekeepCRM uses soft delete markers on:
+Renew CRM uses soft delete markers on:
 
 - `Customer.deletedAt`
 - `Document.deletedAt`

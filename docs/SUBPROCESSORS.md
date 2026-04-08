@@ -1,6 +1,6 @@
-# Subprocessors (SafekeepCRM)
+# Subprocessors (Renew CRM)
 
-This document is intended for the **SafekeepCRM operator** (service provider). It is a repository-grounded starting point for subprocessor transparency and should be completed with your actual deployment choices.
+This document is intended for the **Renew CRM operator** (service provider). It is a repository-grounded starting point for subprocessor transparency and should be completed with your actual deployment choices.
 
 ## How to use this file
 

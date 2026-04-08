@@ -31,14 +31,14 @@ function LoginForm() {
         redirect: false,
       });
       if (result?.error) {
-        setError("Invalid email or password.");
+        setError("Ogiltig e-postadress eller lösenord.");
         setLoading(false);
         return;
       }
       router.push(callbackUrl);
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Något gick fel. Försök igen.");
       setLoading(false);
     }
   }
@@ -47,12 +47,12 @@ function LoginForm() {
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-sm">
         <h1 className="text-xl font-semibold text-foreground">
-          Sign in to Safekeep CRM
+          Logga in till Renew CRM
         </h1>
         <form onSubmit={handleSubmit} className="mt-6">
           <FormLayout variant="card" className="max-w-sm">
             {error && <FormError message={error} />}
-            <FormField id="email" label="Email" required>
+            <FormField id="email" label="E-post" required>
               <input
                 id="email"
                 name="email"
@@ -64,7 +64,7 @@ function LoginForm() {
                 className={formInputClasses}
               />
             </FormField>
-            <FormField id="password" label="Password" required>
+            <FormField id="password" label="Lösenord" required>
               <input
                 id="password"
                 name="password"
@@ -82,7 +82,7 @@ function LoginForm() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Signing in…" : "Sign in"}
+              {loading ? "Loggar in…" : "Logga in"}
             </Button>
           </FormLayout>
         </form>
@@ -96,7 +96,7 @@ export default function LoginPage() {
     <Suspense fallback={
       <main className="flex min-h-screen flex-col items-center justify-center p-8">
         <div className="w-full max-w-sm rounded-card border border-border bg-surface p-card">
-          <p className="text-muted-foreground">Loading…</p>
+          <p className="text-muted-foreground">Laddar…</p>
         </div>
       </main>
     }>

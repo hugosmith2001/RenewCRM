@@ -1,6 +1,6 @@
 ## Auth/session model (current)
 
-SafekeepCRM uses **Auth.js / NextAuth v5** with the **Credentials provider** and **JWT-based sessions**.
+Renew CRM uses **Auth.js / NextAuth v5** with the **Credentials provider** and **JWT-based sessions**.
 
 - **NextAuth config**:
   - Full config + Credentials authorization: `src/auth.ts`

@@ -28,7 +28,7 @@ export function AppShell({ session, children }: AppShellProps) {
             type="button"
             onClick={() => setSidebarOpen((o) => !o)}
             className="flex h-9 w-9 items-center justify-center rounded-sm text-muted-foreground hover:bg-surface-muted hover:text-foreground lg:hidden"
-            aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+            aria-label={sidebarOpen ? "Stäng meny" : "Öppna meny"}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -46,7 +46,7 @@ export function AppShell({ session, children }: AppShellProps) {
                     type="submit"
                     className="text-sm text-muted-foreground hover:text-foreground"
                   >
-                    Sign out
+                    Logga ut
                   </button>
                 </form>
               </>
@@ -64,7 +64,7 @@ export function AppShell({ session, children }: AppShellProps) {
           type="button"
           onClick={() => setSidebarOpen(false)}
           className="fixed inset-0 z-20 bg-foreground/20 lg:hidden"
-          aria-label="Close menu"
+          aria-label="Stäng meny"
         />
       )}
     </>

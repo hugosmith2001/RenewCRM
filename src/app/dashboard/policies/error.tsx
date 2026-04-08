@@ -18,12 +18,12 @@ export default function Error({
 
   return (
     <>
-      <PageHeader title="Policies" />
+      <PageHeader title="Försäkringar" />
       <EmptyState
-        title="Couldn’t load policies"
-        description="Please try again. If this keeps happening, check your connection or contact support."
-        primaryAction={{ label: "Try again", onClick: reset }}
-        secondaryAction={{ label: "Back to dashboard", href: "/dashboard" }}
+        title="Det gick inte att läsa in försäkringar"
+        description="Försök igen. Om problemet fortsätter, kontrollera din anslutning eller kontakta support."
+        primaryAction={{ label: "Försök igen", onClick: reset }}
+        secondaryAction={{ label: "Tillbaka till översikt", href: "/dashboard" }}
       />
     </>
   );

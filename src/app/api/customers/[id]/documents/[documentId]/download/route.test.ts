@@ -115,8 +115,9 @@ describe("GET /api/customers/[id]/documents/[documentId]/download", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("application/pdf");
     expect(res.headers.get("Content-Disposition")).toContain("attachment");
+    // display name has no extension; download should include the storageKey extension
     expect(res.headers.get("Content-Disposition")).toContain(
-      encodeURIComponent("Policy PDF")
+      encodeURIComponent("Policy PDF.pdf")
     );
     expect(res.headers.get("Content-Length")).toBe("1024");
     expect(res.body).toBeDefined();

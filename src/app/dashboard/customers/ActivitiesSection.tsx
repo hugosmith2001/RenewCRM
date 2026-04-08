@@ -7,11 +7,11 @@ import { FormError } from "@/components/forms";
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
 
 const ACTIVITY_TYPE_LABELS: Record<string, string> = {
-  CALL: "Call",
-  MEETING: "Meeting",
-  EMAIL: "Email",
-  NOTE: "Note",
-  ADVICE: "Advice",
+  CALL: "Samtal",
+  MEETING: "Möte",
+  EMAIL: "E-post",
+  NOTE: "Anteckning",
+  ADVICE: "Rådgivning",
 };
 
 type Activity = {
@@ -42,7 +42,7 @@ export function ActivitiesSection({ customerId }: Props) {
       const data = await res.json();
       setActivities(data);
     } catch {
-      setError("Couldn’t load activities.");
+      setError("Det gick inte att läsa in aktiviteter.");
     } finally {
       setLoading(false);
     }
@@ -89,10 +89,10 @@ export function ActivitiesSection({ customerId }: Props) {
   return (
     <DetailSection
       id="activities"
-      title="Activities"
+      title="Aktiviteter"
       actions={
         <Button type="button" onClick={openAdd} variant="primary" size="sm">
-          Log activity
+          Logga aktivitet
         </Button>
       }
     >
@@ -111,14 +111,13 @@ export function ActivitiesSection({ customerId }: Props) {
       )}
       {loading ? (
         <p className="text-sm text-muted-foreground">
-          Loading activities…
+          Laddar aktiviteter…
         </p>
       ) : error ? (
         <FormError message={error} />
       ) : activities.length === 0 && !showForm ? (
         <p className="text-sm text-muted-foreground">
-          No activities yet. Log a call, meeting, email, or note to track
-          communication.
+          Inga aktiviteter ännu. Logga ett samtal, möte, e-post eller en anteckning för att följa kommunikationen.
         </p>
       ) : (
         <ul className={sectionListClasses}>
@@ -161,7 +160,7 @@ export function ActivitiesSection({ customerId }: Props) {
                   variant="ghost"
                   size="sm"
                 >
-                  Edit
+                  Redigera
                 </Button>
                 <Button
                   type="button"
@@ -170,7 +169,7 @@ export function ActivitiesSection({ customerId }: Props) {
                   size="sm"
                   className="text-danger hover:text-danger"
                 >
-                  Delete
+                  Ta bort
                 </Button>
               </div>
             </li>
@@ -179,9 +178,9 @@ export function ActivitiesSection({ customerId }: Props) {
       )}
       <ConfirmDialog
         open={deleteId !== null}
-        title="Delete activity"
-        message="Delete this activity? This cannot be undone."
-        confirmLabel="Delete"
+        title="Ta bort aktivitet"
+        message="Ta bort den här aktiviteten? Detta kan inte ångras."
+        confirmLabel="Ta bort"
         variant="danger"
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}

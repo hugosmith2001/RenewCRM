@@ -1,4 +1,4 @@
-// Safekeep CRM - Prisma Schema
+// Renew CRM - Prisma Schema
 // Phase 1: Tenant, User. Customers/policies in later phases.
 
 generator client {

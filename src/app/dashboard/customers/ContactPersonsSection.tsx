@@ -90,10 +90,10 @@ export function ContactPersonsSection({ customerId }: Props) {
   return (
     <DetailSection
       id="contact-persons"
-      title="Contact persons"
+      title="Kontaktpersoner"
       actions={
         <Button type="button" onClick={openAdd} variant="primary" size="sm">
-          Add contact
+          Lägg till kontakt
         </Button>
       }
     >
@@ -111,10 +111,10 @@ export function ContactPersonsSection({ customerId }: Props) {
         </div>
       )}
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading contacts…</p>
+        <p className="text-sm text-muted-foreground">Laddar kontakter…</p>
       ) : contacts.length === 0 && !showForm ? (
         <p className="text-sm text-muted-foreground">
-          No contact persons yet. Add one to get started.
+          Inga kontaktpersoner ännu. Lägg till en för att komma igång.
         </p>
       ) : (
         <ul className={sectionListClasses}>
@@ -129,7 +129,7 @@ export function ContactPersonsSection({ customerId }: Props) {
                     {c.name}
                   </span>
                   {c.isPrimary && (
-                    <Badge tone="info">Primary</Badge>
+                    <Badge tone="info">Primär</Badge>
                   )}
                 </div>
                 <div className="mt-0.5 flex flex-wrap gap-x-4 gap-y-0 text-sm text-muted-foreground">
@@ -146,7 +146,7 @@ export function ContactPersonsSection({ customerId }: Props) {
                     size="sm"
                     onClick={() => handleSetPrimary(c.id)}
                   >
-                    Set primary
+                    Sätt som primär
                   </Button>
                 )}
                 <Button
@@ -155,7 +155,7 @@ export function ContactPersonsSection({ customerId }: Props) {
                   size="sm"
                   onClick={() => openEdit(c)}
                 >
-                  Edit
+                  Redigera
                 </Button>
                 <Button
                   type="button"
@@ -164,7 +164,7 @@ export function ContactPersonsSection({ customerId }: Props) {
                   className="text-danger hover:text-danger"
                   onClick={() => setDeleteId(c.id)}
                 >
-                  Delete
+                  Ta bort
                 </Button>
               </div>
             </li>
@@ -173,9 +173,9 @@ export function ContactPersonsSection({ customerId }: Props) {
       )}
       <ConfirmDialog
         open={deleteId !== null}
-        title="Remove contact"
-        message="Remove this contact from the customer? This cannot be undone."
-        confirmLabel="Remove"
+        title="Ta bort kontakt"
+        message="Ta bort den här kontakten från kunden? Detta kan inte ångras."
+        confirmLabel="Ta bort"
         variant="danger"
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}

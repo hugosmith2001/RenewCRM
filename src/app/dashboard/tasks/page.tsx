@@ -88,13 +88,13 @@ function TaskTable({
     <Table>
       <THead>
         <tr>
-          <TH className="w-[20%]">Title</TH>
-          <TH>Customer</TH>
-          <TH>Policy</TH>
+          <TH className="w-[20%]">Titel</TH>
+          <TH>Kund</TH>
+          <TH>Försäkring</TH>
           <TH>Status</TH>
-          <TH>Priority</TH>
-          <TH>Due date</TH>
-          <TH className="text-right">Action</TH>
+          <TH>Prioritet</TH>
+          <TH>Förfallodatum</TH>
+          <TH className="text-right">Åtgärd</TH>
         </tr>
       </THead>
       <TBody>
@@ -137,7 +137,7 @@ function TaskTable({
                   href={`/dashboard/customers/${t.customer.id}`}
                   className="text-sm text-primary hover:underline"
                 >
-                  View
+                  Visa
                 </Link>
               </TD>
             </TR>
@@ -159,11 +159,11 @@ export default async function TasksPage() {
   return (
     <>
       <PageHeader
-        title="Tasks"
-        description="Work queue across all customers. Manage reminders and follow-ups."
+        title="Att göra"
+        description="Arbetskö för alla kunder. Hantera påminnelser och uppföljningar."
         actions={
           <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
-            Customers
+            Kunder
           </ButtonLink>
         }
       />
@@ -172,7 +172,7 @@ export default async function TasksPage() {
         left={null}
         right={
           <div className="text-sm text-muted-foreground">
-            {totalOpen} open · {completed.length} completed · {tasks.length} total
+            {totalOpen} öppna · {completed.length} klara · {tasks.length} totalt
           </div>
         }
       />
@@ -185,13 +185,13 @@ export default async function TasksPage() {
                 id="tasks-overdue"
                 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Overdue ({overdue.length})
+                Försenade ({overdue.length})
               </h2>
             </div>
             <TableShell>
               <TaskTable
                 tasks={overdue}
-                emptyMessage="No overdue tasks."
+                emptyMessage="Inget försenat att göra."
               />
             </TableShell>
           </section>
@@ -204,13 +204,13 @@ export default async function TasksPage() {
                 id="tasks-due-soon"
                 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Due soon ({dueSoon.length})
+                Förfaller snart ({dueSoon.length})
               </h2>
             </div>
             <TableShell>
               <TaskTable
                 tasks={dueSoon}
-                emptyMessage="No tasks due in the next 7 days."
+                emptyMessage="Inget att göra som förfaller inom de kommande 7 dagarna."
               />
             </TableShell>
           </section>
@@ -219,27 +219,27 @@ export default async function TasksPage() {
         <section className="mb-4" aria-labelledby="tasks-open">
           <div className="mb-1.5 flex items-center gap-2">
             <h2 id="tasks-open" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Open ({open.length})
+              Öppna ({open.length})
             </h2>
           </div>
           <TableShell>
             {open.length === 0 && overdue.length === 0 && dueSoon.length === 0 ? (
               <InlineState
-                title="No open tasks"
+                title="Inget att göra"
                 description={
                   <span>
-                    Tasks are created on customer pages.{" "}
+                    Att göra skapas på kundsidor.{" "}
                     <Link href="/dashboard/customers" className="text-primary hover:underline">
-                      Go to customers
+                      Gå till kunder
                     </Link>{" "}
-                    to add tasks and reminders.
+                    för att lägga till att göra och påminnelser.
                   </span>
                 }
               />
             ) : (
               <TaskTable
                 tasks={open}
-                emptyMessage="No other open tasks."
+                emptyMessage="Inget annat att göra."
               />
             )}
           </TableShell>
@@ -251,13 +251,13 @@ export default async function TasksPage() {
               id="tasks-completed"
               className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
             >
-              Completed ({completed.length})
+              Klara ({completed.length})
             </h2>
           </div>
           <TableShell className="border-border bg-surface-muted/50">
             <TaskTable
               tasks={completed}
-              emptyMessage="No completed tasks."
+              emptyMessage="Inget avklarat att göra."
             />
           </TableShell>
         </section>

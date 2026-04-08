@@ -33,14 +33,14 @@ export function ActivityFilters({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-filter-control">
       <div className="min-w-[140px]">
-        <FormField id="type" label="Type">
+        <FormField id="type" label="Typ">
           <select
             id="type"
             name="type"
             defaultValue={initialType}
             className={formSelectClasses}
           >
-            <option value="">All</option>
+            <option value="">Alla</option>
             {Object.entries(ACTIVITY_TYPE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -50,25 +50,25 @@ export function ActivityFilters({
         </FormField>
       </div>
       <div className="min-w-[140px]">
-        <FormField id="range" label="Date range">
+        <FormField id="range" label="Datumintervall">
           <select
             id="range"
             name="range"
             defaultValue={initialRange}
             className={formSelectClasses}
           >
-            <option value="">All time</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
+            <option value="">All tid</option>
+            <option value="7d">Senaste 7 dagarna</option>
+            <option value="30d">Senaste 30 dagarna</option>
           </select>
         </FormField>
       </div>
       <Button type="submit" variant="secondary" size="md">
-        Apply
+        Använd
       </Button>
       {hasFilters && (
         <ButtonLink href="/dashboard/activities" variant="secondary" size="md">
-          Clear
+          Rensa
         </ButtonLink>
       )}
     </form>

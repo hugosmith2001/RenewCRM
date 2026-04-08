@@ -9,6 +9,7 @@ import { ActivitiesSection } from "../ActivitiesSection";
 import { TasksSection } from "../TasksSection";
 import { PageHeader, DetailSection } from "@/components/layout";
 import { Badge, ButtonLink } from "@/components/ui";
+import { PurgeCustomerButton } from "./PurgeCustomerButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -36,7 +37,7 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
       <PageHeader
         title={customer.name}
         backHref="/dashboard/customers"
-        backLabel="Customers"
+        backLabel="Kunder"
         description={
           <span className="flex items-center gap-2">
             <Badge tone={statusTone}>{customer.status}</Badge>
@@ -48,28 +49,28 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
         }
         actions={
           <ButtonLink href={`/dashboard/customers/${id}/edit`} variant="primary">
-            Edit customer
+            Redigera kund
           </ButtonLink>
         }
       />
 
       <div className="space-y-section-gap">
-        <DetailSection id="overview" title="Overview">
+        <DetailSection id="overview" title="Översikt">
           <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-medium text-muted-foreground">Type</dt>
+              <dt className="font-medium text-muted-foreground">Typ</dt>
               <dd className="mt-0.5 text-foreground">{customer.type}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Email</dt>
+              <dt className="font-medium text-muted-foreground">E-post</dt>
               <dd className="mt-0.5 text-foreground">{customer.email ?? "—"}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Phone</dt>
+              <dt className="font-medium text-muted-foreground">Telefon</dt>
               <dd className="mt-0.5 text-foreground">{customer.phone ?? "—"}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Owner broker</dt>
+              <dt className="font-medium text-muted-foreground">Ansvarig mäklare</dt>
               <dd className="mt-0.5 text-foreground">
                 {customer.owner
                   ? customer.owner.name ?? customer.owner.email
@@ -77,11 +78,11 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
               </dd>
             </div>
             <div className="sm:col-span-2">
-              <dt className="font-medium text-muted-foreground">Address</dt>
+              <dt className="font-medium text-muted-foreground">Adress</dt>
               <dd className="mt-0.5 text-foreground">{customer.address ?? "—"}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Created</dt>
+              <dt className="font-medium text-muted-foreground">Skapad</dt>
               <dd className="mt-0.5 text-foreground">
                 {new Date(customer.createdAt).toLocaleDateString()}
               </dd>
@@ -98,6 +99,16 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
         <DocumentsSection customerId={id} />
         <ActivitiesSection customerId={id} />
         <TasksSection customerId={id} />
+
+        <div className="rounded-card border border-border bg-surface p-modal">
+          <div className="text-sm font-semibold text-foreground">Riskzon</div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            Radera kunden permanent och relaterade poster.
+          </div>
+          <div className="mt-4 flex justify-end">
+            <PurgeCustomerButton customerId={id} customerName={customer.name} />
+          </div>
+        </div>
       </div>
     </>
   );

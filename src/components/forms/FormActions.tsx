@@ -19,8 +19,8 @@ type FormActionsProps = {
 
 export function FormActions({
   submitLabel,
-  loadingLabel = "Saving…",
-  cancelLabel = "Cancel",
+  loadingLabel = "Sparar…",
+  cancelLabel = "Avbryt",
   onCancel,
   loading = false,
 }: FormActionsProps) {

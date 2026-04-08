@@ -76,11 +76,11 @@ export default async function DocumentsPage({ searchParams }: Props) {
   return (
     <>
       <PageHeader
-        title="Documents"
-        description="All documents across your book. Filter by customer, type, or date. Upload and link documents from customer workspaces."
+        title="Dokument"
+        description="Alla dokument i ditt bestånd. Filtrera på kund, typ eller datum. Ladda upp och koppla dokument från kundsidor."
         actions={
           <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
-            Customers
+            Kunder
           </ButtonLink>
         }
       />
@@ -106,23 +106,23 @@ export default async function DocumentsPage({ searchParams }: Props) {
         <TableShell>
           {documents.length === 0 ? (
             <InlineState
-              title={hasFilters ? "No matches" : "No documents yet"}
+              title={hasFilters ? "Inga träffar" : "Inga dokument ännu"}
               description={
                 hasFilters ? (
                   <span>
-                    Try adjusting filters, or{" "}
+                    Prova att justera filtren, eller{" "}
                     <Link href="/dashboard/documents" className="text-primary hover:underline">
-                      clear filters
+                      rensa filter
                     </Link>
                     .
                   </span>
                 ) : (
                   <span>
-                    Documents are uploaded from customer pages.{" "}
+                    Dokument laddas upp från kundsidor.{" "}
                     <Link href="/dashboard/customers" className="text-primary hover:underline">
-                      Open a customer
+                      Öppna en kund
                     </Link>{" "}
-                    and use the Documents section to upload policy PDFs, contracts, or other files.
+                    och använd avsnittet Dokument för att ladda upp PDF:er för försäkringar, avtal eller andra filer.
                   </span>
                 )
               }
@@ -131,12 +131,12 @@ export default async function DocumentsPage({ searchParams }: Props) {
             <Table>
               <THead>
                 <tr>
-                  <TH className="w-[22%]">Name</TH>
-                  <TH className="w-[12%]">Type</TH>
-                  <TH className="w-[20%]">Customer</TH>
-                  <TH className="w-[15%]">Policy</TH>
-                  <TH className="w-[13%]">Uploaded</TH>
-                  <TH className="text-right w-[18%]">Action</TH>
+                  <TH className="w-[22%]">Namn</TH>
+                  <TH className="w-[12%]">Typ</TH>
+                  <TH className="w-[20%]">Kund</TH>
+                  <TH className="w-[15%]">Försäkring</TH>
+                  <TH className="w-[13%]">Uppladdad</TH>
+                  <TH className="text-right w-[18%]">Åtgärd</TH>
                 </tr>
               </THead>
               <TBody>
@@ -152,7 +152,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
       {totalPages > 1 && (
         <div className="mt-content-top flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Page {query.page} of {totalPages} ({total} total)
+            Sida {query.page} av {totalPages} ({total} totalt)
           </p>
           <div className="flex gap-2">
             {query.page > 1 && (
@@ -167,7 +167,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Previous
+                Föregående
               </ButtonLink>
             )}
             {query.page < totalPages && (
@@ -182,7 +182,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Next
+                Nästa
               </ButtonLink>
             )}
           </div>
@@ -236,13 +236,13 @@ function DocumentRow({ doc }: { doc: DocumentForList }) {
             rel="noopener noreferrer"
             className="text-sm text-primary hover:underline"
           >
-            Download
+            Ladda ner
           </a>
           <Link
             href={`/dashboard/customers/${doc.customer.id}#documents`}
             className="text-sm text-primary hover:underline"
           >
-            View
+            Visa
           </Link>
         </span>
       </TD>

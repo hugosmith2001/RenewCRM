@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems: { label: string; href: string; badge?: string }[] = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Customers", href: "/dashboard/customers" },
-  { label: "Renewals", href: "/dashboard/renewals", badge: "Queue" },
-  { label: "Policies", href: "/dashboard/policies" },
-  { label: "Tasks", href: "/dashboard/tasks" },
-  { label: "Activities", href: "/dashboard/activities" },
-  { label: "Documents", href: "/dashboard/documents" },
-  { label: "Settings", href: "/dashboard/settings" },
+  { label: "Översikt", href: "/dashboard" },
+  { label: "Kunder", href: "/dashboard/customers" },
+  { label: "Förnyelser", href: "/dashboard/renewals", badge: "Kö" },
+  { label: "Försäkringar", href: "/dashboard/policies" },
+  { label: "Att göra", href: "/dashboard/tasks" },
+  { label: "Aktiviteter", href: "/dashboard/activities" },
+  { label: "Dokument", href: "/dashboard/documents" },
+  { label: "Inställningar", href: "/dashboard/settings" },
 ];
 
 type SidebarProps = {
@@ -27,14 +27,14 @@ export function Sidebar({ open = true, onClose }: SidebarProps) {
       className={`fixed left-0 top-0 z-30 flex h-screen w-sidebar min-w-sidebar flex-col border-r border-border bg-surface transition-transform duration-200 ease-out lg:translate-x-0 ${
         open ? "translate-x-0" : "-translate-x-full"
       }`}
-      aria-label="Main navigation"
+      aria-label="Huvudnavigering"
     >
       <div className="flex h-topbar min-h-topbar items-center border-b border-border px-content-x">
         <Link
           href="/dashboard"
           className="text-sm font-semibold text-foreground no-underline"
         >
-          Safekeep CRM
+          Renew CRM
         </Link>
       </div>
       <nav className="flex-1 overflow-y-auto py-3">

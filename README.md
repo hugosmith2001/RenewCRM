@@ -1,5 +1,5 @@
-Safekeep CRM – Settings MVP Implementation Plan
-This README specifies a strict, least‑privilege implementation plan for the Settings MVP, grounded in the current Safekeep CRM codebase.
+Renew CRM – Settings MVP Implementation Plan
+This README specifies a strict, least‑privilege implementation plan for the Settings MVP, grounded in the current Renew CRM codebase.
 
 It does not include implementation code; it defines routes, APIs, permissions, schemas, model changes, safeguards, and phases.
 

@@ -13,7 +13,7 @@ User Auth
  Sign in (invalid credentials) shows error Step: Go to /login. Enter an invalid Email (or invalid password), then click Sign in. Expected: A form error banner appears with the exact text Invalid email or password.; the submit button returns to Sign in. Data integrity check: URL stays on /login (no redirect).
 
 (done)
- Sign out Step: On any authenticated page, click Sign out in the header. Expected: You are redirected to /. Data integrity check: The home page shows Safekeep CRM and a Sign in link.
+ Sign out Step: On any authenticated page, click Sign out in the header. Expected: You are redirected to /. Data integrity check: The home page shows Renew CRM and a Sign in link.
 
 (done)
 Dashboard

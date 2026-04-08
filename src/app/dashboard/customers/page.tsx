@@ -31,13 +31,14 @@ export default async function CustomersPage({ searchParams }: Props) {
   return (
     <>
       <PageHeader
-        title="Customers"
+        title="Kunder"
+        description="Hantera kunder och följ deras försäkringar, dokument, aktiviteter och att göra."
         actions={
           <ButtonLink
             href="/dashboard/customers/new"
             variant="primary"
           >
-            Add customer
+            Lägg till kund
           </ButtonLink>
         }
       />
@@ -61,19 +62,19 @@ export default async function CustomersPage({ searchParams }: Props) {
         <TableShell>
           {customers.length === 0 ? (
             <InlineState
-              title={query.search || query.status || query.type ? "No matches" : "No customers yet"}
+              title={query.search || query.status || query.type ? "Inga träffar" : "Inga kunder ännu"}
               description={
                 query.search || query.status || query.type ? (
                   <span>
-                    Try adjusting your search or filters, or{" "}
+                    Prova att justera din sökning eller dina filter, eller{" "}
                     <Link href="/dashboard/customers" className="text-primary hover:underline">
-                      clear filters
+                      rensa filter
                     </Link>
                     .
                   </span>
                 ) : (
                   <span>
-                    Create your first customer to start tracking policies, documents, activities, and tasks.
+                    Skapa din första kund för att börja följa försäkringar, dokument, aktiviteter och att göra.
                   </span>
                 )
               }
@@ -82,12 +83,12 @@ export default async function CustomersPage({ searchParams }: Props) {
             <Table>
               <THead>
                 <tr>
-                  <TH className="w-[36%]">Customer</TH>
-                  <TH>Type</TH>
-                  <TH>Contact</TH>
+                  <TH className="w-[36%]">Kund</TH>
+                  <TH>Typ</TH>
+                  <TH>Kontakt</TH>
                   <TH>Status</TH>
-                  <TH>Owner</TH>
-                  <TH className="text-right">Action</TH>
+                  <TH>Ansvarig</TH>
+                  <TH className="text-right">Åtgärd</TH>
                 </tr>
               </THead>
               <TBody>
@@ -109,7 +110,7 @@ export default async function CustomersPage({ searchParams }: Props) {
                       <TD className="text-muted-foreground">{c.owner?.name ?? c.owner?.email ?? "—"}</TD>
                       <TD className="text-right">
                         <Link href={`/dashboard/customers/${c.id}`} className="text-sm text-primary hover:underline">
-                          View
+                          Visa
                         </Link>
                       </TD>
                     </TR>
@@ -124,7 +125,7 @@ export default async function CustomersPage({ searchParams }: Props) {
       {totalPages > 1 && (
         <div className="mt-content-top flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Page {query.page} of {totalPages} ({total} total)
+            Sida {query.page} av {totalPages} ({total} totalt)
           </p>
           <div className="flex gap-2">
             {query.page > 1 && (
@@ -138,7 +139,7 @@ export default async function CustomersPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Previous
+                Föregående
               </ButtonLink>
             )}
             {query.page < totalPages && (
@@ -152,7 +153,7 @@ export default async function CustomersPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Next
+                Nästa
               </ButtonLink>
             )}
           </div>

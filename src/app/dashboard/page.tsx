@@ -70,12 +70,12 @@ export default async function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Dashboard"
-        description="Operational overview. Renewals, tasks, activity, and documents."
+        title="Översikt"
+        description="Snabb överblick över förnyelser, att göra, aktiviteter och dokument."
       />
 
       <div className="mt-4 grid gap-section-gap sm:grid-cols-2">
-        <DashboardSection title="Renewals due this week" viewAllHref="/dashboard/renewals">
+        <DashboardSection title="Förnyelser denna vecka" viewAllHref="/dashboard/renewals">
           {renewalsDueThisWeek.length > 0 ? (
             <ul className={sectionListClasses}>
               {renewalsDueThisWeek.map((item) => (
@@ -84,15 +84,15 @@ export default async function DashboardPage() {
             </ul>
           ) : (
             <EmptyBlock
-              title="No renewals due this week"
-              description="Policies due in the next 7 days (or overdue) appear here. Set renewal dates on policies in the customer workspace."
+              title="Inga förnyelser denna vecka"
+              description="Försäkringar som förfaller inom de kommande 7 dagarna (eller är försenade) visas här. Ange förnyelsedatum på försäkringar på kundsidan."
               actionHref="/dashboard/customers"
-              actionLabel="View customers"
+              actionLabel="Visa kunder"
             />
           )}
         </DashboardSection>
 
-        <DashboardSection title="Tasks due today" viewAllHref="/dashboard/tasks">
+        <DashboardSection title="Att göra som förfaller idag" viewAllHref="/dashboard/tasks">
           {tasksDueToday.length > 0 ? (
             <ul className={sectionListClasses}>
               {tasksDueToday.map((t) => (
@@ -101,44 +101,44 @@ export default async function DashboardPage() {
             </ul>
           ) : (
             <EmptyBlock
-              title="No tasks due today"
-              description="Tasks with a due date of today appear here. Add tasks from customer pages."
+              title="Inget förfaller idag"
+              description="Här visas sådant som förfaller idag. Lägg till att göra på kundsidor."
               actionHref="/dashboard/customers"
-              actionLabel="View customers"
+              actionLabel="Visa kunder"
             />
           )}
         </DashboardSection>
 
-        <DashboardSection title="Recent activity" viewAllHref="/dashboard/activities">
+        <DashboardSection title="Senaste aktiviteter" viewAllHref="/dashboard/activities">
           {activities.length > 0 ? (
-<ul className={sectionListClasses}>
-            {activities.map((a) => (
+            <ul className={sectionListClasses}>
+              {activities.map((a) => (
                 <ActivityRow key={a.id} activity={a} />
               ))}
             </ul>
           ) : (
             <EmptyBlock
-              title="No recent activity"
-              description="Calls, meetings, emails, and notes logged on customer pages appear here."
+              title="Inga senaste aktiviteter"
+              description="Samtal, möten, e-post och anteckningar som loggas på kundsidor visas här."
               actionHref="/dashboard/customers"
-              actionLabel="View customers"
+              actionLabel="Visa kunder"
             />
           )}
         </DashboardSection>
 
-        <DashboardSection title="Recent documents" viewAllHref="/dashboard/documents">
+        <DashboardSection title="Senaste dokument" viewAllHref="/dashboard/documents">
           {documents.length > 0 ? (
-<ul className={sectionListClasses}>
-            {documents.map((d) => (
+            <ul className={sectionListClasses}>
+              {documents.map((d) => (
                 <DocumentRow key={d.id} doc={d} />
               ))}
             </ul>
           ) : (
             <EmptyBlock
-              title="No documents yet"
-              description="Documents uploaded from customer pages appear here."
+              title="Inga dokument ännu"
+              description="Dokument som laddas upp från kundsidor visas här."
               actionHref="/dashboard/customers"
-              actionLabel="View customers"
+              actionLabel="Visa kunder"
             />
           )}
         </DashboardSection>
@@ -172,7 +172,7 @@ function DashboardSection({
           href={viewAllHref}
           className="text-sm font-medium text-primary hover:text-primary-hover no-underline"
         >
-          View all
+          Visa alla
         </Link>
       </div>
       <div className="p-section-body">{children}</div>
@@ -192,7 +192,7 @@ function EmptyBlock({
   actionLabel: string;
 }) {
   return (
-    <div className="py-3 text-left">
+    <div className="py-section-list-row pt-0 text-left">
       <p className="text-sm font-medium text-foreground">{title}</p>
       <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
       <Link
@@ -318,7 +318,7 @@ function DocumentRow({ doc }: { doc: DocumentForList }) {
             rel="noopener noreferrer"
             className="text-xs text-primary hover:underline"
           >
-            Download
+            Ladda ner
           </a>
         </div>
       </div>

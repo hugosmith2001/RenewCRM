@@ -6,11 +6,11 @@ import { DetailSection, sectionListClasses, sectionListItemClasses } from "@/com
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
 
 const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  POLICY_DOCUMENT: "Policy document",
-  CONTRACT: "Contract",
-  ID_DOCUMENT: "ID document",
-  CORRESPONDENCE: "Correspondence",
-  OTHER: "Other",
+  POLICY_DOCUMENT: "Försäkringsdokument",
+  CONTRACT: "Avtal",
+  ID_DOCUMENT: "ID-handling",
+  CORRESPONDENCE: "Korrespondens",
+  OTHER: "Annat",
 };
 
 type Document = {
@@ -56,11 +56,10 @@ export function PolicyDocumentsSection({ customerId, documents }: Props) {
   }
 
   return (
-    <DetailSection id="documents" title="Documents">
+    <DetailSection id="documents" title="Dokument">
       {documents.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No documents linked to this policy. Upload from the customer workspace
-          and link to this policy.
+          Inga dokument är kopplade till den här försäkringen. Ladda upp från kundsidan och koppla till försäkringen.
         </p>
       ) : (
         <ul className={sectionListClasses}>
@@ -88,7 +87,7 @@ export function PolicyDocumentsSection({ customerId, documents }: Props) {
                   rel="noopener noreferrer"
                   className="text-sm text-primary hover:underline"
                 >
-                  Download
+                  Ladda ner
                 </a>
                 <Button
                   type="button"
@@ -97,7 +96,7 @@ export function PolicyDocumentsSection({ customerId, documents }: Props) {
                   size="sm"
                   className="text-danger hover:text-danger"
                 >
-                  Delete
+                  Ta bort
                 </Button>
               </div>
             </li>
@@ -106,9 +105,9 @@ export function PolicyDocumentsSection({ customerId, documents }: Props) {
       )}
       <ConfirmDialog
         open={deleteId !== null}
-        title="Delete document"
-        message="Delete this document? This cannot be undone."
-        confirmLabel="Delete"
+        title="Ta bort dokument"
+        message="Ta bort det här dokumentet? Detta kan inte ångras."
+        confirmLabel="Ta bort"
         variant="danger"
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}

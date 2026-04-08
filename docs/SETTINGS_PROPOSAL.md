@@ -1,6 +1,6 @@
 # Settings: Technical and Product Proposal
 
-This document proposes a coherent information architecture and implementation plan for the **Settings** area of Safekeep CRM (multi-tenant B2B CRM for insurance brokers). It is based on analysis of the current codebase and does **not** include implementation—only the proposal.
+This document proposes a coherent information architecture and implementation plan for the **Settings** area of Renew CRM (multi-tenant B2B CRM for insurance brokers). It is based on analysis of the current codebase and does **not** include implementation—only the proposal.
 
 ---
 

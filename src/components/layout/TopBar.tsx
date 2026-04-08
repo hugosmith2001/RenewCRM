@@ -20,7 +20,7 @@ export async function TopBar() {
             type="submit"
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            Sign out
+            Logga ut
           </button>
         </form>
       </div>

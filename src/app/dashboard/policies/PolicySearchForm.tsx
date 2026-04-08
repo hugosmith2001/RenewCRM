@@ -30,13 +30,13 @@ export function PolicySearchForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-filter-control">
       <div className="min-w-[220px]">
-        <FormField id="search" label="Search">
+        <FormField id="search" label="Sök">
           <input
             id="search"
             name="search"
             type="text"
             defaultValue={initialSearch}
-            placeholder="Policy number, customer, insurer…"
+            placeholder="Försäkringsnummer, kund, försäkringsbolag…"
             className={formInputClasses}
           />
         </FormField>
@@ -49,20 +49,20 @@ export function PolicySearchForm({
             defaultValue={initialStatus}
             className={formSelectClasses}
           >
-            <option value="">All</option>
-            <option value="ACTIVE">Active</option>
-            <option value="PENDING">Pending</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="CANCELLED">Cancelled</option>
+            <option value="">Alla</option>
+            <option value="ACTIVE">Aktiv</option>
+            <option value="PENDING">Pågående</option>
+            <option value="EXPIRED">Utgången</option>
+            <option value="CANCELLED">Avbruten</option>
           </select>
         </FormField>
       </div>
       <Button type="submit" variant="secondary" size="md">
-        Apply
+        Använd
       </Button>
       {(initialSearch || initialStatus) && (
         <ButtonLink href="/dashboard/policies" variant="secondary" size="md">
-          Clear
+          Rensa
         </ButtonLink>
       )}
     </form>

@@ -4,9 +4,9 @@ import { InlineState, TableShell } from "@/components/ui";
 export default function Loading() {
   return (
     <>
-      <PageHeader title="Activities" description="Recent activity across all customers." />
+      <PageHeader title="Aktiviteter" description="Senaste aktivitet för alla kunder." />
       <TableShell className="mt-content-top">
-        <InlineState title="Loading activities" description="Fetching the activity feed…" />
+        <InlineState title="Laddar aktiviteter" description="Hämtar aktivitetsflödet…" />
       </TableShell>
     </>
   );

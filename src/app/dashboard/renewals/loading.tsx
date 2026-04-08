@@ -4,9 +4,9 @@ import { InlineState, TableShell } from "@/components/ui";
 export default function Loading() {
   return (
     <>
-      <PageHeader title="Renewals" description="Your renewal queue. Policies with a renewal date appear here." />
+      <PageHeader title="Förnyelser" description="Din förnyelsekö. Försäkringar med förnyelsedatum visas här." />
       <TableShell className="mt-content-top">
-        <InlineState title="Loading renewals" description="Fetching your renewal queue…" />
+        <InlineState title="Laddar förnyelser" description="Hämtar din förnyelsekö…" />
       </TableShell>
     </>
   );

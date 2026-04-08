@@ -67,7 +67,6 @@ type EncryptedBlob = {
 const ENCRYPTION_PREFIX = "SKENC1:";
 
 function getEncryptionKey(): Buffer | null {
-  if (!localStorage.localEncryption.enabled) return null;
   const raw = localStorage.localEncryption.key;
   if (!raw) return null;
   // Derive a stable 32-byte key from the provided secret material.
@@ -75,6 +74,7 @@ function getEncryptionKey(): Buffer | null {
 }
 
 function encryptIfEnabled(plain: Buffer): Buffer {
+  if (!localStorage.localEncryption.enabled) return plain;
   const key = getEncryptionKey();
   if (!key) return plain;
 
@@ -96,12 +96,14 @@ function encryptIfEnabled(plain: Buffer): Buffer {
 
 function decryptIfEnabled(raw: Buffer): Buffer {
   const key = getEncryptionKey();
-  // If encryption is disabled, return raw (even if it looks encrypted).
-  if (!key) return raw;
-
   const text = raw.toString("utf8");
   if (!text.startsWith(ENCRYPTION_PREFIX)) {
     return raw;
+  }
+  if (!key) {
+    // Encrypted blob present but we can't decrypt (missing key).
+    // Failing loudly avoids "random text file" downloads of ciphertext/metadata.
+    throw new Error("Encrypted file cannot be decrypted (missing key)");
   }
 
   const json = text.slice(ENCRYPTION_PREFIX.length);
@@ -150,9 +152,9 @@ export function storageGetStream(storageKey: string): Readable {
   if (!existsSync(fullPath)) {
     throw new Error("File not found");
   }
-  // If local encryption is enabled, we must decrypt before streaming.
+  // If we have a key configured, we can transparently decrypt encrypted blobs.
   // Files are limited to 20MB by API constraints, so buffering is acceptable.
-  if (localStorage.localEncryption.enabled) {
+  if (localStorage.localEncryption.key) {
     return Readable.from(
       (async function* () {
         const raw = await readFile(fullPath);

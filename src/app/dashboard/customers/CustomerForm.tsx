@@ -52,7 +52,7 @@ export function CustomerForm(props: Props) {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to update customer");
+          throw new Error(data.error ?? "Det gick inte att uppdatera kunden");
         }
         router.push(`/dashboard/customers/${customer.id}`);
       } else {
@@ -63,14 +63,14 @@ export function CustomerForm(props: Props) {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to create customer");
+          throw new Error(data.error ?? "Det gick inte att skapa kunden");
         }
         const created = await res.json();
         router.push(`/dashboard/customers/${created.id}`);
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Något gick fel");
       setLoading(false);
     }
   }
@@ -79,7 +79,7 @@ export function CustomerForm(props: Props) {
     <form onSubmit={handleSubmit}>
       <FormLayout variant="card">
         {error && <FormError message={error} />}
-        <FormField id="name" label="Name" required>
+        <FormField id="name" label="Namn" required>
           <input
             id="name"
             type="text"
@@ -90,15 +90,15 @@ export function CustomerForm(props: Props) {
           />
         </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField id="type" label="Type">
+          <FormField id="type" label="Typ">
             <select
               id="type"
               value={type}
               onChange={(e) => setType(e.target.value as "PRIVATE" | "COMPANY")}
               className={formSelectClasses}
             >
-              <option value="PRIVATE">Private</option>
-              <option value="COMPANY">Company</option>
+              <option value="PRIVATE">Privat</option>
+              <option value="COMPANY">Företag</option>
             </select>
           </FormField>
           <FormField id="status" label="Status">
@@ -108,14 +108,14 @@ export function CustomerForm(props: Props) {
               onChange={(e) => setStatus(e.target.value as "ACTIVE" | "INACTIVE" | "PROSPECT")}
               className={formSelectClasses}
             >
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-              <option value="PROSPECT">Prospect</option>
+              <option value="ACTIVE">Aktiv</option>
+              <option value="INACTIVE">Inaktiv</option>
+              <option value="PROSPECT">Prospekt</option>
             </select>
           </FormField>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField id="email" label="Email">
+          <FormField id="email" label="E-post">
             <input
               id="email"
               type="email"
@@ -124,7 +124,7 @@ export function CustomerForm(props: Props) {
               className={formInputClasses}
             />
           </FormField>
-          <FormField id="phone" label="Phone">
+          <FormField id="phone" label="Telefon">
             <input
               id="phone"
               type="text"
@@ -136,8 +136,8 @@ export function CustomerForm(props: Props) {
         </div>
         <FormField
           id="address"
-          label="Address"
-          description="Postal address only. Avoid adding notes or sensitive details."
+          label="Adress"
+          description="Endast postadress. Undvik att lägga in anteckningar eller känsliga uppgifter."
         >
           <textarea
             id="address"
@@ -148,9 +148,9 @@ export function CustomerForm(props: Props) {
           />
         </FormField>
         <FormActions
-          submitLabel={isEdit ? "Save changes" : "Create customer"}
-          loadingLabel={isEdit ? "Saving…" : "Creating…"}
-          cancelLabel="Cancel"
+          submitLabel={isEdit ? "Spara ändringar" : "Skapa kund"}
+          loadingLabel={isEdit ? "Sparar…" : "Skapar…"}
+          cancelLabel="Avbryt"
           onCancel={isEdit && customer ? () => router.push(`/dashboard/customers/${customer.id}`) : undefined}
           loading={loading}
         />

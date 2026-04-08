@@ -6,12 +6,12 @@ import { DetailSection, sectionListClasses, sectionListItemClasses, sectionInner
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
 
 const TYPE_LABELS: Record<string, string> = {
-  PROPERTY: "Property",
-  VEHICLE: "Vehicle",
+  PROPERTY: "Fastighet",
+  VEHICLE: "Fordon",
   PERSON: "Person",
-  BUSINESS: "Business",
-  EQUIPMENT: "Equipment",
-  OTHER: "Other",
+  BUSINESS: "Företag",
+  EQUIPMENT: "Utrustning",
+  OTHER: "Annat",
 };
 
 type InsuredObject = {
@@ -87,10 +87,10 @@ export function InsuredObjectsSection({ customerId }: Props) {
   return (
     <DetailSection
       id="insured-objects"
-      title="Insured objects"
+      title="Försäkrade objekt"
       actions={
         <Button type="button" onClick={openAdd} variant="primary" size="sm">
-          Add object
+          Lägg till objekt
         </Button>
       }
     >
@@ -109,12 +109,11 @@ export function InsuredObjectsSection({ customerId }: Props) {
       )}
       {loading ? (
         <p className="text-sm text-muted-foreground">
-          Loading insured objects…
+          Laddar försäkrade objekt…
         </p>
       ) : objects.length === 0 && !showForm ? (
         <p className="text-sm text-muted-foreground">
-          No insured objects yet. Add one (e.g. property, vehicle) to get
-          started.
+          Inga försäkrade objekt ännu. Lägg till ett (t.ex. fastighet, fordon) för att komma igång.
         </p>
       ) : (
         <ul className={sectionListClasses}>
@@ -145,7 +144,7 @@ export function InsuredObjectsSection({ customerId }: Props) {
                   variant="ghost"
                   size="sm"
                 >
-                  Edit
+                  Redigera
                 </Button>
                 <Button
                   type="button"
@@ -154,7 +153,7 @@ export function InsuredObjectsSection({ customerId }: Props) {
                   size="sm"
                   className="text-danger hover:text-danger"
                 >
-                  Delete
+                  Ta bort
                 </Button>
               </div>
             </li>
@@ -163,9 +162,9 @@ export function InsuredObjectsSection({ customerId }: Props) {
       )}
       <ConfirmDialog
         open={deleteId !== null}
-        title="Remove insured object"
-        message="Remove this insured object? This cannot be undone."
-        confirmLabel="Remove"
+        title="Ta bort försäkrat objekt"
+        message="Ta bort det här försäkrade objektet? Detta kan inte ångras."
+        confirmLabel="Ta bort"
         variant="danger"
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}

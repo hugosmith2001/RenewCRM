@@ -1,6 +1,6 @@
 ## Current storage model
 
-SafekeepCRM stores document **metadata** in Postgres via Prisma (`Document` rows) and stores document **bytes** in a storage backend referenced by `Document.storageKey`.
+Renew CRM stores document **metadata** in Postgres via Prisma (`Document` rows) and stores document **bytes** in a storage backend referenced by `Document.storageKey`.
 
 - **Access model**: documents are downloaded via a server route (`/api/customers/:id/documents/:documentId/download`) that performs authentication + tenant isolation checks and **streams bytes back** to the client.
 - **No public URLs**: the application does not expose direct/public object URLs by default.
@@ -34,7 +34,7 @@ Local storage is **development-friendly**, but it is not recommended for product
 
 ## Local filesystem notes (development + explicit override)
 
-In production, SafekeepCRM refuses to start with local filesystem storage unless explicitly allowed:
+In production, Renew CRM refuses to start with local filesystem storage unless explicitly allowed:
 
 - Set `STORAGE_ALLOW_LOCAL_IN_PROD=true` to acknowledge the risk.
 - For production-local storage, **encryption is required** unless explicitly acknowledged:

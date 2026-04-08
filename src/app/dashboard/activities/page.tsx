@@ -62,11 +62,11 @@ export default async function ActivitiesPage({ searchParams }: Props) {
   return (
     <>
       <PageHeader
-        title="Activities"
-        description="Recent activity across all customers. Calls, meetings, emails, notes, and advice."
+        title="Aktiviteter"
+        description="Senaste aktivitet för alla kunder. Samtal, möten, e-post, anteckningar och rådgivning."
         actions={
           <ButtonLink href="/dashboard" variant="secondary" size="sm">
-            Back to dashboard
+            Tillbaka till översikt
           </ButtonLink>
         }
       />
@@ -89,23 +89,23 @@ export default async function ActivitiesPage({ searchParams }: Props) {
         <TableShell>
           {activities.length === 0 ? (
             <InlineState
-              title={hasFilters ? "No matches" : "No activities yet"}
+              title={hasFilters ? "Inga träffar" : "Inga aktiviteter ännu"}
               description={
                 hasFilters ? (
                   <span>
-                    Try adjusting filters, or{" "}
+                    Prova att justera filtren, eller{" "}
                     <Link href="/dashboard/activities" className="text-primary hover:underline">
-                      clear filters
+                      rensa filter
                     </Link>
                     .
                   </span>
                 ) : (
                   <span>
-                    Activities are logged on customer pages.{" "}
+                    Aktiviteter loggas på kundsidor.{" "}
                     <Link href="/dashboard/customers" className="text-primary hover:underline">
-                      Open a customer
+                      Öppna en kund
                     </Link>{" "}
-                    to log calls, meetings, emails, or notes.
+                    för att logga samtal, möten, e-post eller anteckningar.
                   </span>
                 )
               }
@@ -114,11 +114,11 @@ export default async function ActivitiesPage({ searchParams }: Props) {
             <Table>
               <THead>
                 <tr>
-                  <TH className="w-[10%]">Type</TH>
-                  <TH className="w-[24%]">Title</TH>
-                  <TH className="w-[20%]">Customer</TH>
-                  <TH className="w-[18%]">Created</TH>
-                  <TH className="text-right w-[10%]">Action</TH>
+                  <TH className="w-[10%]">Typ</TH>
+                  <TH className="w-[24%]">Titel</TH>
+                  <TH className="w-[20%]">Kund</TH>
+                  <TH className="w-[18%]">Skapad</TH>
+                  <TH className="text-right w-[10%]">Åtgärd</TH>
                 </tr>
               </THead>
               <TBody>
@@ -134,7 +134,7 @@ export default async function ActivitiesPage({ searchParams }: Props) {
       {totalPages > 1 && (
         <div className="mt-content-top flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Page {query.page} of {totalPages} ({total} total)
+            Sida {query.page} av {totalPages} ({total} totalt)
           </p>
           <div className="flex gap-2">
             {query.page > 1 && (
@@ -147,7 +147,7 @@ export default async function ActivitiesPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Previous
+                Föregående
               </ButtonLink>
             )}
             {query.page < totalPages && (
@@ -160,7 +160,7 @@ export default async function ActivitiesPage({ searchParams }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Next
+                Nästa
               </ButtonLink>
             )}
           </div>
@@ -199,7 +199,7 @@ function ActivityRow({ activity }: { activity: ActivityForFeed }) {
           href={`/dashboard/customers/${activity.customer.id}`}
           className="text-sm text-primary hover:underline"
         >
-          View
+          Visa
         </Link>
       </TD>
     </TR>

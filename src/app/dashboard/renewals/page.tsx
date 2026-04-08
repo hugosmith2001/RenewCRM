@@ -72,12 +72,12 @@ function RenewalsSection({
         <Table>
           <THead>
             <tr>
-              <TH>Customer</TH>
-              <TH>Policy number</TH>
-              <TH>Insurer</TH>
+              <TH>Kund</TH>
+              <TH>Försäkringsnummer</TH>
+              <TH>Försäkringsbolag</TH>
               <TH>Status</TH>
-              <TH>Renewal date</TH>
-              <TH className="min-w-[5rem] text-right">Action</TH>
+              <TH>Förnyelsedatum</TH>
+              <TH className="min-w-[5rem] text-right">Åtgärd</TH>
             </tr>
           </THead>
           <TBody>
@@ -113,7 +113,7 @@ function RenewalsSection({
                     href={`/dashboard/customers/${item.customerId}/policies/${item.id}`}
                     className="text-sm text-primary hover:underline"
                   >
-                    View
+                    Visa
                   </Link>
                 </TD>
               </TR>
@@ -153,11 +153,11 @@ export default async function RenewalsPage({ searchParams }: Props) {
   return (
     <>
       <PageHeader
-        title="Renewals"
-        description="Your renewal queue. Filter by status; set renewal dates from the customer workspace."
+        title="Förnyelser"
+        description="Din förnyelsekö. Filtrera på status och ange förnyelsedatum på kundsidan."
         actions={
           <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
-            Customers
+            Kunder
           </ButtonLink>
         }
       />
@@ -166,8 +166,8 @@ export default async function RenewalsPage({ searchParams }: Props) {
         left={<RenewalsFilterForm initialStatus={status} />}
         right={
           <span className="text-sm text-muted-foreground">
-            {total} total
-            {totalMissing > 0 && ` (${totalMissing} missing date)`}
+            {total} totalt
+            {totalMissing > 0 && ` (${totalMissing} saknar datum)`}
           </span>
         }
       />
@@ -176,14 +176,14 @@ export default async function RenewalsPage({ searchParams }: Props) {
         <div className="mt-content-top">
           <TableShell>
             <InlineState
-              title="No policies match"
+              title="Inga försäkringar matchar"
               description={
                 status
-                  ? "Try clearing filters, or add policies and set renewal dates from the customer workspace."
-                  : "Add policies and set renewal dates from the customer workspace to see them here."
+                  ? "Prova att rensa filtren, eller lägg till försäkringar och ange förnyelsedatum på kundsidan."
+                  : "Lägg till försäkringar och ange förnyelsedatum på kundsidan för att se dem här."
               }
               primaryAction={{
-                label: "View customers",
+                label: "Visa kunder",
                 href: "/dashboard/customers",
               }}
             />
@@ -193,50 +193,50 @@ export default async function RenewalsPage({ searchParams }: Props) {
         <div className="mt-content-top space-y-0">
           {buckets.overdue.length > 0 && (
             <RenewalsSection
-              title="Overdue"
+              title="Försenade"
               count={buckets.overdue.length}
               items={buckets.overdue}
-              emptyMessage="No overdue renewals."
+              emptyMessage="Inga försenade förnyelser."
             />
           )}
           {buckets.next7.length > 0 && (
             <RenewalsSection
-              title="Next 7 days"
+              title="Kommande 7 dagar"
               count={buckets.next7.length}
               items={buckets.next7}
-              emptyMessage="Nothing due in the next 7 days."
+              emptyMessage="Inget som förfaller inom de kommande 7 dagarna."
             />
           )}
           {buckets.next30.length > 0 && (
             <RenewalsSection
-              title="Next 30 days"
+              title="Kommande 30 dagar"
               count={buckets.next30.length}
               items={buckets.next30}
-              emptyMessage="Nothing due in the next 30 days."
+              emptyMessage="Inget som förfaller inom de kommande 30 dagarna."
             />
           )}
           {buckets.next90.length > 0 && (
             <RenewalsSection
-              title="Next 90 days"
+              title="Kommande 90 dagar"
               count={buckets.next90.length}
               items={buckets.next90}
-              emptyMessage="Nothing due in the next 90 days."
+              emptyMessage="Inget som förfaller inom de kommande 90 dagarna."
             />
           )}
           {buckets.later.length > 0 && (
             <RenewalsSection
-              title="Later"
+              title="Senare"
               count={buckets.later.length}
               items={buckets.later}
-              emptyMessage="Nothing due beyond 90 days."
+              emptyMessage="Inget som förfaller senare än 90 dagar."
             />
           )}
           {buckets.missingDate.length > 0 && (
             <RenewalsSection
-              title="Missing renewal date"
+              title="Saknar förnyelsedatum"
               count={buckets.missingDate.length}
               items={buckets.missingDate}
-              emptyMessage="No policies without a renewal date."
+              emptyMessage="Inga försäkringar utan förnyelsedatum."
             />
           )}
         </div>

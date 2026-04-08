@@ -1,6 +1,6 @@
 ## GDPR Phase 0 (Governance & prerequisites)
 
-This folder contains the **Phase 0 deliverables** referenced by `GDPR_PLAN.md`: governance artifacts and operational prerequisites that let SafekeepCRM operate legally while product features are built.
+This folder contains the **Phase 0 deliverables** referenced by `GDPR_PLAN.md`: governance artifacts and operational prerequisites that let Renew CRM operate legally while product features are built.
 
 ### What’s in here
 

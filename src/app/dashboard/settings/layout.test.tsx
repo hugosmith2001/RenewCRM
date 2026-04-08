@@ -49,11 +49,11 @@ describe("SettingsLayout (Phase 0)", () => {
 
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).toContain("/dashboard/settings/profile");
-    expect(html).toContain("Profile");
+    expect(html).toContain("Profil");
     expect(html).toContain("/dashboard/settings/password");
-    expect(html).toContain("Password");
+    expect(html).toContain("Lösenord");
     expect(html).toContain("/dashboard/settings/privacy");
-    expect(html).toContain("Privacy &amp; compliance");
+    expect(html).toContain("Integritet &amp; regelefterlevnad");
   });
 
   it("shows Organization nav links only for ADMIN", async () => {
@@ -70,7 +70,7 @@ describe("SettingsLayout (Phase 0)", () => {
 
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).toContain("/dashboard/settings/brokerage");
-    expect(html).toContain("Brokerage");
+    expect(html).toContain("Mäklarkontor");
     expect(html).not.toContain("/dashboard/settings/team");
     expect(html).not.toContain("Team");
   });
@@ -89,7 +89,7 @@ describe("SettingsLayout (Phase 0)", () => {
 
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).not.toContain("/dashboard/settings/brokerage");
-    expect(html).not.toContain("Brokerage");
+    expect(html).not.toContain("Mäklarkontor");
     expect(html).not.toContain("/dashboard/settings/team");
     expect(html).not.toContain("Team");
   });
@@ -108,7 +108,7 @@ describe("SettingsLayout (Phase 0)", () => {
 
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).not.toContain("/dashboard/settings/brokerage");
-    expect(html).not.toContain("Brokerage");
+    expect(html).not.toContain("Mäklarkontor");
     expect(html).not.toContain("/dashboard/settings/team");
     expect(html).not.toContain("Team");
   });

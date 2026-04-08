@@ -11,7 +11,7 @@ export default async function PrivacySettingsPage() {
       <DetailSection title="Privacy notice (app users)">
         <div className="space-y-4 text-sm text-muted-foreground">
           <p className="text-foreground">
-            SafekeepCRM is used by your organization to manage customer relationships and related work.
+            Renew CRM is used by your organization to manage customer relationships and related work.
           </p>
           <div className="space-y-2">
             <p>
@@ -31,7 +31,7 @@ export default async function PrivacySettingsPage() {
             </p>
           </div>
           <div className="space-y-2">
-            <p className="font-medium text-foreground">Data categories commonly processed in SafekeepCRM</p>
+            <p className="font-medium text-foreground">Data categories commonly processed in Renew CRM</p>
             <ul className={sectionListClasses}>
               <li className={sectionListItemClasses}>User account data (email, name, role, tenant membership)</li>
               <li className={sectionListItemClasses}>Customer and contact details (name, email, phone, address)</li>
@@ -55,7 +55,7 @@ export default async function PrivacySettingsPage() {
       <DetailSection title="Cookies">
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
-            SafekeepCRM currently uses <span className="font-medium text-foreground">essential cookies</span> for
+            Renew CRM currently uses <span className="font-medium text-foreground">essential cookies</span> for
             authentication and session security (Auth.js / NextAuth).
           </p>
           <ul className={sectionListClasses}>

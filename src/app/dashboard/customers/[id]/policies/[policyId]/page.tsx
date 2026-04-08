@@ -9,19 +9,19 @@ import { Badge, ButtonLink } from "@/components/ui";
 import { PolicyDocumentsSection } from "../../../policies/PolicyDocumentsSection";
 
 const STATUS_LABELS: Record<string, string> = {
-  ACTIVE: "Active",
-  PENDING: "Pending",
-  EXPIRED: "Expired",
-  CANCELLED: "Cancelled",
+  ACTIVE: "Aktiv",
+  PENDING: "Pågående",
+  EXPIRED: "Utgången",
+  CANCELLED: "Avbruten",
 };
 
 const INSURED_OBJECT_TYPE_LABELS: Record<string, string> = {
-  PROPERTY: "Property",
-  VEHICLE: "Vehicle",
+  PROPERTY: "Fastighet",
+  VEHICLE: "Fordon",
   PERSON: "Person",
-  BUSINESS: "Business",
-  EQUIPMENT: "Equipment",
-  OTHER: "Other",
+  BUSINESS: "Företag",
+  EQUIPMENT: "Utrustning",
+  OTHER: "Annat",
 };
 
 type Props = {
@@ -70,7 +70,7 @@ export default async function PolicyDetailPage({ params }: Props) {
             <span className="text-muted-foreground">
               {policy.insurer?.name ?? "—"}
               {policy.premium != null &&
-                ` · ${Number(policy.premium).toLocaleString()} premium`}
+                ` · ${Number(policy.premium).toLocaleString()} premie`}
             </span>
           </span>
         }
@@ -79,16 +79,16 @@ export default async function PolicyDetailPage({ params }: Props) {
             href={`/dashboard/customers/${customerId}?editPolicy=${policyId}#policies`}
             variant="primary"
           >
-            Edit policy
+            Redigera försäkring
           </ButtonLink>
         }
       />
 
       <div className="space-y-section-gap">
-        <DetailSection id="overview" title="Overview">
+        <DetailSection id="overview" title="Översikt">
           <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-medium text-muted-foreground">Policy number</dt>
+              <dt className="font-medium text-muted-foreground">Försäkringsnummer</dt>
               <dd className="mt-0.5 text-foreground font-mono">
                 {policy.policyNumber}
               </dd>
@@ -102,13 +102,13 @@ export default async function PolicyDetailPage({ params }: Props) {
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Insurer</dt>
+              <dt className="font-medium text-muted-foreground">Försäkringsbolag</dt>
               <dd className="mt-0.5 text-foreground">
                 {policy.insurer?.name ?? "—"}
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Premium</dt>
+              <dt className="font-medium text-muted-foreground">Premie</dt>
               <dd className="mt-0.5 text-foreground">
                 {policy.premium != null
                   ? Number(policy.premium).toLocaleString()
@@ -116,19 +116,19 @@ export default async function PolicyDetailPage({ params }: Props) {
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Start date</dt>
+              <dt className="font-medium text-muted-foreground">Startdatum</dt>
               <dd className="mt-0.5 text-foreground">
                 {formatDate(policy.startDate)}
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">End date</dt>
+              <dt className="font-medium text-muted-foreground">Slutdatum</dt>
               <dd className="mt-0.5 text-foreground">
                 {formatDate(policy.endDate)}
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Renewal date</dt>
+              <dt className="font-medium text-muted-foreground">Förnyelsedatum</dt>
               <dd className="mt-0.5 text-foreground">
                 {policy.renewalDate
                   ? formatDate(policy.renewalDate)
@@ -136,7 +136,7 @@ export default async function PolicyDetailPage({ params }: Props) {
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Created</dt>
+              <dt className="font-medium text-muted-foreground">Skapad</dt>
               <dd className="mt-0.5 text-foreground">
                 {formatDate(policy.createdAt)}
               </dd>
@@ -144,7 +144,7 @@ export default async function PolicyDetailPage({ params }: Props) {
           </dl>
         </DetailSection>
 
-        <DetailSection id="customer" title="Customer">
+        <DetailSection id="customer" title="Kund">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="font-medium text-foreground">{customer.name}</p>
@@ -159,16 +159,15 @@ export default async function PolicyDetailPage({ params }: Props) {
               variant="secondary"
               size="sm"
             >
-              View full customer
+              Visa hela kunden
             </ButtonLink>
           </div>
         </DetailSection>
 
-        <DetailSection id="insured-objects" title="Insured objects">
+        <DetailSection id="insured-objects" title="Försäkrade objekt">
           {!policy.insuredObjects?.length ? (
             <p className="text-sm text-muted-foreground">
-              No insured objects linked. Edit the policy from the customer
-              workspace to link objects.
+              Inga försäkrade objekt är kopplade. Redigera försäkringen på kundsidan för att koppla objekt.
             </p>
           ) : (
             <ul className={sectionListClasses}>
@@ -192,9 +191,9 @@ export default async function PolicyDetailPage({ params }: Props) {
 
         <PolicyDocumentsSection customerId={customerId} documents={documents} />
 
-        <DetailSection id="context" title="Activities & tasks">
+        <DetailSection id="context" title="Aktiviteter & att göra">
           <p className="text-sm text-muted-foreground">
-            Activities and tasks are managed on the customer workspace.
+            Aktiviteter och att göra hanteras på kundsidan.
           </p>
           <ButtonLink
             href={`/dashboard/customers/${customerId}#activities`}
@@ -202,7 +201,7 @@ export default async function PolicyDetailPage({ params }: Props) {
             size="sm"
             className="mt-2"
           >
-            View customer activities
+            Visa kundens aktiviteter
           </ButtonLink>
         </DetailSection>
       </div>

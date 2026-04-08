@@ -4,12 +4,12 @@ import { InlineState } from "@/components/ui";
 export default function PolicyDetailLoading() {
   return (
     <>
-      <PageHeader title="—" backLabel="Customer" />
+      <PageHeader title="—" backLabel="Kund" />
       <div className="space-y-section-gap">
-        <DetailSection title="Overview">
+        <DetailSection title="Översikt">
           <InlineState
-            title="Loading policy"
-            description="Fetching policy details…"
+            title="Laddar försäkring"
+            description="Hämtar försäkringsdetaljer…"
           />
         </DetailSection>
       </div>

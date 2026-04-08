@@ -1,6 +1,6 @@
-# GDPR plan for SafekeepCRM (repo-specific, no code yet)
+# GDPR plan for Renew CRM (repo-specific, no code yet)
 
-This plan is written for the current SafekeepCRM codebase (Next.js + NextAuth + Prisma/Postgres + local/S3-style document storage). It prioritizes what you need to become **GDPR-complete in practice**: product features + security controls + operational processes + documentation.
+This plan is written for the current Renew CRM codebase (Next.js + NextAuth + Prisma/Postgres + local/S3-style document storage). It prioritizes what you need to become **GDPR-complete in practice**: product features + security controls + operational processes + documentation.
 
 > Scope note: GDPR compliance cannot be guaranteed by code alone. You must also implement operational controls (hosting, backups, DPAs, incident response, policies). This plan covers both.
 
@@ -51,10 +51,10 @@ Deliverable:
 
 ## GDPR Role Model (Controller vs Processor)
 
-SafekeepCRM acts in **two roles at the same time**, depending on the data category:
+Renew CRM acts in **two roles at the same time**, depending on the data category:
 
-- **Safekeep as Processor (tenant customer data)**: for each tenant (brokerage), Safekeep processes the tenant’s **Customer/Contact/Policy/Document/Activity** data on the tenant’s behalf. The tenant is the **Controller** for that data.
-- **Safekeep as Controller (platform operational data)**: Safekeep is the controller for:
+- **Renew CRM as Processor (tenant customer data)**: for each tenant (brokerage), Renew CRM processes the tenant’s **Customer/Contact/Policy/Document/Activity** data on the tenant’s behalf. The tenant is the **Controller** for that data.
+- **Renew CRM as Controller (platform operational data)**: Renew CRM is the controller for:
   - **user accounts**
   - **authentication**
   - **logs/audit/security data**
@@ -62,20 +62,20 @@ SafekeepCRM acts in **two roles at the same time**, depending on the data catego
 Implications (keep these explicit in product + docs):
 
 - **DSAR flows differ** depending on subject type and role:
-  - tenant customer data: controller (tenant) requests/approves; Safekeep provides tooling as processor assistance
-  - Safekeep user/auth/security data: Safekeep handles as controller
+  - tenant customer data: controller (tenant) requests/approves; Renew CRM provides tooling as processor assistance
+  - Renew CRM user/auth/security data: Renew CRM handles as controller
 - **Legal basis differs per data category**:
-  - tenant customer data: tenant/controller determines lawful basis; Safekeep relies on DPA + instructions
-  - Safekeep operational data: typically **contract** (service delivery) + **legitimate interests** (security), plus **legal obligations** where applicable
-- **Responsibilities differ (tenant vs Safekeep)**:
+  - tenant customer data: tenant/controller determines lawful basis; Renew CRM relies on DPA + instructions
+  - Renew CRM operational data: typically **contract** (service delivery) + **legitimate interests** (security), plus **legal obligations** where applicable
+- **Responsibilities differ (tenant vs Renew CRM)**:
   - tenant: privacy notices to their customers, DSAR responses, retention rules/legal holds for their customers
-  - Safekeep: security controls, subprocessor transparency, processor assistance, and controller duties for platform operational data
+  - Renew CRM: security controls, subprocessor transparency, processor assistance, and controller duties for platform operational data
 
 ---
 
 ## Decide your GDPR “position” (controller vs processor)
 
-SafekeepCRM can be:
+Renew CRM can be:
 
 - **Processor** for your customers (e.g., brokerages) who are the **controllers** of their customers’ personal data; or
 - **Controller** if you run the brokerage yourself and the CRM is internal.
@@ -143,7 +143,7 @@ Acceptance criteria:
 
 **DPIA (Data Protection Impact Assessment)**
 
-Because SafekeepCRM processes insurance-related personal data, includes document handling, and is multi-tenant, you should complete a DPIA before broad production rollout.
+Because Renew CRM processes insurance-related personal data, includes document handling, and is multi-tenant, you should complete a DPIA before broad production rollout.
 
 - What it includes:
   - **risk identification** (confidentiality, tenant isolation, unauthorized access, document leakage, excessive retention)
@@ -302,7 +302,7 @@ Operational details (make these implementation requirements):
 
 - **Identity verification** depends on the role model:
   - tenant customer data: verified tenant admin/controller request (processor assistance)
-  - Safekeep user/auth/security data: Safekeep handles as controller
+  - Renew CRM user/auth/security data: Renew CRM handles as controller
 - **Export format**:
   - JSON (complete, structured)
   - CSV summaries (human-friendly)

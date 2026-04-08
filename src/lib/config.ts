@@ -66,28 +66,28 @@ export type StorageDriver = z.infer<typeof storageDriverSchema>;
 
 export type StorageConfig =
   | {
-      driver: "local";
-      rootPath: string;
-      allowInProduction: boolean;
-      localEncryption: {
-        enabled: boolean;
-        key?: string;
-        allowUnencryptedInProduction: boolean;
-      };
-    }
-  | {
-      driver: "s3";
-      // Reserved for future S3-compatible implementation.
-      bucket: string;
-      region?: string;
-      endpoint?: string;
-      forcePathStyle?: boolean;
-      prefix?: string;
-      sse?: "AES256" | "aws:kms";
-      kmsKeyId?: string;
-      accessKeyId?: string;
-      secretAccessKey?: string;
+    driver: "local";
+    rootPath: string;
+    allowInProduction: boolean;
+    localEncryption: {
+      enabled: boolean;
+      key?: string;
+      allowUnencryptedInProduction: boolean;
     };
+  }
+  | {
+    driver: "s3";
+    // Reserved for future S3-compatible implementation.
+    bucket: string;
+    region?: string;
+    endpoint?: string;
+    forcePathStyle?: boolean;
+    prefix?: string;
+    sse?: "AES256" | "aws:kms";
+    kmsKeyId?: string;
+    accessKeyId?: string;
+    secretAccessKey?: string;
+  };
 
 export type RuntimeConfig = {
   env: NodeEnv;

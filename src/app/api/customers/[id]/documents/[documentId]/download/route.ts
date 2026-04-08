@@ -4,8 +4,31 @@ import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getDocumentById, getDocumentStream } from "@/modules/documents";
 import { handleApiError } from "@/lib/api-error";
 import { logger } from "@/lib/logger";
+import path from "path";
 
 type Params = { params: Promise<{ id: string; documentId: string }> };
+
+function buildDownloadFilename(displayName: string, storageKey: string): string {
+  const name = (displayName || "").trim() || "document";
+  const storageBase = path.posix.basename(storageKey || "");
+  const ext = path.posix.extname(storageBase);
+  if (!ext) return name;
+  const lower = name.toLowerCase();
+  const lowerExt = ext.toLowerCase();
+  if (lower.endsWith(lowerExt)) return name;
+  return `${name}${ext}`;
+}
+
+function contentDispositionAttachment(filename: string): string {
+  // RFC 6266 + RFC 5987: provide both filename and filename* for UTF-8.
+  // Keep filename ASCII-ish for broad compatibility.
+  const fallback = filename
+    .replaceAll(/[\r\n"]/g, "")
+    .replaceAll(/[^\x20-\x7E]/g, "_")
+    .slice(0, 180) || "download";
+  const encoded = encodeURIComponent(filename);
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
+}
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -29,8 +52,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const nodeStream = getDocumentStream(doc.storageKey);
     const webStream = Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>;
     const headers = new Headers();
-    const disposition = `attachment; filename="${encodeURIComponent(doc.name)}"`;
-    headers.set("Content-Type", doc.mimeType);
+    const downloadName = buildDownloadFilename(doc.name, doc.storageKey);
+    const disposition = contentDispositionAttachment(downloadName);
+    headers.set("Content-Type", doc.mimeType || "application/octet-stream");
     headers.set("Content-Disposition", disposition);
     headers.set("Content-Length", String(doc.sizeBytes));
 

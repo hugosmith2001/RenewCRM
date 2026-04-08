@@ -35,7 +35,7 @@ export function RenewalsFilterForm({
             defaultValue={initialStatus}
             className={formSelectClasses}
           >
-            <option value="">All statuses</option>
+            <option value="">Alla statusar</option>
             {Object.entries(POLICY_STATUS_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -45,11 +45,11 @@ export function RenewalsFilterForm({
         </FormField>
       </div>
       <Button type="submit" variant="secondary" size="md">
-        Apply
+        Använd
       </Button>
       {hasFilters && (
         <ButtonLink href="/dashboard/renewals" variant="secondary" size="md">
-          Clear
+          Rensa
         </ButtonLink>
       )}
     </form>

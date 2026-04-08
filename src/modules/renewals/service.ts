@@ -28,7 +28,6 @@ export type RenewalsBuckets = {
 };
 
 export type RenewalsQuery = {
-  brokerId?: string;
   status?: PolicyStatus;
 };
 
@@ -43,7 +42,7 @@ function toRenewalItem(row: {
   policyNumber: string;
   status: PolicyStatus;
   renewalDate: Date | null;
-  customer: { id: string; name: string; owner: { name: string | null; email: string } | null };
+  customer: { id: string; name: string };
   insurer: { name: string };
   insuredObjects: { insuredObject: { type: string } }[];
 }): RenewalItem {
@@ -56,8 +55,8 @@ function toRenewalItem(row: {
     customerName: row.customer.name,
     insurerName: row.insurer.name,
     productType: row.insuredObjects[0]?.insuredObject?.type ?? null,
-    brokerName: row.customer.owner?.name ?? null,
-    brokerEmail: row.customer.owner?.email ?? null,
+    brokerName: null,
+    brokerEmail: null,
   };
 }
 
@@ -75,9 +74,6 @@ export async function listRenewalsBucketed(
 
   const where: Prisma.PolicyWhereInput = { tenantId };
   if (query.status) where.status = query.status;
-  if (query.brokerId !== undefined && query.brokerId !== "") {
-    where.customer = { ownerBrokerId: query.brokerId };
-  }
 
   const rows = await prisma.policy.findMany({
     where,
@@ -86,7 +82,6 @@ export async function listRenewalsBucketed(
         select: {
           id: true,
           name: true,
-          owner: { select: { name: true, email: true } },
         },
       },
       insurer: { select: { name: true } },

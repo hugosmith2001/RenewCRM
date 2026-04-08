@@ -31,7 +31,6 @@ CREATE TABLE "Task" (
     "dueDate" DATE,
     "priority" "TaskPriority" NOT NULL DEFAULT 'MEDIUM',
     "status" "TaskStatus" NOT NULL DEFAULT 'PENDING',
-    "assignedToUserId" TEXT,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
@@ -55,9 +54,6 @@ CREATE INDEX "Task_customerId_idx" ON "Task"("customerId");
 CREATE INDEX "Task_tenantId_status_idx" ON "Task"("tenantId", "status");
 
 -- CreateIndex
-CREATE INDEX "Task_assignedToUserId_idx" ON "Task"("assignedToUserId");
-
--- CreateIndex
 CREATE INDEX "Task_dueDate_idx" ON "Task"("dueDate");
 
 -- AddForeignKey
@@ -74,6 +70,3 @@ ALTER TABLE "Task" ADD CONSTRAINT "Task_tenantId_fkey" FOREIGN KEY ("tenantId") 
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_assignedToUserId_fkey" FOREIGN KEY ("assignedToUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

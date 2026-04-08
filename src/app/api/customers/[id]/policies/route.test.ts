@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "@/app/api/customers/[id]/policies/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -17,14 +16,14 @@ vi.mock("@/modules/policies", () => ({
   createPolicy: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getCustomerById } = await import("@/modules/customers");
 const {
   listPoliciesByCustomerId,
   createPolicy,
 } = await import("@/modules/policies");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetCustomerById = vi.mocked(getCustomerById);
 const mockAssertTenantAccess = vi.mocked(assertTenantAccess);
 const mockListPoliciesByCustomerId = vi.mocked(listPoliciesByCustomerId);
@@ -35,7 +34,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -47,11 +45,9 @@ const customer = {
   email: "acme@example.com",
   phone: null as string | null,
   address: null as string | null,
-  ownerBrokerId: null as string | null,
   status: "ACTIVE" as const,
   createdAt: new Date(),
   updatedAt: new Date(),
-  owner: null,
 };
 
 function params(id: string) {
@@ -69,8 +65,8 @@ beforeEach(() => {
  * Does not cover: real DB or session.
  */
 describe("GET /api/customers/[id]/policies", () => {
-  it("returns 401 when requireRole throws Unauthorized", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+  it("returns 401 when requireAuth throws Unauthorized", async () => {
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId),
@@ -81,7 +77,7 @@ describe("GET /api/customers/[id]/policies", () => {
   });
 
   it("returns 404 when customer not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(null);
 
     const res = await GET(new NextRequest("http://localhost"), {
@@ -95,7 +91,7 @@ describe("GET /api/customers/[id]/policies", () => {
   });
 
   it("returns 200 and policies array with serialized premium when customer exists", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     const policies = [
@@ -135,7 +131,7 @@ describe("GET /api/customers/[id]/policies", () => {
   });
 
   it("returns empty array when customer has no policies", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockListPoliciesByCustomerId.mockResolvedValue([]);
@@ -159,7 +155,7 @@ describe("POST /api/customers/[id]/policies", () => {
   };
 
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await POST(
       new NextRequest("http://localhost", {
@@ -174,7 +170,7 @@ describe("POST /api/customers/[id]/policies", () => {
   });
 
   it("returns 404 when customer not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(null);
 
     const res = await POST(
@@ -190,7 +186,7 @@ describe("POST /api/customers/[id]/policies", () => {
   });
 
   it("returns 400 when body validation fails (missing policyNumber)", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -213,7 +209,7 @@ describe("POST /api/customers/[id]/policies", () => {
   });
 
   it("returns 400 when body validation fails (endDate before startDate)", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -234,7 +230,7 @@ describe("POST /api/customers/[id]/policies", () => {
   });
 
   it("returns 400 when createPolicy returns null", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockCreatePolicy.mockResolvedValue(null);
@@ -255,7 +251,7 @@ describe("POST /api/customers/[id]/policies", () => {
   });
 
   it("returns 201 and created policy with serialized premium when valid", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     const created = {

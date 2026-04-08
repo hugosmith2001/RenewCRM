@@ -50,10 +50,10 @@ Tenants/controllers can override retention durations (in days) within bounded ra
 - If an override exists: the purge logic uses it (clamped/bounded)
 - If no override exists: the **system default** applies
 
-API (admin-only, tenant-scoped):
+API:
 
-- `GET /api/admin/retention` – list effective policies + bounds
-- `POST /api/admin/retention` – set/update an override
+- `GET /api/retention` – list effective policies + bounds
+- `POST /api/retention` – set/update an override
 
 ---
 
@@ -73,7 +73,7 @@ User-initiated deletes set `deletedAt` and remove the record from standard list/
 Purge is blocked when:
 
 - `Customer.legalHold = true`, or
-- `Customer.restrictedAt` is set (DSAR restriction of processing)
+- `Customer.restrictedAt` is set (restriction of processing)
 
 Documents are blocked when:
 

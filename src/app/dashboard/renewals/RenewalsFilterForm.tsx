@@ -5,17 +5,11 @@ import { Button, ButtonLink } from "@/components/ui";
 import { FormField, formSelectClasses } from "@/components/forms";
 import { POLICY_STATUS_LABELS } from "@/lib/constants/labels";
 
-type Broker = { id: string; name: string | null; email: string };
-
 type Props = {
-  brokers: Broker[];
-  initialBrokerId?: string;
   initialStatus?: string;
 };
 
 export function RenewalsFilterForm({
-  brokers,
-  initialBrokerId = "",
   initialStatus = "",
 }: Props) {
   const router = useRouter();
@@ -23,35 +17,16 @@ export function RenewalsFilterForm({
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
-    const brokerId = (form.elements.namedItem("brokerId") as HTMLSelectElement)?.value ?? "";
     const status = (form.elements.namedItem("status") as HTMLSelectElement)?.value ?? "";
     const params = new URLSearchParams();
-    if (brokerId) params.set("brokerId", brokerId);
     if (status) params.set("status", status);
     router.push(`/dashboard/renewals?${params.toString()}`);
   }
 
-  const hasFilters = initialBrokerId || initialStatus;
+  const hasFilters = initialStatus;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-filter-control">
-      <div className="min-w-[180px]">
-        <FormField id="brokerId" label="Broker">
-          <select
-            id="brokerId"
-            name="brokerId"
-            defaultValue={initialBrokerId}
-            className={formSelectClasses}
-          >
-            <option value="">All brokers</option>
-            {brokers.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name ?? b.email}
-              </option>
-            ))}
-          </select>
-        </FormField>
-      </div>
       <div className="min-w-[140px]">
         <FormField id="status" label="Status">
           <select

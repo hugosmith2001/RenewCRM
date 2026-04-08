@@ -6,7 +6,7 @@ import type { Customer, CustomerStatus, CustomerType } from "@prisma/client";
 import type { CreateCustomerInput, ListCustomersQuery, UpdateCustomerInput } from "@/lib/validations/customers";
 
 export type CustomerWithOwner = Customer & {
-  owner: { id: string; name: string | null; email: string } | null;
+  owner: null;
 };
 
 export async function getCustomerById(
@@ -15,11 +15,9 @@ export async function getCustomerById(
 ): Promise<CustomerWithOwner | null> {
   const customer = await prisma.customer.findFirst({
     where: { id, tenantId, deletedAt: null },
-    include: {
-      owner: { select: { id: true, name: true, email: true } },
-    },
   });
-  return customer as CustomerWithOwner | null;
+  if (!customer) return null;
+  return { ...(customer as Customer), owner: null } as CustomerWithOwner;
 }
 
 export async function listCustomers(
@@ -51,9 +49,6 @@ export async function listCustomers(
   const [customers, total] = await Promise.all([
     prisma.customer.findMany({
       where,
-      include: {
-        owner: { select: { id: true, name: true, email: true } },
-      },
       orderBy: { name: "asc" },
       skip,
       take: limit,
@@ -61,13 +56,15 @@ export async function listCustomers(
     prisma.customer.count({ where }),
   ]);
 
-  return { customers: customers as CustomerWithOwner[], total };
+  return {
+    customers: (customers as Customer[]).map((c) => ({ ...c, owner: null })) as CustomerWithOwner[],
+    total,
+  };
 }
 
 export async function createCustomer(
   tenantId: string,
-  data: CreateCustomerInput,
-  ownerBrokerId?: string | null
+  data: CreateCustomerInput
 ): Promise<Customer> {
   return prisma.customer.create({
     data: {
@@ -77,7 +74,6 @@ export async function createCustomer(
       email: data.email ?? null,
       phone: data.phone ?? null,
       address: data.address ?? null,
-      ownerBrokerId: data.ownerBrokerId ?? ownerBrokerId ?? null,
       status: data.status,
     },
   });
@@ -101,7 +97,6 @@ export async function updateCustomer(
       ...(data.email !== undefined && { email: data.email ?? null }),
       ...(data.phone !== undefined && { phone: data.phone ?? null }),
       ...(data.address !== undefined && { address: data.address ?? null }),
-      ...(data.ownerBrokerId !== undefined && { ownerBrokerId: data.ownerBrokerId ?? null }),
       ...(data.status !== undefined && { status: data.status }),
     },
   });

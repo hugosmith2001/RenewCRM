@@ -37,7 +37,6 @@ const baseCustomer = {
   email: "acme@example.com",
   phone: null as string | null,
   address: null as string | null,
-  ownerBrokerId: null as string | null,
   status: "ACTIVE" as const,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -55,20 +54,15 @@ beforeEach(() => {
  * Does not cover: real DB, auth, or API layer.
  */
 describe("getCustomerById", () => {
-  it("returns customer with owner when found for tenant", async () => {
-    const withOwner = {
-      ...baseCustomer,
-      owner: { id: "u1", name: "Broker", email: "broker@t.com" },
-    };
-    mockFindFirst.mockResolvedValue(withOwner);
+  it("returns customer when found for tenant", async () => {
+    mockFindFirst.mockResolvedValue(baseCustomer);
 
     const result = await getCustomerById(tenantId, customerId);
 
     expect(mockFindFirst).toHaveBeenCalledWith({
       where: { id: customerId, tenantId, deletedAt: null },
-      include: { owner: { select: { id: true, name: true, email: true } } },
     });
-    expect(result).toEqual(withOwner);
+    expect(result).toEqual({ ...baseCustomer, owner: null });
   });
 
   it("returns null when customer does not exist", async () => {
@@ -191,7 +185,6 @@ describe("createCustomer", () => {
         email: null,
         phone: null,
         address: null,
-        ownerBrokerId: null,
         status: "ACTIVE",
       },
     });
@@ -205,7 +198,6 @@ describe("createCustomer", () => {
       email: "a@b.com",
       phone: "123",
       address: "Street",
-      ownerBrokerId: "user-1",
       type: "COMPANY",
       status: "PROSPECT",
     });
@@ -217,7 +209,6 @@ describe("createCustomer", () => {
         email: "a@b.com",
         phone: "123",
         address: "Street",
-        ownerBrokerId: "user-1",
         type: "COMPANY",
         status: "PROSPECT",
       }),
@@ -250,18 +241,6 @@ describe("updateCustomer", () => {
       data: { name: "New Name", status: "INACTIVE" },
     });
     expect(result).toEqual(updated);
-  });
-
-  it("clears ownerBrokerId when set to null", async () => {
-    mockFindFirst.mockResolvedValue({ ...baseCustomer, ownerBrokerId: "user-1" });
-    mockUpdate.mockResolvedValue({ ...baseCustomer, ownerBrokerId: null });
-
-    await updateCustomer(tenantId, customerId, { ownerBrokerId: null });
-
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: customerId },
-      data: { ownerBrokerId: null },
-    });
   });
 });
 

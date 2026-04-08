@@ -4,10 +4,9 @@ import {
   DELETE,
 } from "@/app/api/customers/[id]/insured-objects/[objectId]/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -17,14 +16,14 @@ vi.mock("@/modules/insured-objects", () => ({
   deleteInsuredObject: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const {
   getInsuredObjectById,
   updateInsuredObject,
   deleteInsuredObject,
 } = await import("@/modules/insured-objects");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetInsuredObjectById = vi.mocked(getInsuredObjectById);
 const mockUpdateInsuredObject = vi.mocked(updateInsuredObject);
 const mockDeleteInsuredObject = vi.mocked(deleteInsuredObject);
@@ -35,7 +34,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -67,7 +65,7 @@ beforeEach(() => {
  */
 describe("PATCH /api/customers/[id]/insured-objects/[objectId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await PATCH(
       new NextRequest("http://localhost", {
@@ -82,7 +80,7 @@ describe("PATCH /api/customers/[id]/insured-objects/[objectId]", () => {
   });
 
   it("returns 404 when insured object not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetInsuredObjectById.mockResolvedValue(null);
 
     const res = await PATCH(
@@ -100,7 +98,7 @@ describe("PATCH /api/customers/[id]/insured-objects/[objectId]", () => {
   });
 
   it("returns 400 when object belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetInsuredObjectById.mockResolvedValue({
       ...insuredObject,
       customerId: "other-customer",
@@ -121,7 +119,7 @@ describe("PATCH /api/customers/[id]/insured-objects/[objectId]", () => {
   });
 
   it("returns 400 when body validation fails", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetInsuredObjectById.mockResolvedValue(insuredObject);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -140,7 +138,7 @@ describe("PATCH /api/customers/[id]/insured-objects/[objectId]", () => {
   });
 
   it("returns 200 and updated object when valid", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetInsuredObjectById.mockResolvedValue(insuredObject);
     mockAssertTenantAccess.mockImplementation(() => {});
     const updated = { ...insuredObject, name: "2020 Honda Civic" };
@@ -168,7 +166,7 @@ describe("PATCH /api/customers/[id]/insured-objects/[objectId]", () => {
 
 describe("DELETE /api/customers/[id]/insured-objects/[objectId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await DELETE(new NextRequest("http://localhost"), {
       params: params(customerId, objectId),
@@ -179,7 +177,7 @@ describe("DELETE /api/customers/[id]/insured-objects/[objectId]", () => {
   });
 
   it("returns 404 when insured object not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetInsuredObjectById.mockResolvedValue(null);
 
     const res = await DELETE(new NextRequest("http://localhost"), {
@@ -193,7 +191,7 @@ describe("DELETE /api/customers/[id]/insured-objects/[objectId]", () => {
   });
 
   it("returns 400 when object belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetInsuredObjectById.mockResolvedValue({
       ...insuredObject,
       customerId: "other-customer",
@@ -210,7 +208,7 @@ describe("DELETE /api/customers/[id]/insured-objects/[objectId]", () => {
   });
 
   it("returns 204 when object deleted", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetInsuredObjectById.mockResolvedValue(insuredObject);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockDeleteInsuredObject.mockResolvedValue(true);

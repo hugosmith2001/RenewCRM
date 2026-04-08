@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CustomerWithOwner } from "@/modules/customers";
 import {
@@ -12,15 +12,12 @@ import {
   formSelectClasses,
 } from "@/components/forms";
 
-type UserOption = { id: string; name: string | null; email: string };
-
 type Props =
   | { mode: "create" }
   | { mode: "edit"; customer: CustomerWithOwner };
 
 export function CustomerForm(props: Props) {
   const router = useRouter();
-  const [users, setUsers] = useState<UserOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,15 +29,7 @@ export function CustomerForm(props: Props) {
   const [email, setEmail] = useState(customer?.email ?? "");
   const [phone, setPhone] = useState(customer?.phone ?? "");
   const [address, setAddress] = useState(customer?.address ?? "");
-  const [ownerBrokerId, setOwnerBrokerId] = useState(customer?.ownerBrokerId ?? "");
   const [status, setStatus] = useState<"ACTIVE" | "INACTIVE" | "PROSPECT">(customer?.status ?? "ACTIVE");
-
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.ok ? res.json() : [])
-      .then(setUsers)
-      .catch(() => setUsers([]));
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,7 +42,6 @@ export function CustomerForm(props: Props) {
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
         address: address.trim() || undefined,
-        ownerBrokerId: ownerBrokerId || null,
         status,
       };
       if (isEdit && customer) {
@@ -158,21 +146,6 @@ export function CustomerForm(props: Props) {
             onChange={(e) => setAddress(e.target.value)}
             className={formInputClasses}
           />
-        </FormField>
-        <FormField id="ownerBrokerId" label="Owner broker">
-          <select
-            id="ownerBrokerId"
-            value={ownerBrokerId}
-            onChange={(e) => setOwnerBrokerId(e.target.value)}
-            className={formSelectClasses}
-          >
-            <option value="">— None —</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name ?? u.email}
-              </option>
-            ))}
-          </select>
         </FormField>
         <FormActions
           submitLabel={isEdit ? "Save changes" : "Create customer"}

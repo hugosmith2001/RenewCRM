@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getContactById, setPrimaryContact } from "@/modules/contacts";
 import { logAuditEvent } from "@/modules/audit";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string; contactId: string }> };
 
 export async function POST(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, contactId } = await params;
     const contact = await getContactById(user.tenantId, contactId);
     if (!contact) {

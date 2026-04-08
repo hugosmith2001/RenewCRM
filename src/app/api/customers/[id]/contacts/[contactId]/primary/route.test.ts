@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/customers/[id]/contacts/[contactId]/primary/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -13,10 +12,10 @@ vi.mock("@/modules/contacts", () => ({
   setPrimaryContact: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getContactById, setPrimaryContact } = await import("@/modules/contacts");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetContactById = vi.mocked(getContactById);
 const mockSetPrimaryContact = vi.mocked(setPrimaryContact);
 const mockAssertTenantAccess = vi.mocked(assertTenantAccess);
@@ -26,7 +25,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -60,7 +58,7 @@ beforeEach(() => {
  */
 describe("POST /api/customers/[id]/contacts/[contactId]/primary", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await POST(new NextRequest("http://localhost"), {
       params: params(customerId, contactId),
@@ -70,20 +68,8 @@ describe("POST /api/customers/[id]/contacts/[contactId]/primary", () => {
     expect(mockSetPrimaryContact).not.toHaveBeenCalled();
   });
 
-  it("returns 403 when user lacks role", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Forbidden"));
-
-    const res = await POST(new NextRequest("http://localhost"), {
-      params: params(customerId, contactId),
-    });
-
-    expect(res.status).toBe(403);
-    const body = await res.json();
-    expect(body.error).toBe("Forbidden");
-  });
-
   it("returns 404 when contact not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue(null);
 
     const res = await POST(new NextRequest("http://localhost"), {
@@ -97,7 +83,7 @@ describe("POST /api/customers/[id]/contacts/[contactId]/primary", () => {
   });
 
   it("returns 400 when contact belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue({
       ...contact,
       customerId: "other-customer",
@@ -114,7 +100,7 @@ describe("POST /api/customers/[id]/contacts/[contactId]/primary", () => {
   });
 
   it("returns 200 and contact with isPrimary true on success", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue(contact);
     mockAssertTenantAccess.mockImplementation(() => {});
     const updated = { ...contact, isPrimary: true };

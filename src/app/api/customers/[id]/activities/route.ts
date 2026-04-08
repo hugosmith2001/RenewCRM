@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
 import { listActivitiesByCustomerId, createActivity } from "@/modules/activities";
 import { logAuditEvent } from "@/modules/audit";
 import { createActivitySchema } from "@/lib/validations/activities";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const user = await requireAuth();
     const { id: customerId } = await params;
     const customer = await getCustomerById(user.tenantId, customerId);
     if (!customer) {
@@ -27,7 +26,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function POST(request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId } = await params;
     const customer = await getCustomerById(user.tenantId, customerId);
     if (!customer) {

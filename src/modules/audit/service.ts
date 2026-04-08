@@ -15,8 +15,7 @@ export type AuditEntityType =
   | "Policy"
   | "Document"
   | "Activity"
-  | "Task"
-  | "DsarRequest";
+  | "Task";
 
 export type LogAuditInput = {
   tenantId: string;
@@ -41,15 +40,12 @@ const ALLOWED_AUDIT_METADATA_KEYS = new Set([
   "activityId",
   "insurerId",
   "objectId",
-  "dsarRequestId",
   "subjectId",
   // Non-PII enums/flags
   "status",
   "type",
   "documentType",
   "isPrimary",
-  "requestType",
-  "subjectType",
   "actionType",
 ]);
 

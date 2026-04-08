@@ -26,7 +26,6 @@ async function main() {
       passwordHash,
       sessionVersion: 0,
       isActive: true,
-      role: "ADMIN",
       name: "Demo Admin",
     },
     create: {
@@ -35,7 +34,6 @@ async function main() {
       passwordHash,
       sessionVersion: 0,
       name: "Demo Admin",
-      role: "ADMIN",
     },
   });
 

@@ -1,19 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/audit/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
 }));
 
 vi.mock("@/modules/audit", () => ({
   listAuditEvents: vi.fn(),
 }));
 
-const { requireRole } = await import("@/modules/auth");
+const { requireAuth } = await import("@/modules/auth");
 const { listAuditEvents } = await import("@/modules/audit");
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockListAuditEvents = vi.mocked(listAuditEvents);
 
 const authUser = {
@@ -21,7 +20,6 @@ const authUser = {
   email: "admin@tenant.local",
   name: "Admin",
   tenantId: "tenant-1",
-  role: Role.ADMIN,
 };
 
 beforeEach(() => {
@@ -39,8 +37,8 @@ describe("GET /api/audit", () => {
     return new NextRequest(url);
   }
 
-  it("returns 401 when requireRole throws Unauthorized", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+  it("returns 401 when not authenticated", async () => {
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(request());
 
@@ -50,19 +48,8 @@ describe("GET /api/audit", () => {
     expect(mockListAuditEvents).not.toHaveBeenCalled();
   });
 
-  it("returns 403 when requireRole throws Forbidden", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Forbidden"));
-
-    const res = await GET(request());
-
-    expect(res.status).toBe(403);
-    const body = await res.json();
-    expect(body).toEqual({ error: "Forbidden" });
-    expect(mockListAuditEvents).not.toHaveBeenCalled();
-  });
-
   it("returns 400 when query validation fails", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
 
     const res = await GET(request("http://localhost/api/audit?entityType=Invalid"));
 
@@ -74,7 +61,7 @@ describe("GET /api/audit", () => {
   });
 
   it("returns 400 when limit exceeds 100", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
 
     const res = await GET(request("http://localhost/api/audit?limit=101"));
 
@@ -83,7 +70,7 @@ describe("GET /api/audit", () => {
   });
 
   it("returns 200 and events/total when authenticated with valid query", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     const events = [
       {
         id: "ev-1",
@@ -110,7 +97,7 @@ describe("GET /api/audit", () => {
   });
 
   it("passes parsed query (entityType, action, page, limit) to listAuditEvents", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockListAuditEvents.mockResolvedValue({ events: [], total: 0 });
 
     await GET(
@@ -127,15 +114,14 @@ describe("GET /api/audit", () => {
     });
   });
 
-  it("allows BROKER to access audit (requireRole called with ADMIN and BROKER)", async () => {
-    const broker = { ...authUser, role: Role.BROKER };
-    mockRequireRole.mockResolvedValue(broker);
+  it("allows authenticated user to access audit", async () => {
+    mockRequireAuth.mockResolvedValue(authUser);
     mockListAuditEvents.mockResolvedValue({ events: [], total: 0 });
 
     const res = await GET(request());
 
     expect(res.status).toBe(200);
-    expect(mockRequireRole).toHaveBeenCalledWith([Role.ADMIN, Role.BROKER]);
+    expect(mockRequireAuth).toHaveBeenCalled();
     expect(mockListAuditEvents).toHaveBeenCalledWith("tenant-1", expect.any(Object));
   });
 });

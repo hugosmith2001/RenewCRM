@@ -18,6 +18,14 @@ export default async function DataProcessingSettingsPage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <Link
+          href="/dashboard/settings/privacy"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Privacy &amp; compliance
+        </Link>
+      </div>
       <DetailSection title="Data processing overview (tenant admins)">
         <div className="space-y-4 text-sm text-muted-foreground">
           <p className="text-foreground">
@@ -78,22 +86,58 @@ export default async function DataProcessingSettingsPage() {
           </p>
           <ul className={sectionListClasses}>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Lawful basis</span>: `docs/LAWFUL_BASIS.md`
+              <span className="font-medium text-foreground">Lawful basis</span>:{" "}
+              <Link
+                className="font-mono underline underline-offset-4 hover:text-foreground"
+                href="/dashboard/settings/docs/LAWFUL_BASIS.md"
+              >
+                docs/LAWFUL_BASIS.md
+              </Link>
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Cookies</span>: `docs/COOKIE_NOTICE.md`
+              <span className="font-medium text-foreground">Cookies</span>:{" "}
+              <Link
+                className="font-mono underline underline-offset-4 hover:text-foreground"
+                href="/dashboard/settings/docs/COOKIE_NOTICE.md"
+              >
+                docs/COOKIE_NOTICE.md
+              </Link>
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Subprocessors</span>: `docs/SUBPROCESSORS.md`
+              <span className="font-medium text-foreground">Subprocessors</span>:{" "}
+              <Link
+                className="font-mono underline underline-offset-4 hover:text-foreground"
+                href="/dashboard/settings/docs/SUBPROCESSORS.md"
+              >
+                docs/SUBPROCESSORS.md
+              </Link>
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Auth/security model</span>: `docs/AUTH_SECURITY.md`
+              <span className="font-medium text-foreground">Auth/security model</span>:{" "}
+              <Link
+                className="font-mono underline underline-offset-4 hover:text-foreground"
+                href="/dashboard/settings/docs/AUTH_SECURITY.md"
+              >
+                docs/AUTH_SECURITY.md
+              </Link>
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Storage security</span>: `docs/STORAGE_SECURITY.md`
+              <span className="font-medium text-foreground">Storage security</span>:{" "}
+              <Link
+                className="font-mono underline underline-offset-4 hover:text-foreground"
+                href="/dashboard/settings/docs/STORAGE_SECURITY.md"
+              >
+                docs/STORAGE_SECURITY.md
+              </Link>
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">RoPA (draft)</span>: `docs/gdpr/ROPA.md`
+              <span className="font-medium text-foreground">RoPA (draft)</span>:{" "}
+              <Link
+                className="font-mono underline underline-offset-4 hover:text-foreground"
+                href="/dashboard/settings/docs/gdpr/ROPA.md"
+              >
+                docs/gdpr/ROPA.md
+              </Link>
             </li>
           </ul>
           <p>

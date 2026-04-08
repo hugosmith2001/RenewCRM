@@ -6,11 +6,7 @@ import { prisma } from "@/lib/db";
 import type { Task, TaskPriority, TaskStatus } from "@prisma/client";
 import type { CreateTaskInput, UpdateTaskInput } from "@/lib/validations/tasks";
 
-export type TaskWithAssignee = Task & {
-  assignedTo: { id: string; name: string | null; email: string } | null;
-};
-
-export type TaskForWorkQueue = TaskWithAssignee & {
+export type TaskForWorkQueue = Task & {
   customer: { id: string; name: string };
 };
 
@@ -19,7 +15,6 @@ export async function listTasksForTenant(tenantId: string): Promise<TaskForWorkQ
     where: { tenantId },
     include: {
       customer: { select: { id: true, name: true } },
-      assignedTo: { select: { id: true, name: true, email: true } },
     },
     orderBy: [
       // Open first (PENDING, IN_PROGRESS), then DONE, CANCELLED last
@@ -33,7 +28,7 @@ export async function listTasksForTenant(tenantId: string): Promise<TaskForWorkQ
 export async function listTasksByCustomerId(
   tenantId: string,
   customerId: string
-): Promise<TaskWithAssignee[]> {
+): Promise<Task[]> {
   const customer = await prisma.customer.findFirst({
     where: { id: customerId, tenantId, deletedAt: null },
     select: { id: true },
@@ -42,23 +37,17 @@ export async function listTasksByCustomerId(
 
   return prisma.task.findMany({
     where: { customerId, tenantId },
-    include: {
-      assignedTo: { select: { id: true, name: true, email: true } },
-    },
     orderBy: [{ status: "asc" }, { dueDate: "asc" }],
-  }) as Promise<TaskWithAssignee[]>;
+  }) as Promise<Task[]>;
 }
 
 export async function getTaskById(
   tenantId: string,
   taskId: string
-): Promise<TaskWithAssignee | null> {
+): Promise<Task | null> {
   return prisma.task.findFirst({
     where: { id: taskId, tenantId },
-    include: {
-      assignedTo: { select: { id: true, name: true, email: true } },
-    },
-  }) as Promise<TaskWithAssignee | null>;
+  }) as Promise<Task | null>;
 }
 
 export async function createTask(
@@ -72,19 +61,6 @@ export async function createTask(
   });
   if (!customer) return null;
 
-  const assignedToUserId =
-    data.assignedToUserId === undefined || data.assignedToUserId === ""
-      ? null
-      : data.assignedToUserId;
-
-  if (assignedToUserId) {
-    const assignee = await prisma.user.findFirst({
-      where: { id: assignedToUserId, tenantId },
-      select: { id: true },
-    });
-    if (!assignee) return null;
-  }
-
   return prisma.task.create({
     data: {
       tenantId,
@@ -94,7 +70,6 @@ export async function createTask(
       dueDate: data.dueDate ?? null,
       priority: (data.priority as TaskPriority) ?? "MEDIUM",
       status: (data.status as TaskStatus) ?? "PENDING",
-      assignedToUserId: assignedToUserId ?? null,
     },
   });
 }
@@ -109,17 +84,6 @@ export async function updateTask(
   });
   if (!existing) return null;
 
-  if (data.assignedToUserId !== undefined) {
-    const id = data.assignedToUserId === "" ? null : data.assignedToUserId;
-    if (id) {
-      const assignee = await prisma.user.findFirst({
-        where: { id, tenantId },
-        select: { id: true },
-      });
-      if (!assignee) return null;
-    }
-  }
-
   return prisma.task.update({
     where: { id: taskId },
     data: {
@@ -128,9 +92,6 @@ export async function updateTask(
       ...(data.dueDate !== undefined && { dueDate: data.dueDate ?? null }),
       ...(data.priority !== undefined && { priority: data.priority as TaskPriority }),
       ...(data.status !== undefined && { status: data.status as TaskStatus }),
-      ...(data.assignedToUserId !== undefined && {
-        assignedToUserId: data.assignedToUserId === "" ? null : data.assignedToUserId ?? null,
-      }),
     },
   });
 }

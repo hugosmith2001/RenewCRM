@@ -5,19 +5,13 @@ import { Button, ButtonLink } from "@/components/ui";
 import { FormField, formInputClasses, formSelectClasses } from "@/components/forms";
 import { ACTIVITY_TYPE_LABELS } from "@/lib/constants/labels";
 
-type User = { id: string; name: string | null; email: string };
-
 type Props = {
-  users: User[];
   initialType?: string;
-  initialBroker?: string;
   initialRange?: string;
 };
 
 export function ActivityFilters({
-  users,
   initialType = "",
-  initialBroker = "",
   initialRange = "",
 }: Props) {
   const router = useRouter();
@@ -26,17 +20,15 @@ export function ActivityFilters({
     e.preventDefault();
     const form = e.currentTarget;
     const type = (form.elements.namedItem("type") as HTMLSelectElement)?.value || "";
-    const broker = (form.elements.namedItem("broker") as HTMLSelectElement)?.value || "";
     const range = (form.elements.namedItem("range") as HTMLSelectElement)?.value || "";
     const params = new URLSearchParams();
     params.set("page", "1");
     if (type) params.set("type", type);
-    if (broker) params.set("broker", broker);
     if (range) params.set("range", range);
     router.push(`/dashboard/activities?${params.toString()}`);
   }
 
-  const hasFilters = initialType || initialBroker || initialRange;
+  const hasFilters = initialType || initialRange;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-filter-control">
@@ -52,23 +44,6 @@ export function ActivityFilters({
             {Object.entries(ACTIVITY_TYPE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
-              </option>
-            ))}
-          </select>
-        </FormField>
-      </div>
-      <div className="min-w-[180px]">
-        <FormField id="broker" label="Broker">
-          <select
-            id="broker"
-            name="broker"
-            defaultValue={initialBroker}
-            className={formSelectClasses}
-          >
-            <option value="">All</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name || u.email}
               </option>
             ))}
           </select>

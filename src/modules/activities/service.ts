@@ -3,7 +3,7 @@
  * Activity CRUD scoped by tenant and customer (calls, meetings, notes, etc.).
  */
 import { prisma } from "@/lib/db";
-import type { Activity, ActivityType, Role } from "@prisma/client";
+import type { Activity, ActivityType } from "@prisma/client";
 import type { CreateActivityInput, UpdateActivityInput } from "@/lib/validations/activities";
 
 export type ActivityWithCreator = Activity & {
@@ -16,23 +16,20 @@ export type ActivityForFeed = ActivityWithCreator & {
 
 export type ListActivitiesForTenantFilters = {
   type?: ActivityType;
-  createdById?: string;
   from?: Date;
   to?: Date;
   limit?: number;
   offset?: number;
-  viewerRole?: Role;
 };
 
 export async function listActivitiesForTenant(
   tenantId: string,
   filters: ListActivitiesForTenantFilters = {}
 ): Promise<{ activities: ActivityForFeed[]; total: number }> {
-  const { type, createdById, from, to, limit = 100, offset = 0, viewerRole } = filters;
+  const { type, from, to, limit = 100, offset = 0 } = filters;
   const where = {
     tenantId,
     ...(type && { type }),
-    ...(createdById && { createdById }),
     ...((from || to) && {
       createdAt: {
         ...(from && { gte: from }),
@@ -55,14 +52,7 @@ export async function listActivitiesForTenant(
     prisma.activity.count({ where }),
   ]);
 
-  // Phase 2 (GDPR): Reduce broad exposure of free-text in tenant-wide feeds for STAFF.
-  // Staff can still view activity content in the customer workspace where it's typically necessary.
-  const safeActivities =
-    viewerRole === "STAFF"
-      ? activities.map((a) => ({ ...a, subject: null }))
-      : activities;
-
-  return { activities: safeActivities, total };
+  return { activities, total };
 }
 
 export async function listActivitiesByCustomerId(

@@ -51,7 +51,7 @@ export default async function SettingsLayout({ children }: SettingsLayoutProps) 
               href="/dashboard/settings/privacy"
               className="text-sm text-muted-foreground hover:text-foreground"
             >
-              Privacy
+              Privacy &amp; compliance
             </Link>
           </div>
           {isAdmin && (
@@ -65,28 +65,6 @@ export default async function SettingsLayout({ children }: SettingsLayoutProps) 
                   className="text-sm text-muted-foreground hover:text-foreground"
                 >
                   Brokerage
-                </Link>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Legal
-                </span>
-                <Link
-                  href="/dashboard/settings/data-processing"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Data processing
-                </Link>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Admin
-                </span>
-                <Link
-                  href="/dashboard/settings/admin/dsar"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  DSAR
                 </Link>
               </div>
             </>

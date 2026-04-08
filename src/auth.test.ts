@@ -43,7 +43,6 @@ describe("auth JWT callback (session invalidation)", () => {
     mockUserFindUnique.mockResolvedValue({
       isActive: false,
       tenantId: "t1",
-      role: "ADMIN",
       sessionVersion: 1,
     });
 
@@ -67,12 +66,11 @@ describe("auth JWT callback (session invalidation)", () => {
     mockUserFindUnique.mockResolvedValue({
       isActive: true,
       tenantId: "t1",
-      role: "ADMIN",
       sessionVersion: 2,
     });
 
     const out = await opts.callbacks.jwt({
-      token: { id: "u1", tenantId: "t1", role: "ADMIN", sessionVersion: 1 },
+      token: { id: "u1", tenantId: "t1", sessionVersion: 1 },
       user: undefined,
       account: undefined,
       profile: undefined,
@@ -83,7 +81,7 @@ describe("auth JWT callback (session invalidation)", () => {
     expect(out).toEqual({});
   });
 
-  it("refreshes tenantId/role/sessionVersion from DB when still valid", async () => {
+  it("refreshes tenantId/sessionVersion from DB when still valid", async () => {
     await import("@/auth");
     const opts = (globalThis as any).__captured_nextauth_opts__;
     if (!opts?.callbacks?.jwt) throw new Error("Missing jwt callback");
@@ -91,12 +89,11 @@ describe("auth JWT callback (session invalidation)", () => {
     mockUserFindUnique.mockResolvedValue({
       isActive: true,
       tenantId: "t-new",
-      role: "BROKER",
       sessionVersion: 7,
     });
 
     const out = await opts.callbacks.jwt({
-      token: { id: "u1", tenantId: "t-old", role: "ADMIN", sessionVersion: 7 },
+      token: { id: "u1", tenantId: "t-old", sessionVersion: 7 },
       user: undefined,
       account: undefined,
       profile: undefined,
@@ -107,7 +104,6 @@ describe("auth JWT callback (session invalidation)", () => {
     expect(out).toMatchObject({
       id: "u1",
       tenantId: "t-new",
-      role: "BROKER",
       sessionVersion: 7,
     });
   });

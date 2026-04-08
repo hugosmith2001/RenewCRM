@@ -9,7 +9,6 @@ export const auditEntityTypeEnum = z.enum([
   "Document",
   "Activity",
   "Task",
-  "DsarRequest",
 ]);
 
 export const auditActionEnum = z.enum(["CREATE", "UPDATE", "UPLOAD", "DELETE"]);

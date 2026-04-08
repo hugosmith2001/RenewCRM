@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/customers/[id]/documents/[documentId]/download/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 import { Readable } from "stream";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -14,10 +13,10 @@ vi.mock("@/modules/documents", () => ({
   getDocumentStream: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getDocumentById, getDocumentStream } = await import("@/modules/documents");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetDocumentById = vi.mocked(getDocumentById);
 const mockGetDocumentStream = vi.mocked(getDocumentStream);
 const mockAssertTenantAccess = vi.mocked(assertTenantAccess);
@@ -27,7 +26,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -62,7 +60,7 @@ beforeEach(() => {
  */
 describe("GET /api/customers/[id]/documents/[documentId]/download", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId, documentId),
@@ -73,7 +71,7 @@ describe("GET /api/customers/[id]/documents/[documentId]/download", () => {
   });
 
   it("returns 404 when document not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue(null);
 
     const res = await GET(new NextRequest("http://localhost"), {
@@ -87,7 +85,7 @@ describe("GET /api/customers/[id]/documents/[documentId]/download", () => {
   });
 
   it("returns 400 when document belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue({
       ...document,
       customerId: "other-customer",
@@ -104,7 +102,7 @@ describe("GET /api/customers/[id]/documents/[documentId]/download", () => {
   });
 
   it("returns 200 with stream and correct headers when document exists", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue(document);
     mockAssertTenantAccess.mockImplementation(() => {});
     const nodeStream = Readable.from(Buffer.from("pdf content"));
@@ -126,7 +124,7 @@ describe("GET /api/customers/[id]/documents/[documentId]/download", () => {
   });
 
   it("returns 404 when storage throws File not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue(document);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockGetDocumentStream.mockImplementation(() => {

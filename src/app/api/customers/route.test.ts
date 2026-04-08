@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "@/app/api/customers/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
 }));
 
 vi.mock("@/modules/customers", () => ({
@@ -16,10 +15,10 @@ vi.mock("@/modules/audit", () => ({
   logAuditEvent: vi.fn(),
 }));
 
-const { requireRole } = await import("@/modules/auth");
+const { requireAuth } = await import("@/modules/auth");
 const { listCustomers, createCustomer } = await import("@/modules/customers");
 const { logAuditEvent } = await import("@/modules/audit");
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockListCustomers = vi.mocked(listCustomers);
 const mockCreateCustomer = vi.mocked(createCustomer);
 const mockLogAuditEvent = vi.mocked(logAuditEvent);
@@ -29,7 +28,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 beforeEach(() => {
@@ -49,7 +47,7 @@ describe("GET /api/customers", () => {
   }
 
   it("returns 401 when requireRole throws Unauthorized", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(request());
 
@@ -58,18 +56,8 @@ describe("GET /api/customers", () => {
     expect(body).toEqual({ error: "Unauthorized" });
   });
 
-  it("returns 403 when requireRole throws Forbidden", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Forbidden"));
-
-    const res = await GET(request());
-
-    expect(res.status).toBe(403);
-    const body = await res.json();
-    expect(body).toEqual({ error: "Forbidden" });
-  });
-
   it("returns 200 and customers/total when authenticated with valid query", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     const customers = [
       {
         id: "c1",
@@ -79,11 +67,9 @@ describe("GET /api/customers", () => {
         email: "a@b.com",
         phone: null,
         address: null,
-        ownerBrokerId: null,
         status: "ACTIVE",
         createdAt: new Date(),
         updatedAt: new Date(),
-        owner: null,
       },
     ];
     mockListCustomers.mockResolvedValue({ customers, total: 1 });
@@ -100,7 +86,7 @@ describe("GET /api/customers", () => {
   });
 
   it("returns 400 when query validation fails", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockListCustomers.mockResolvedValue({ customers: [], total: 0 });
 
     const res = await GET(request("http://localhost/api/customers?limit=999"));
@@ -115,7 +101,7 @@ describe("GET /api/customers", () => {
 
 describe("POST /api/customers", () => {
   it("returns 401 when requireRole throws Unauthorized", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await POST(
       new NextRequest("http://localhost/api/customers", {
@@ -128,21 +114,8 @@ describe("POST /api/customers", () => {
     expect(mockCreateCustomer).not.toHaveBeenCalled();
   });
 
-  it("returns 403 when user is STAFF (only ADMIN/BROKER can create)", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Forbidden"));
-
-    const res = await POST(
-      new NextRequest("http://localhost/api/customers", {
-        method: "POST",
-        body: JSON.stringify({ name: "Acme" }),
-      })
-    );
-
-    expect(res.status).toBe(403);
-  });
-
   it("returns 400 when body validation fails", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
 
     const res = await POST(
       new NextRequest("http://localhost/api/customers", {
@@ -159,7 +132,7 @@ describe("POST /api/customers", () => {
   });
 
   it("returns 201 and created customer when body is valid", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     const created = {
       id: "cust-new",
       tenantId: "tenant-1",
@@ -168,7 +141,6 @@ describe("POST /api/customers", () => {
       email: "new@corp.com",
       phone: null,
       address: null,
-      ownerBrokerId: null,
       status: "ACTIVE",
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -195,7 +167,7 @@ describe("POST /api/customers", () => {
   });
 
   it("calls logAuditEvent with CREATE after successful create (Phase 8 audit)", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     const created = {
       id: "cust-audit-test",
       tenantId: "tenant-1",
@@ -204,7 +176,6 @@ describe("POST /api/customers", () => {
       email: "audit@test.com",
       phone: null as string | null,
       address: null as string | null,
-      ownerBrokerId: null as string | null,
       status: "ACTIVE" as const,
       createdAt: new Date(),
       updatedAt: new Date(),

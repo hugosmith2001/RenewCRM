@@ -8,7 +8,6 @@ import {
   FormActions,
   SensitiveDataWarning,
   formInputClasses,
-  formSelectClasses,
 } from "@/components/forms";
 
 const TASK_PRIORITY_LABELS: Record<string, string> = {
@@ -24,15 +23,12 @@ const TASK_STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelled",
 };
 
-type UserOption = { id: string; name: string | null; email: string };
-
 export type TaskFormData = {
   title: string;
   description: string;
   dueDate: string;
   priority: string;
   status: string;
-  assignedToUserId: string;
 };
 
 type Props = {
@@ -44,7 +40,6 @@ type Props = {
     dueDate: string | null;
     priority: string;
     status: string;
-    assignedToUserId: string | null;
   } | null;
   onSuccess: () => void;
   onCancel: () => void;
@@ -56,7 +51,6 @@ const emptyForm: TaskFormData = {
   dueDate: "",
   priority: "MEDIUM",
   status: "PENDING",
-  assignedToUserId: "",
 };
 
 function formatDateForInput(date: string | null): string {
@@ -67,18 +61,10 @@ function formatDateForInput(date: string | null): string {
 
 export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
   const [form, setForm] = useState<TaskFormData>(emptyForm);
-  const [users, setUsers] = useState<UserOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEdit = !!task;
-
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.ok ? res.json() : [])
-      .then(setUsers)
-      .catch(() => setUsers([]));
-  }, []);
 
   useEffect(() => {
     if (task) {
@@ -88,7 +74,6 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
         dueDate: formatDateForInput(task.dueDate),
         priority: task.priority,
         status: task.status,
-        assignedToUserId: task.assignedToUserId ?? "",
       });
     } else {
       setForm(emptyForm);
@@ -106,7 +91,6 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
         dueDate: form.dueDate || undefined,
         priority: form.priority,
         status: form.status,
-        assignedToUserId: form.assignedToUserId || undefined,
       };
       if (isEdit && task) {
         const res = await fetch(`/api/customers/${customerId}/tasks/${task.id}`, {
@@ -195,26 +179,11 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
               id="task-status"
               value={form.status}
               onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
-              className={formSelectClasses}
+              className={formInputClasses}
             >
               {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
-                </option>
-              ))}
-            </select>
-          </FormField>
-          <FormField id="task-assignee" label="Assign to">
-            <select
-              id="task-assignee"
-              value={form.assignedToUserId}
-              onChange={(e) => setForm((p) => ({ ...p, assignedToUserId: e.target.value }))}
-              className={formSelectClasses}
-            >
-              <option value="">— Unassigned —</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name ?? u.email}
                 </option>
               ))}
             </select>

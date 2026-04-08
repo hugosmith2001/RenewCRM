@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, PATCH, DELETE } from "@/app/api/customers/[id]/tasks/[taskId]/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -14,10 +13,10 @@ vi.mock("@/modules/tasks", () => ({
   deleteTask: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getTaskById, updateTask, deleteTask } = await import("@/modules/tasks");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetTaskById = vi.mocked(getTaskById);
 const mockUpdateTask = vi.mocked(updateTask);
 const mockDeleteTask = vi.mocked(deleteTask);
@@ -28,7 +27,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -42,8 +40,6 @@ const task = {
   dueDate: new Date("2025-04-01"),
   priority: "HIGH" as const,
   status: "PENDING" as const,
-  assignedToUserId: "user-1",
-  assignedTo: { id: "user-1", name: "Broker", email: "broker@tenant.local" },
 };
 
 function params(custId: string, tId: string) {
@@ -61,7 +57,7 @@ beforeEach(() => {
  */
 describe("GET /api/customers/[id]/tasks/[taskId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId, taskId),
@@ -72,7 +68,7 @@ describe("GET /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 404 when task not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue(null);
 
     const res = await GET(new NextRequest("http://localhost"), {
@@ -86,7 +82,7 @@ describe("GET /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 400 when task belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue({
       ...task,
       customerId: "other-customer",
@@ -102,7 +98,7 @@ describe("GET /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 200 and task when found and customer matches", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue(task);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -120,7 +116,7 @@ describe("GET /api/customers/[id]/tasks/[taskId]", () => {
 
 describe("PATCH /api/customers/[id]/tasks/[taskId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await PATCH(
       new NextRequest("http://localhost", {
@@ -135,7 +131,7 @@ describe("PATCH /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 404 when task not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue(null);
 
     const res = await PATCH(
@@ -151,7 +147,7 @@ describe("PATCH /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 400 when task belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue({
       ...task,
       customerId: "other-customer",
@@ -172,7 +168,7 @@ describe("PATCH /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 400 when body validation fails (empty title)", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue(task);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -191,7 +187,7 @@ describe("PATCH /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 200 and updated task when valid", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue(task);
     mockAssertTenantAccess.mockImplementation(() => {});
     const updated = { ...task, title: "Updated title", status: "DONE" as const };
@@ -223,7 +219,7 @@ describe("PATCH /api/customers/[id]/tasks/[taskId]", () => {
 
 describe("DELETE /api/customers/[id]/tasks/[taskId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await DELETE(new NextRequest("http://localhost"), {
       params: params(customerId, taskId),
@@ -234,7 +230,7 @@ describe("DELETE /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 404 when task not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue(null);
 
     const res = await DELETE(new NextRequest("http://localhost"), {
@@ -246,7 +242,7 @@ describe("DELETE /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 400 when task belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue({
       ...task,
       customerId: "other-customer",
@@ -263,7 +259,7 @@ describe("DELETE /api/customers/[id]/tasks/[taskId]", () => {
   });
 
   it("returns 204 when task deleted", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetTaskById.mockResolvedValue(task);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockDeleteTask.mockResolvedValue(true);

@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getContactById, updateContact, deleteContact } from "@/modules/contacts";
 import { logAuditEvent } from "@/modules/audit";
 import { updateContactSchema } from "@/lib/validations/contacts";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string; contactId: string }> };
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, contactId } = await params;
     const contact = await getContactById(user.tenantId, contactId);
     if (!contact) {
@@ -47,7 +46,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, contactId } = await params;
     const contact = await getContactById(user.tenantId, contactId);
     if (!contact) {

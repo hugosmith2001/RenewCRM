@@ -4,10 +4,9 @@ import {
   DELETE,
 } from "@/app/api/customers/[id]/documents/[documentId]/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -16,10 +15,10 @@ vi.mock("@/modules/documents", () => ({
   deleteDocument: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getDocumentById, deleteDocument } = await import("@/modules/documents");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetDocumentById = vi.mocked(getDocumentById);
 const mockDeleteDocument = vi.mocked(deleteDocument);
 const mockAssertTenantAccess = vi.mocked(assertTenantAccess);
@@ -29,7 +28,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -63,7 +61,7 @@ beforeEach(() => {
  */
 describe("GET /api/customers/[id]/documents/[documentId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId, documentId),
@@ -74,7 +72,7 @@ describe("GET /api/customers/[id]/documents/[documentId]", () => {
   });
 
   it("returns 404 when document not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue(null);
 
     const res = await GET(new NextRequest("http://localhost"), {
@@ -87,7 +85,7 @@ describe("GET /api/customers/[id]/documents/[documentId]", () => {
   });
 
   it("returns 400 when document belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue({
       ...document,
       customerId: "other-customer",
@@ -103,7 +101,7 @@ describe("GET /api/customers/[id]/documents/[documentId]", () => {
   });
 
   it("returns 200 and document when found and customer matches", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue(document);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -124,7 +122,7 @@ describe("GET /api/customers/[id]/documents/[documentId]", () => {
 
 describe("DELETE /api/customers/[id]/documents/[documentId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await DELETE(new NextRequest("http://localhost"), {
       params: params(customerId, documentId),
@@ -134,19 +132,8 @@ describe("DELETE /api/customers/[id]/documents/[documentId]", () => {
     expect(mockDeleteDocument).not.toHaveBeenCalled();
   });
 
-  it("returns 403 when STAFF (delete requires ADMIN or BROKER)", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Forbidden"));
-
-    const res = await DELETE(new NextRequest("http://localhost"), {
-      params: params(customerId, documentId),
-    });
-
-    expect(res.status).toBe(403);
-    expect(mockDeleteDocument).not.toHaveBeenCalled();
-  });
-
   it("returns 404 when document not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue(null);
 
     const res = await DELETE(new NextRequest("http://localhost"), {
@@ -160,7 +147,7 @@ describe("DELETE /api/customers/[id]/documents/[documentId]", () => {
   });
 
   it("returns 400 when document belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue({
       ...document,
       customerId: "other-customer",
@@ -177,7 +164,7 @@ describe("DELETE /api/customers/[id]/documents/[documentId]", () => {
   });
 
   it("returns 204 and calls deleteDocument when authorized", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetDocumentById.mockResolvedValue(document);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockDeleteDocument.mockResolvedValue(true);

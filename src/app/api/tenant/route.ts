@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth, requireRole } from "@/modules/auth";
-import { Role } from "@prisma/client";
+import { requireAuth } from "@/modules/auth";
 import { updateTenantSchema } from "@/lib/validations/settings";
 import { handleApiError } from "@/lib/api-error";
 
@@ -32,7 +31,7 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await requireRole([Role.ADMIN]);
+    const user = await requireAuth();
     const body = await request.json();
     const parsed = updateTenantSchema.safeParse(body);
 

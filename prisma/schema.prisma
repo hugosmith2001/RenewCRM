@@ -1,5 +1,5 @@
 // Safekeep CRM - Prisma Schema
-// Phase 1: Tenant, User, Role. Customers/policies in later phases.
+// Phase 1: Tenant, User. Customers/policies in later phases.
 
 generator client {
   provider = "prisma-client-js"
@@ -11,14 +11,8 @@ datasource db {
 }
 
 // ---------------------------------------------------------------------------
-// Phase 1: Auth, Tenants, Roles
+// Phase 1: Auth, Tenants
 // ---------------------------------------------------------------------------
-
-enum Role {
-  ADMIN   // full access within tenant
-  BROKER  // manage customers, policies, activities, tasks
-  STAFF   // limited read/write
-}
 
 model Tenant {
   id        String   @id @default(cuid())
@@ -37,9 +31,6 @@ model Tenant {
   activities     Activity[]
   tasks          Task[]
   auditEvents    AuditEvent[]
-  dsarRequests   DsarRequest[]
-  dsarActions    DsarRequestAction[]
-  dsarExports    DsarExport[]
   retentionOverrides RetentionPolicyOverride[]
 }
 
@@ -64,48 +55,6 @@ enum RetentionCategory {
   AUDIT_EVENT
 }
 
-// ---------------------------------------------------------------------------
-// Phase 3A: DSAR workflow foundation
-// ---------------------------------------------------------------------------
-
-enum DsarRequestType {
-  EXPORT
-  ERASE
-  RESTRICT
-}
-
-enum DsarSubjectType {
-  CUSTOMER
-  CONTACT
-  USER
-}
-
-enum DsarStatus {
-  PENDING
-  IN_REVIEW
-  APPROVED
-  PROCESSING
-  COMPLETED
-  FAILED
-  REJECTED
-}
-
-enum DsarActionType {
-  CREATED
-  STATUS_CHANGED
-  NOTE_ADDED
-  EXECUTION_STARTED
-  EXECUTION_COMPLETED
-  EXECUTION_FAILED
-}
-
-enum DsarExportStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
 model AuditEvent {
   id         String     @id @default(cuid())
   tenantId   String
@@ -123,82 +72,6 @@ model AuditEvent {
   @@index([tenantId, entityType, entityId])
 }
 
-model DsarRequest {
-  id              String          @id @default(cuid())
-  tenantId        String
-  requestType     DsarRequestType
-  subjectType     DsarSubjectType
-  subjectRefId    String
-  status          DsarStatus      @default(PENDING)
-  createdByUserId String
-  updatedByUserId String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  /**
-   * Operational-only notes. Avoid personal data; do not mirror subject content here.
-   * Used to track operator reasoning and non-PII processing details.
-   */
-  notes String? @db.Text
-
-  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  actions DsarRequestAction[]
-  export  DsarExport?
-
-  @@index([tenantId])
-  @@index([tenantId, createdAt(sort: Desc)])
-  @@index([tenantId, status])
-  @@index([tenantId, subjectType, subjectRefId])
-}
-
-model DsarRequestAction {
-  id            String          @id @default(cuid())
-  tenantId      String
-  dsarRequestId String
-  operatorUserId String
-  actionType    DsarActionType
-  fromStatus    DsarStatus?
-  toStatus      DsarStatus?
-  note          String?         @db.Text
-  createdAt     DateTime        @default(now())
-
-  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  dsarRequest DsarRequest @relation(fields: [dsarRequestId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@index([tenantId, dsarRequestId, createdAt(sort: Desc)])
-}
-
-model DsarExport {
-  id             String           @id @default(cuid())
-  tenantId       String
-  dsarRequestId  String           @unique
-  status         DsarExportStatus @default(PENDING)
-  formatVersion  Int              @default(1)
-  includeFiles   Boolean          @default(false)
-  /**
-   * Export payload (structured, shaped; not raw DB rows).
-   * Keep stable keys to support portability.
-   */
-  exportJson     Json?
-  /**
-   * Optional CSV summaries keyed by filename (e.g. "tasks.csv").
-   * Stored as JSON: { [filename]: csvString }.
-   */
-  exportCsv      Json?
-  error          String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  completedAt    DateTime?
-
-  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  dsarRequest DsarRequest @relation(fields: [dsarRequestId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@index([tenantId, status])
-  @@index([tenantId, completedAt(sort: Desc)])
-}
-
 model User {
   id           String   @id @default(cuid())
   email        String
@@ -212,7 +85,6 @@ model User {
   restrictedAt       DateTime?
   restrictedByUserId String?
   restrictionReason  String?  @db.Text
-  role         Role     @default(STAFF)
   tenantId     String
   /**
    * Session invalidation version.
@@ -223,8 +95,6 @@ model User {
   updatedAt    DateTime @updatedAt
 
   tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customersOwned   Customer[] @relation("CustomerOwner")
-  assignedTasks    Task[]     @relation("TaskAssignee")
   createdActivities Activity[] @relation("ActivityCreator")
 
   @@unique([tenantId, email])
@@ -255,7 +125,6 @@ model Customer {
   email          String?
   phone          String?
   address        String?
-  ownerBrokerId  String?
   status         CustomerStatus @default(ACTIVE)
   /**
    * Soft delete marker. Records are excluded from standard list/get flows.
@@ -278,7 +147,6 @@ model Customer {
   updatedAt      DateTime       @updatedAt
 
   tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  owner          User?          @relation("CustomerOwner", fields: [ownerBrokerId], references: [id], onDelete: SetNull)
   contacts       CustomerContact[]
   insuredObjects InsuredObject[]
   policies       Policy[]
@@ -346,16 +214,13 @@ model Task {
   dueDate          DateTime?     @db.Date
   priority         TaskPriority  @default(MEDIUM)
   status           TaskStatus    @default(PENDING)
-  assignedToUserId String?
 
   tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  assignedTo User?    @relation("TaskAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([customerId])
   @@index([tenantId, status])
-  @@index([assignedToUserId])
   @@index([dueDate])
 }
 

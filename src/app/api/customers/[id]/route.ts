@@ -1,24 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById, updateCustomer, deleteCustomer } from "@/modules/customers";
 import { logAuditEvent } from "@/modules/audit";
 import { updateCustomerSchema } from "@/lib/validations/customers";
 import { handleApiError } from "@/lib/api-error";
 import { isBlockedByRestriction } from "@/lib/restriction";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const user = await requireAuth();
     const { id } = await params;
     const customer = await getCustomerById(user.tenantId, id);
     if (!customer) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, customer.tenantId);
-    if (isBlockedByRestriction(user.role, customer)) {
+    if (isBlockedByRestriction(customer)) {
       return NextResponse.json({ error: "Customer is restricted" }, { status: 423 });
     }
     return NextResponse.json(customer);
@@ -29,14 +28,14 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id } = await params;
     const existing = await getCustomerById(user.tenantId, id);
     if (!existing) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, existing.tenantId);
-    if (isBlockedByRestriction(user.role, existing)) {
+    if (isBlockedByRestriction(existing)) {
       return NextResponse.json({ error: "Customer is restricted" }, { status: 423 });
     }
     const body = await request.json();
@@ -63,14 +62,14 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id } = await params;
     const existing = await getCustomerById(user.tenantId, id);
     if (!existing) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, existing.tenantId);
-    if (isBlockedByRestriction(user.role, existing)) {
+    if (isBlockedByRestriction(existing)) {
       return NextResponse.json({ error: "Customer is restricted" }, { status: 423 });
     }
     await deleteCustomer(user.tenantId, id);

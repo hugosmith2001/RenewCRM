@@ -39,7 +39,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           tenantId: user.tenantId,
-          role: user.role,
           sessionVersion: user.sessionVersion,
         };
       },
@@ -52,7 +51,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id as string;
         token.tenantId = (user as { tenantId: string }).tenantId;
-        token.role = (user as { role: string }).role;
         token.sessionVersion = (user as { sessionVersion: number }).sessionVersion;
         return token;
       }
@@ -65,7 +63,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           select: {
             isActive: true,
             tenantId: true,
-            role: true,
             sessionVersion: true,
           },
         });
@@ -77,9 +74,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return {};
         }
 
-        // Keep tenant/role authoritative from DB to avoid stale privilege.
+        // Keep tenant authoritative from DB to avoid stale session.
         token.tenantId = dbUser.tenantId;
-        token.role = dbUser.role;
         token.sessionVersion = dbUser.sessionVersion;
       }
 

@@ -1,17 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { createTaskSchema, updateTaskSchema } from "@/lib/validations/tasks";
 
-// Valid CUID format (25 chars, starts with c)
-const validCuid = "clh7k8q9r0000xyz00000000";
-
 /**
  * Phase 7: Task validation (Zod schemas).
  *
  * Covers:
- * - createTaskSchema: title required and max 500, optional description/dueDate/priority/status/assignedToUserId,
- *   priority/status defaults (MEDIUM, PENDING), empty-string coercion for description/dueDate/assignedToUserId,
- *   valid priority/status enums, reject empty title, invalid date, invalid cuid for assignee.
- * - updateTaskSchema: partial fields, dueDate nullable, assignedToUserId empty string -> unassigned.
+ * - createTaskSchema: title required and max 500, optional description/dueDate/priority/status,
+ *   priority/status defaults (MEDIUM, PENDING), empty-string coercion for description/dueDate,
+ *   valid priority/status enums, reject empty title, invalid date.
+ * - updateTaskSchema: partial fields, dueDate nullable.
  *
  * Does not cover: API routes, DB, or schema composition.
  * Edge cases not exercised: exact boundary lengths, timezone edge cases for dueDate.
@@ -26,7 +23,6 @@ describe("createTaskSchema", () => {
       expect(result.data.status).toBe("PENDING");
       expect(result.data.description).toBeUndefined();
       expect(result.data.dueDate).toBeUndefined();
-      expect(result.data.assignedToUserId).toBeUndefined();
     }
   });
 
@@ -37,7 +33,6 @@ describe("createTaskSchema", () => {
       dueDate: "2025-04-15",
       priority: "HIGH",
       status: "PENDING",
-      assignedToUserId: validCuid,
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -45,7 +40,6 @@ describe("createTaskSchema", () => {
       expect(result.data.description).toBe("Send quote before end of month");
       expect(result.data.priority).toBe("HIGH");
       expect(result.data.status).toBe("PENDING");
-      expect(result.data.assignedToUserId).toBe(validCuid);
       expect(result.data.dueDate).toBeInstanceOf(Date);
     }
   });
@@ -88,15 +82,6 @@ describe("createTaskSchema", () => {
     }
   });
 
-  it("coerces empty assignedToUserId to undefined (unassigned)", () => {
-    const result = createTaskSchema.safeParse({
-      title: "T",
-      assignedToUserId: "",
-    });
-    expect(result.success).toBe(true);
-    if (result.success) expect(result.data.assignedToUserId).toBeUndefined();
-  });
-
   it("rejects empty title", () => {
     expect(createTaskSchema.safeParse({ title: "" }).success).toBe(false);
   });
@@ -135,15 +120,6 @@ describe("createTaskSchema", () => {
     if (result.success) expect(result.data.dueDate).toBeUndefined();
   });
 
-  it("rejects invalid cuid for assignedToUserId", () => {
-    expect(
-      createTaskSchema.safeParse({ title: "T", assignedToUserId: "short" }).success
-    ).toBe(false);
-    expect(
-      createTaskSchema.safeParse({ title: "T", assignedToUserId: "x".repeat(30) }).success
-    ).toBe(false);
-  });
-
   it("rejects null/undefined body", () => {
     expect(createTaskSchema.safeParse(null).success).toBe(false);
     expect(createTaskSchema.safeParse(undefined).success).toBe(false);
@@ -179,12 +155,6 @@ describe("updateTaskSchema", () => {
     const result = updateTaskSchema.safeParse({ dueDate: null });
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.dueDate).toBeNull();
-  });
-
-  it("accepts assignedToUserId empty string (unassign)", () => {
-    const result = updateTaskSchema.safeParse({ assignedToUserId: "" });
-    expect(result.success).toBe(true);
-    if (result.success) expect(result.data.assignedToUserId).toBeUndefined();
   });
 
   it("rejects title longer than 500 in partial", () => {

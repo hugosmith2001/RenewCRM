@@ -43,10 +43,9 @@ export const authConfig = {
   callbacks: {
     jwt: ({ token }) => token,
     session: ({ session, token }) => {
-      if (session.user && token && typeof token.id === "string" && typeof token.tenantId === "string" && token.role) {
+      if (session.user && token && typeof token.id === "string" && typeof token.tenantId === "string") {
         session.user.id = token.id;
         session.user.tenantId = token.tenantId;
-        session.user.role = token.role as "ADMIN" | "BROKER" | "STAFF";
       }
       return session;
     },

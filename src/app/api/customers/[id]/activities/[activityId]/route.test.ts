@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, PATCH, DELETE } from "@/app/api/customers/[id]/activities/[activityId]/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -14,10 +13,10 @@ vi.mock("@/modules/activities", () => ({
   deleteActivity: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getActivityById, updateActivity, deleteActivity } = await import("@/modules/activities");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetActivityById = vi.mocked(getActivityById);
 const mockUpdateActivity = vi.mocked(updateActivity);
 const mockDeleteActivity = vi.mocked(deleteActivity);
@@ -28,7 +27,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -60,7 +58,7 @@ beforeEach(() => {
  */
 describe("GET /api/customers/[id]/activities/[activityId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId, activityId),
@@ -71,7 +69,7 @@ describe("GET /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 404 when activity not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue(null);
 
     const res = await GET(new NextRequest("http://localhost"), {
@@ -85,7 +83,7 @@ describe("GET /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 400 when activity belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue({
       ...activity,
       customerId: "other-customer",
@@ -101,7 +99,7 @@ describe("GET /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 200 and activity when found and customer matches", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue(activity);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -119,7 +117,7 @@ describe("GET /api/customers/[id]/activities/[activityId]", () => {
 
 describe("PATCH /api/customers/[id]/activities/[activityId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await PATCH(
       new NextRequest("http://localhost", {
@@ -134,7 +132,7 @@ describe("PATCH /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 404 when activity not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue(null);
 
     const res = await PATCH(
@@ -150,7 +148,7 @@ describe("PATCH /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 400 when activity belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue({
       ...activity,
       customerId: "other-customer",
@@ -171,7 +169,7 @@ describe("PATCH /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 400 when body validation fails (invalid type)", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue(activity);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -190,7 +188,7 @@ describe("PATCH /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 200 and updated activity when valid", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue(activity);
     mockAssertTenantAccess.mockImplementation(() => {});
     const updated = { ...activity, subject: "Updated subject" };
@@ -218,7 +216,7 @@ describe("PATCH /api/customers/[id]/activities/[activityId]", () => {
 
 describe("DELETE /api/customers/[id]/activities/[activityId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await DELETE(new NextRequest("http://localhost"), {
       params: params(customerId, activityId),
@@ -229,7 +227,7 @@ describe("DELETE /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 404 when activity not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue(null);
 
     const res = await DELETE(new NextRequest("http://localhost"), {
@@ -241,7 +239,7 @@ describe("DELETE /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 400 when activity belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue({
       ...activity,
       customerId: "other-customer",
@@ -258,7 +256,7 @@ describe("DELETE /api/customers/[id]/activities/[activityId]", () => {
   });
 
   it("returns 204 when activity deleted", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetActivityById.mockResolvedValue(activity);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockDeleteActivity.mockResolvedValue(true);

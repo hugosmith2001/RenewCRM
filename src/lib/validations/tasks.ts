@@ -27,8 +27,6 @@ export const createTaskSchema = z.object({
   dueDate: optionalDate,
   priority: taskPriorityEnum.optional().default("MEDIUM"),
   status: taskStatusEnum.optional().default("PENDING"),
-  assignedToUserId: z
-    .preprocess((v) => (v === "" || v === undefined ? undefined : v), z.string().cuid().optional().nullable()),
 });
 
 export const updateTaskSchema = z.object({
@@ -37,8 +35,6 @@ export const updateTaskSchema = z.object({
   dueDate: optionalDate.nullable(),
   priority: taskPriorityEnum.optional(),
   status: taskStatusEnum.optional(),
-  assignedToUserId: z
-    .preprocess((v) => (v === "" || v === undefined ? undefined : v), z.string().cuid().optional().nullable()),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;

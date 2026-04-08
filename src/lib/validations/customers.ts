@@ -18,7 +18,6 @@ export const createCustomerSchema = z.object({
   ),
   phone: optionalString(50),
   address: optionalString(500),
-  ownerBrokerId: z.string().cuid().optional().nullable(),
   status: customerStatusEnum.default("ACTIVE"),
 });
 

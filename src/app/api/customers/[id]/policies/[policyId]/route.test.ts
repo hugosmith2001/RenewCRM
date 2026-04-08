@@ -5,10 +5,9 @@ import {
   DELETE,
 } from "@/app/api/customers/[id]/policies/[policyId]/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -18,14 +17,14 @@ vi.mock("@/modules/policies", () => ({
   deletePolicy: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const {
   getPolicyById,
   updatePolicy,
   deletePolicy,
 } = await import("@/modules/policies");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetPolicyById = vi.mocked(getPolicyById);
 const mockUpdatePolicy = vi.mocked(updatePolicy);
 const mockDeletePolicy = vi.mocked(deletePolicy);
@@ -36,7 +35,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -77,7 +75,7 @@ beforeEach(() => {
  */
 describe("GET /api/customers/[id]/policies/[policyId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId, policyId),
@@ -88,7 +86,7 @@ describe("GET /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 404 when policy not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue(null);
 
     const res = await GET(new NextRequest("http://localhost"), {
@@ -101,7 +99,7 @@ describe("GET /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 400 when policy belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue({
       ...policyWithRelations,
       customerId: "other-customer",
@@ -117,7 +115,7 @@ describe("GET /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 200 and policy with insuredObjectIds and serialized premium", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue(policyWithRelations);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -137,7 +135,7 @@ describe("GET /api/customers/[id]/policies/[policyId]", () => {
 
 describe("PATCH /api/customers/[id]/policies/[policyId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await PATCH(
       new NextRequest("http://localhost", {
@@ -152,7 +150,7 @@ describe("PATCH /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 404 when policy not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue(null);
 
     const res = await PATCH(
@@ -168,7 +166,7 @@ describe("PATCH /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 400 when policy belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue({
       ...policyWithRelations,
       customerId: "other-customer",
@@ -187,7 +185,7 @@ describe("PATCH /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 400 when body validation fails", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue(policyWithRelations);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -209,7 +207,7 @@ describe("PATCH /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 200 and updated policy when valid", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue(policyWithRelations);
     mockAssertTenantAccess.mockImplementation(() => {});
     const updated = {
@@ -247,7 +245,7 @@ describe("PATCH /api/customers/[id]/policies/[policyId]", () => {
 
 describe("DELETE /api/customers/[id]/policies/[policyId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await DELETE(new NextRequest("http://localhost"), {
       params: params(customerId, policyId),
@@ -258,7 +256,7 @@ describe("DELETE /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 404 when policy not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue(null);
 
     const res = await DELETE(new NextRequest("http://localhost"), {
@@ -270,7 +268,7 @@ describe("DELETE /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 400 when policy belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue({
       ...policyWithRelations,
       customerId: "other-customer",
@@ -285,7 +283,7 @@ describe("DELETE /api/customers/[id]/policies/[policyId]", () => {
   });
 
   it("returns 204 and calls deletePolicy when policy exists and belongs to customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetPolicyById.mockResolvedValue(policyWithRelations);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockDeletePolicy.mockResolvedValue(undefined);

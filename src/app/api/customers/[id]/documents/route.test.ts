@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "@/app/api/customers/[id]/documents/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -17,14 +16,14 @@ vi.mock("@/modules/documents", () => ({
   createDocument: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getCustomerById } = await import("@/modules/customers");
 const {
   listDocumentsByCustomerId,
   createDocument,
 } = await import("@/modules/documents");
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetCustomerById = vi.mocked(getCustomerById);
 const mockAssertTenantAccess = vi.mocked(assertTenantAccess);
 const mockListDocumentsByCustomerId = vi.mocked(listDocumentsByCustomerId);
@@ -35,7 +34,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -96,7 +94,7 @@ beforeEach(() => {
  */
 describe("GET /api/customers/[id]/documents", () => {
   it("returns 401 when requireRole throws Unauthorized", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId),
@@ -107,7 +105,7 @@ describe("GET /api/customers/[id]/documents", () => {
   });
 
   it("returns 404 when customer not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(null);
 
     const res = await GET(new NextRequest("http://localhost"), {
@@ -121,7 +119,7 @@ describe("GET /api/customers/[id]/documents", () => {
   });
 
   it("returns 200 and documents array when customer exists", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     const docs = [
@@ -154,7 +152,7 @@ describe("GET /api/customers/[id]/documents", () => {
   });
 
   it("returns empty array when customer has no documents", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockListDocumentsByCustomerId.mockResolvedValue([]);
@@ -171,7 +169,7 @@ describe("GET /api/customers/[id]/documents", () => {
 
 describe("POST /api/customers/[id]/documents", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await POST(formRequestWithFile(), {
       params: params(customerId),
@@ -181,19 +179,8 @@ describe("POST /api/customers/[id]/documents", () => {
     expect(mockCreateDocument).not.toHaveBeenCalled();
   });
 
-  it("returns 403 when STAFF (upload requires ADMIN or BROKER)", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Forbidden"));
-
-    const res = await POST(formRequestWithFile(), {
-      params: params(customerId),
-    });
-
-    expect(res.status).toBe(403);
-    expect(mockCreateDocument).not.toHaveBeenCalled();
-  });
-
   it("returns 404 when customer not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(null);
 
     const res = await POST(formRequestWithFile(), {
@@ -207,7 +194,7 @@ describe("POST /api/customers/[id]/documents", () => {
   });
 
   it("returns 400 when no file in form", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -226,7 +213,7 @@ describe("POST /api/customers/[id]/documents", () => {
   });
 
   it("returns 400 when file is too large (over 20 MB)", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -244,7 +231,7 @@ describe("POST /api/customers/[id]/documents", () => {
   });
 
   it("returns 400 when file type is not allowed", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -260,7 +247,7 @@ describe("POST /api/customers/[id]/documents", () => {
   });
 
   it("returns 400 when metadata validation fails (invalid documentType)", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -285,7 +272,7 @@ describe("POST /api/customers/[id]/documents", () => {
   });
 
   it("returns 400 when createDocument returns null", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockCreateDocument.mockResolvedValue(null);
@@ -300,7 +287,7 @@ describe("POST /api/customers/[id]/documents", () => {
   });
 
   it("returns 201 and document when upload succeeds", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetCustomerById.mockResolvedValue(customer);
     mockAssertTenantAccess.mockImplementation(() => {});
     const created = {

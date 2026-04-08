@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getActivityById, updateActivity, deleteActivity } from "@/modules/activities";
 import { logAuditEvent } from "@/modules/audit";
 import { updateActivitySchema } from "@/lib/validations/activities";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string; activityId: string }> };
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const user = await requireAuth();
     const { id: customerId, activityId } = await params;
     const activity = await getActivityById(user.tenantId, activityId);
     if (!activity) {
@@ -28,7 +27,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, activityId } = await params;
     const activity = await getActivityById(user.tenantId, activityId);
     if (!activity) {
@@ -65,7 +64,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, activityId } = await params;
     const activity = await getActivityById(user.tenantId, activityId);
     if (!activity) {

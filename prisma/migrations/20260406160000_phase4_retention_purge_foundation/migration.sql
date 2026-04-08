@@ -6,16 +6,6 @@
 -- CreateEnum
 CREATE TYPE "RetentionCategory" AS ENUM ('INACTIVE_CUSTOMER', 'DOCUMENT_POST_POLICY_END', 'AUDIT_EVENT');
 
--- AlterTable
-ALTER TABLE "Customer"
-ADD COLUMN     "deletedAt" TIMESTAMP(3),
-ADD COLUMN     "legalHold" BOOLEAN NOT NULL DEFAULT false;
-
--- AlterTable
-ALTER TABLE "Document"
-ADD COLUMN     "deletedAt" TIMESTAMP(3),
-ADD COLUMN     "legalHold" BOOLEAN NOT NULL DEFAULT false;
-
 -- CreateTable
 CREATE TABLE "RetentionPolicyOverride" (
     "id" TEXT NOT NULL,
@@ -33,18 +23,6 @@ CREATE UNIQUE INDEX "RetentionPolicyOverride_tenantId_category_key" ON "Retentio
 
 -- CreateIndex
 CREATE INDEX "RetentionPolicyOverride_tenantId_idx" ON "RetentionPolicyOverride"("tenantId");
-
--- CreateIndex
-CREATE INDEX "Customer_tenantId_deletedAt_idx" ON "Customer"("tenantId", "deletedAt");
-
--- CreateIndex
-CREATE INDEX "Customer_tenantId_legalHold_idx" ON "Customer"("tenantId", "legalHold");
-
--- CreateIndex
-CREATE INDEX "Document_tenantId_deletedAt_idx" ON "Document"("tenantId", "deletedAt");
-
--- CreateIndex
-CREATE INDEX "Document_tenantId_legalHold_idx" ON "Document"("tenantId", "legalHold");
 
 -- AddForeignKey
 ALTER TABLE "RetentionPolicyOverride" ADD CONSTRAINT "RetentionPolicyOverride_tenantId_fkey"

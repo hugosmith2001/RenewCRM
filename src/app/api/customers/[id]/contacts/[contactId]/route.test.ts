@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { PATCH, DELETE } from "@/app/api/customers/[id]/contacts/[contactId]/route";
 import { NextRequest } from "next/server";
-import { Role } from "@prisma/client";
 
 vi.mock("@/modules/auth", () => ({
-  requireRole: vi.fn(),
+  requireAuth: vi.fn(),
   assertTenantAccess: vi.fn(),
 }));
 
@@ -14,12 +13,12 @@ vi.mock("@/modules/contacts", () => ({
   deleteContact: vi.fn(),
 }));
 
-const { requireRole, assertTenantAccess } = await import("@/modules/auth");
+const { requireAuth, assertTenantAccess } = await import("@/modules/auth");
 const { getContactById, updateContact, deleteContact } = await import(
   "@/modules/contacts"
 );
 
-const mockRequireRole = vi.mocked(requireRole);
+const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetContactById = vi.mocked(getContactById);
 const mockUpdateContact = vi.mocked(updateContact);
 const mockDeleteContact = vi.mocked(deleteContact);
@@ -30,7 +29,6 @@ const authUser = {
   email: "broker@tenant.local",
   name: "Broker",
   tenantId: "tenant-1",
-  role: Role.BROKER,
 };
 
 const customerId = "cust-1";
@@ -64,7 +62,7 @@ beforeEach(() => {
  */
 describe("PATCH /api/customers/[id]/contacts/[contactId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await PATCH(
       new NextRequest("http://localhost", {
@@ -79,7 +77,7 @@ describe("PATCH /api/customers/[id]/contacts/[contactId]", () => {
   });
 
   it("returns 404 when contact not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue(null);
 
     const res = await PATCH(
@@ -97,7 +95,7 @@ describe("PATCH /api/customers/[id]/contacts/[contactId]", () => {
   });
 
   it("returns 400 when contact belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue({
       ...contact,
       customerId: "other-customer",
@@ -118,7 +116,7 @@ describe("PATCH /api/customers/[id]/contacts/[contactId]", () => {
   });
 
   it("returns 400 when body validation fails", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue(contact);
     mockAssertTenantAccess.mockImplementation(() => {});
 
@@ -137,7 +135,7 @@ describe("PATCH /api/customers/[id]/contacts/[contactId]", () => {
   });
 
   it("returns 200 and updated contact when valid", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue(contact);
     mockAssertTenantAccess.mockImplementation(() => {});
     const updated = { ...contact, name: "Updated Name" };
@@ -165,7 +163,7 @@ describe("PATCH /api/customers/[id]/contacts/[contactId]", () => {
 
 describe("DELETE /api/customers/[id]/contacts/[contactId]", () => {
   it("returns 401 when not authenticated", async () => {
-    mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await DELETE(new NextRequest("http://localhost"), {
       params: params(customerId, contactId),
@@ -176,7 +174,7 @@ describe("DELETE /api/customers/[id]/contacts/[contactId]", () => {
   });
 
   it("returns 404 when contact not found", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue(null);
 
     const res = await DELETE(new NextRequest("http://localhost"), {
@@ -188,7 +186,7 @@ describe("DELETE /api/customers/[id]/contacts/[contactId]", () => {
   });
 
   it("returns 400 when contact belongs to different customer", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue({
       ...contact,
       customerId: "other-customer",
@@ -205,7 +203,7 @@ describe("DELETE /api/customers/[id]/contacts/[contactId]", () => {
   });
 
   it("returns 204 when contact deleted", async () => {
-    mockRequireRole.mockResolvedValue(authUser);
+    mockRequireAuth.mockResolvedValue(authUser);
     mockGetContactById.mockResolvedValue(contact);
     mockAssertTenantAccess.mockImplementation(() => {});
     mockDeleteContact.mockResolvedValue(true);

@@ -23,10 +23,9 @@ export const updateActivitySchema = z.object({
 export type CreateActivityInput = z.infer<typeof createActivitySchema>;
 export type UpdateActivityInput = z.infer<typeof updateActivitySchema>;
 
-/** Query params for cross-customer activities list (type, broker, date range). */
+/** Query params for cross-customer activities list (type, date range). */
 export const listActivitiesQuerySchema = z.object({
   type: activityTypeEnum.optional(),
-  broker: z.string().cuid().optional(),
   range: z.enum(["7d", "30d"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(200).default(50),

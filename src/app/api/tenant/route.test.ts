@@ -4,7 +4,6 @@ import { GET, PATCH } from "@/app/api/tenant/route";
 
 vi.mock("@/modules/auth", () => ({
   requireAuth: vi.fn(),
-  requireRole: vi.fn(),
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -16,11 +15,10 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-const { requireAuth, requireRole } = await import("@/modules/auth");
+const { requireAuth } = await import("@/modules/auth");
 const { prisma } = await import("@/lib/db");
 
 const mockRequireAuth = vi.mocked(requireAuth);
-const mockRequireRole = vi.mocked(requireRole);
 const mockPrismaTenantFindUnique = vi.mocked(prisma.tenant.findUnique);
 const mockPrismaTenantUpdate = vi.mocked(prisma.tenant.update);
 
@@ -73,7 +71,6 @@ describe("/api/tenant", () => {
         email: "user@example.com",
         name: "User",
         tenantId: "tenant-1",
-        role: "STAFF",
       });
       mockPrismaTenantFindUnique.mockResolvedValue({
         name: "Acme Brokerage",
@@ -100,7 +97,6 @@ describe("/api/tenant", () => {
         email: "user@example.com",
         name: "User",
         tenantId: "tenant-1",
-        role: "STAFF",
       });
       mockPrismaTenantFindUnique.mockResolvedValue({
         name: "Acme Brokerage",
@@ -133,7 +129,6 @@ describe("/api/tenant", () => {
         email: "user@example.com",
         name: "User",
         tenantId: "tenant-1",
-        role: "STAFF",
       });
       mockPrismaTenantFindUnique.mockResolvedValue(null);
 
@@ -146,8 +141,8 @@ describe("/api/tenant", () => {
   });
 
   describe("PATCH /api/tenant", () => {
-    it("returns 401 when requireRole throws Unauthorized", async () => {
-      mockRequireRole.mockRejectedValue(new Error("Unauthorized"));
+    it("returns 401 when requireAuth throws Unauthorized", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
       const res = await PATCH(makeRequest("PATCH", { name: "New Name" }));
 
@@ -157,26 +152,14 @@ describe("/api/tenant", () => {
       expect(mockPrismaTenantUpdate).not.toHaveBeenCalled();
     });
 
-    it("returns 403 when requireRole throws Forbidden (non-ADMIN user)", async () => {
-      mockRequireRole.mockRejectedValue(new Error("Forbidden"));
-
-      const res = await PATCH(makeRequest("PATCH", { name: "New Name" }));
-
-      expect(res.status).toBe(403);
-      const body = await res.json();
-      expect(body).toEqual({ error: "Forbidden" });
-      expect(mockPrismaTenantUpdate).not.toHaveBeenCalled();
-    });
-
-    it("updates only current tenant's name for ADMIN with valid payload", async () => {
+    it("updates only current tenant's name with valid payload", async () => {
       const sessionUser = {
         id: "admin-1",
         email: "admin@example.com",
         name: "Admin",
         tenantId: "tenant-1",
-        role: "ADMIN" as const,
       };
-      mockRequireRole.mockResolvedValue(sessionUser);
+      mockRequireAuth.mockResolvedValue(sessionUser);
       mockPrismaTenantUpdate.mockResolvedValue({
         name: "New Brokerage Name",
         slug: "acme-brokerage",
@@ -217,9 +200,8 @@ describe("/api/tenant", () => {
         email: "admin@example.com",
         name: "Admin",
         tenantId: "tenant-1",
-        role: "ADMIN" as const,
       };
-      mockRequireRole.mockResolvedValue(sessionUser);
+      mockRequireAuth.mockResolvedValue(sessionUser);
 
       const cases = ["", "   ", "x".repeat(151)];
 
@@ -240,9 +222,8 @@ describe("/api/tenant", () => {
         email: "admin@example.com",
         name: "Admin",
         tenantId: "tenant-1",
-        role: "ADMIN" as const,
       };
-      mockRequireRole.mockResolvedValue(sessionUser);
+      mockRequireAuth.mockResolvedValue(sessionUser);
       mockPrismaTenantUpdate.mockResolvedValue({
         name: "New Brokerage Name",
         slug: "existing-slug",
@@ -281,9 +262,8 @@ describe("/api/tenant", () => {
         email: "admin@example.com",
         name: "Admin",
         tenantId: "tenant-1",
-        role: "ADMIN" as const,
       };
-      mockRequireRole.mockResolvedValue(sessionUser);
+      mockRequireAuth.mockResolvedValue(sessionUser);
       mockPrismaTenantUpdate.mockResolvedValue({
         name: "New Brokerage Name",
         slug: "acme-brokerage",
@@ -317,9 +297,8 @@ describe("/api/tenant", () => {
         email: "admin@example.com",
         name: "Admin",
         tenantId: "tenant-1",
-        role: "ADMIN" as const,
       };
-      mockRequireRole.mockResolvedValue(sessionUser);
+      mockRequireAuth.mockResolvedValue(sessionUser);
       mockPrismaTenantUpdate.mockResolvedValue({
         name: "New Brokerage Name",
         slug: "acme-brokerage",

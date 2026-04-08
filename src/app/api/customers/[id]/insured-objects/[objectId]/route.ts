@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import {
   getInsuredObjectById,
   updateInsuredObject,
@@ -8,13 +8,12 @@ import {
 import { logAuditEvent } from "@/modules/audit";
 import { updateInsuredObjectSchema } from "@/lib/validations/insured-objects";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string; objectId: string }> };
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, objectId } = await params;
     const obj = await getInsuredObjectById(user.tenantId, objectId);
     if (!obj) {
@@ -57,7 +56,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, objectId } = await params;
     const obj = await getInsuredObjectById(user.tenantId, objectId);
     if (!obj) {

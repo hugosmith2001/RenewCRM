@@ -19,7 +19,7 @@ describe("authConfig", () => {
   describe("session callback", () => {
     const sessionCallback = authConfig.callbacks?.session;
 
-    it("adds id, tenantId, role to session.user when token has them", () => {
+    it("adds id and tenantId to session.user when token has them", () => {
       if (typeof sessionCallback !== "function") throw new Error("missing session callback");
       const session = {
         user: { email: "x@x.com", name: "X" },
@@ -28,7 +28,6 @@ describe("authConfig", () => {
       const token = {
         id: "user-123",
         tenantId: "tenant-456",
-        role: "ADMIN",
         email: "x@x.com",
         name: "X",
       };
@@ -36,13 +35,12 @@ describe("authConfig", () => {
       expect(result.user).toBeDefined();
       expect(result.user!.id).toBe("user-123");
       expect(result.user!.tenantId).toBe("tenant-456");
-      expect(result.user!.role).toBe("ADMIN");
     });
 
     it("returns session unchanged when token has no id", () => {
       if (typeof sessionCallback !== "function") throw new Error("missing session callback");
       const session = { user: { email: "x@x.com" }, expires: "" };
-      const token = { tenantId: "t1", role: "ADMIN" };
+      const token = { tenantId: "t1" };
       const result = sessionCallback({ session, token, user: {} as never });
       expect(result.user!.id).toBeUndefined();
       expect(result.user!.tenantId).toBeUndefined();
@@ -51,23 +49,15 @@ describe("authConfig", () => {
     it("returns session unchanged when token has no tenantId", () => {
       if (typeof sessionCallback !== "function") throw new Error("missing session callback");
       const session = { user: { email: "x@x.com" }, expires: "" };
-      const token = { id: "u1", role: "ADMIN" };
+      const token = { id: "u1" };
       const result = sessionCallback({ session, token, user: {} as never });
       expect(result.user!.tenantId).toBeUndefined();
-    });
-
-    it("returns session unchanged when token has no role", () => {
-      if (typeof sessionCallback !== "function") throw new Error("missing session callback");
-      const session = { user: { email: "x@x.com" }, expires: "" };
-      const token = { id: "u1", tenantId: "t1" };
-      const result = sessionCallback({ session, token, user: {} as never });
-      expect(result.user!.role).toBeUndefined();
     });
 
     it("returns session unchanged when session.user is missing", () => {
       if (typeof sessionCallback !== "function") throw new Error("missing session callback");
       const session = { user: undefined, expires: "" };
-      const token = { id: "u1", tenantId: "t1", role: "ADMIN" };
+      const token = { id: "u1", tenantId: "t1" };
       const result = sessionCallback({ session, token, user: {} as never });
       expect(result.user).toBeUndefined();
     });

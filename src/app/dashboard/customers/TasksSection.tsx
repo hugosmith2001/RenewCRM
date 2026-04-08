@@ -26,8 +26,6 @@ type Task = {
   dueDate: string | null;
   priority: string;
   status: string;
-  assignedToUserId: string | null;
-  assignedTo: { id: string; name: string | null; email: string } | null;
 };
 
 type Props = { customerId: string };
@@ -136,8 +134,7 @@ export function TasksSection({ customerId }: Props) {
         <FormError message={error} />
       ) : tasks.length === 0 && !showForm ? (
         <p className="text-sm text-muted-foreground">
-          No tasks yet. Add a task or reminder and optionally assign it to a
-          team member.
+          No tasks yet. Add a task or reminder.
         </p>
       ) : (
         <ul className={sectionListClasses}>
@@ -179,11 +176,6 @@ export function TasksSection({ customerId }: Props) {
                 )}
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0 text-xs text-muted-foreground">
                   <span>Due: {formatDueDate(t.dueDate)}</span>
-                  {t.assignedTo && (
-                    <span>
-                      Assigned to {t.assignedTo.name ?? t.assignedTo.email}
-                    </span>
-                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">

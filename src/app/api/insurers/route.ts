@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole } from "@/modules/auth";
+import { requireAuth } from "@/modules/auth";
 import { listInsurers, createInsurer } from "@/modules/policies";
 import { logAuditEvent } from "@/modules/audit";
 import { createInsurerSchema } from "@/lib/validations/insurers";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 export async function GET(_request: NextRequest) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const user = await requireAuth();
     const insurers = await listInsurers(user.tenantId);
     return NextResponse.json(insurers);
   } catch (err) {
@@ -18,7 +17,7 @@ export async function GET(_request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const body = await request.json();
     const parsed = createInsurerSchema.safeParse(body);
     if (!parsed.success) {

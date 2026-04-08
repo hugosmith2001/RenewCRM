@@ -53,7 +53,7 @@ describe("SettingsLayout (Phase 0)", () => {
     expect(html).toContain("/dashboard/settings/password");
     expect(html).toContain("Password");
     expect(html).toContain("/dashboard/settings/privacy");
-    expect(html).toContain("Privacy");
+    expect(html).toContain("Privacy &amp; compliance");
   });
 
   it("shows Organization nav links only for ADMIN", async () => {
@@ -71,8 +71,6 @@ describe("SettingsLayout (Phase 0)", () => {
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).toContain("/dashboard/settings/brokerage");
     expect(html).toContain("Brokerage");
-    expect(html).toContain("/dashboard/settings/data-processing");
-    expect(html).toContain("Data processing");
     expect(html).not.toContain("/dashboard/settings/team");
     expect(html).not.toContain("Team");
   });
@@ -92,8 +90,6 @@ describe("SettingsLayout (Phase 0)", () => {
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).not.toContain("/dashboard/settings/brokerage");
     expect(html).not.toContain("Brokerage");
-    expect(html).not.toContain("/dashboard/settings/data-processing");
-    expect(html).not.toContain("Data processing");
     expect(html).not.toContain("/dashboard/settings/team");
     expect(html).not.toContain("Team");
   });
@@ -113,8 +109,6 @@ describe("SettingsLayout (Phase 0)", () => {
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).not.toContain("/dashboard/settings/brokerage");
     expect(html).not.toContain("Brokerage");
-    expect(html).not.toContain("/dashboard/settings/data-processing");
-    expect(html).not.toContain("Data processing");
     expect(html).not.toContain("/dashboard/settings/team");
     expect(html).not.toContain("Team");
   });

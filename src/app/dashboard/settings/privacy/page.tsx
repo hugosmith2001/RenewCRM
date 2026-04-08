@@ -4,7 +4,7 @@ import { DetailSection, sectionListClasses, sectionListItemClasses } from "@/com
 import { getCurrentUser } from "@/modules/auth";
 
 export default async function PrivacySettingsPage() {
-  const user = await getCurrentUser();
+  await getCurrentUser();
 
   return (
     <div className="space-y-6">
@@ -43,11 +43,11 @@ export default async function PrivacySettingsPage() {
           </div>
           <p>
             If you have questions about your organization’s customer data processing (including retention and disclosures),
-            contact your organization’s administrator. For platform/operator information, see{" "}
+            contact your organization. For platform/operator information, see{" "}
             <Link className="underline underline-offset-4 hover:text-foreground" href="/dashboard/settings/data-processing">
               Data processing (controllers)
             </Link>
-            {user?.role && user.role !== "ADMIN" ? " (visible to admins)" : ""}.
+            .
           </p>
         </div>
       </DetailSection>

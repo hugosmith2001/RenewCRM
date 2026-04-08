@@ -22,7 +22,6 @@ describe("createCustomerSchema", () => {
       expect(result.data.email).toBeUndefined();
       expect(result.data.phone).toBeUndefined();
       expect(result.data.address).toBeUndefined();
-      expect(result.data.ownerBrokerId).toBeUndefined();
     }
   });
 
@@ -33,7 +32,6 @@ describe("createCustomerSchema", () => {
       email: "jane@example.com",
       phone: "+46 70 123 45 67",
       address: "Street 1, City",
-      ownerBrokerId: "clxxxxxxxxxxxxxxxxxxxxxxxxx",
       status: "PROSPECT" as const,
     };
     const result = createCustomerSchema.safeParse(input);
@@ -44,7 +42,6 @@ describe("createCustomerSchema", () => {
       expect(result.data.email).toBe("jane@example.com");
       expect(result.data.phone).toBe("+46 70 123 45 67");
       expect(result.data.address).toBe("Street 1, City");
-      expect(result.data.ownerBrokerId).toBe(input.ownerBrokerId);
       expect(result.data.status).toBe("PROSPECT");
     }
   });

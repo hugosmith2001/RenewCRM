@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getDocumentById, deleteDocument } from "@/modules/documents";
 import { logAuditEvent } from "@/modules/audit";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string; documentId: string }> };
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const user = await requireAuth();
     const { id: customerId, documentId } = await params;
     const doc = await getDocumentById(user.tenantId, documentId);
     if (!doc) {
@@ -33,7 +32,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, documentId } = await params;
     const doc = await getDocumentById(user.tenantId, documentId);
     if (!doc) {

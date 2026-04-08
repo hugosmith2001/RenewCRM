@@ -4,14 +4,12 @@
  */
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import type { Role } from "@prisma/client";
 
 export type SessionUser = {
   id: string;
   email: string;
   name?: string | null;
   tenantId: string;
-  role: Role;
 };
 
 /**
@@ -28,7 +26,6 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     email: session.user.email ?? "",
     name: session.user.name ?? null,
     tenantId: session.user.tenantId,
-    role: session.user.role,
   };
 }
 
@@ -52,18 +49,6 @@ export async function requireAuth(): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error("Unauthorized");
-  }
-  return user;
-}
-
-/**
- * Throws if not authenticated or if the user's role is not in the allowed list.
- * Use for backend authorization in API routes and server actions.
- */
-export async function requireRole(allowedRoles: Role[]): Promise<SessionUser> {
-  const user = await requireAuth();
-  if (!allowedRoles.includes(user.role)) {
-    throw new Error("Forbidden");
   }
   return user;
 }

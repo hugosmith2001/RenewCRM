@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, assertTenantAccess } from "@/modules/auth";
+import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import {
   getPolicyById,
   updatePolicy,
@@ -8,7 +8,6 @@ import {
 import { logAuditEvent } from "@/modules/audit";
 import { updatePolicySchema } from "@/lib/validations/policies";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string; policyId: string }> };
 
@@ -25,7 +24,7 @@ export async function GET(
   { params }: Params
 ) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const user = await requireAuth();
     const { id: customerId, policyId } = await params;
     const policy = await getPolicyById(user.tenantId, policyId);
     if (!policy) {
@@ -54,7 +53,7 @@ export async function GET(
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, policyId } = await params;
     const policy = await getPolicyById(user.tenantId, policyId);
     if (!policy) {
@@ -97,7 +96,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const { id: customerId, policyId } = await params;
     const policy = await getPolicyById(user.tenantId, policyId);
     if (!policy) {

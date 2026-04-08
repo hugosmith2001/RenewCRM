@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser, listTenantUsers } from "@/modules/auth";
+import { getCurrentUser } from "@/modules/auth";
 import { listRenewalsBucketed } from "@/modules/renewals";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout";
@@ -37,10 +37,6 @@ function statusTone(status: string): "success" | "warning" | "neutral" {
 
 function isPolicyStatus(value: string): value is PolicyStatus {
   return (Object.values(PolicyStatus) as string[]).includes(value);
-}
-
-function brokerDisplay(item: RenewalItem): string {
-  return item.brokerName ?? item.brokerEmail ?? "—";
 }
 
 function RenewalsSection({
@@ -81,7 +77,6 @@ function RenewalsSection({
               <TH>Insurer</TH>
               <TH>Status</TH>
               <TH>Renewal date</TH>
-              <TH>Broker</TH>
               <TH className="min-w-[5rem] text-right">Action</TH>
             </tr>
           </THead>
@@ -113,7 +108,6 @@ function RenewalsSection({
                 <TD className="whitespace-nowrap text-muted-foreground">
                   {item.renewalDate ? formatDate(item.renewalDate) : "—"}
                 </TD>
-                <TD className="text-muted-foreground">{brokerDisplay(item)}</TD>
                 <TD className="min-w-[5rem] text-right">
                   <Link
                     href={`/dashboard/customers/${item.customerId}/policies/${item.id}`}
@@ -132,7 +126,7 @@ function RenewalsSection({
 }
 
 type Props = {
-  searchParams: Promise<{ brokerId?: string; status?: string }>;
+  searchParams: Promise<{ status?: string }>;
 };
 
 export default async function RenewalsPage({ searchParams }: Props) {
@@ -140,17 +134,12 @@ export default async function RenewalsPage({ searchParams }: Props) {
   if (!user) redirect("/login");
 
   const sp = await searchParams;
-  const brokerId = sp.brokerId ?? "";
   const status = sp.status ?? "";
   const statusFilter = isPolicyStatus(status) ? status : undefined;
 
-  const [buckets, brokers] = await Promise.all([
-    listRenewalsBucketed(user.tenantId, {
-      brokerId: brokerId || undefined,
-      status: statusFilter,
-    }),
-    listTenantUsers(user.tenantId),
-  ]);
+  const buckets = await listRenewalsBucketed(user.tenantId, {
+    status: statusFilter,
+  });
 
   const totalWithDate =
     buckets.overdue.length +
@@ -165,7 +154,7 @@ export default async function RenewalsPage({ searchParams }: Props) {
     <>
       <PageHeader
         title="Renewals"
-        description="Your renewal queue. Filter by broker or status; set renewal dates from the customer workspace."
+        description="Your renewal queue. Filter by status; set renewal dates from the customer workspace."
         actions={
           <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
             Customers
@@ -174,7 +163,7 @@ export default async function RenewalsPage({ searchParams }: Props) {
       />
 
       <ListToolbar
-        left={<RenewalsFilterForm brokers={brokers} initialBrokerId={brokerId} initialStatus={status} />}
+        left={<RenewalsFilterForm initialStatus={status} />}
         right={
           <span className="text-sm text-muted-foreground">
             {total} total
@@ -189,7 +178,7 @@ export default async function RenewalsPage({ searchParams }: Props) {
             <InlineState
               title="No policies match"
               description={
-                brokerId || status
+                status
                   ? "Try clearing filters, or add policies and set renewal dates from the customer workspace."
                   : "Add policies and set renewal dates from the customer workspace to see them here."
               }

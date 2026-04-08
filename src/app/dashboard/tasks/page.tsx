@@ -91,7 +91,6 @@ function TaskTable({
           <TH className="w-[20%]">Title</TH>
           <TH>Customer</TH>
           <TH>Policy</TH>
-          <TH>Assigned to</TH>
           <TH>Status</TH>
           <TH>Priority</TH>
           <TH>Due date</TH>
@@ -126,9 +125,6 @@ function TaskTable({
                 </Link>
               </TD>
               <TD className="text-muted-foreground">—</TD>
-              <TD className="text-muted-foreground">
-                {t.assignedTo?.name ?? t.assignedTo?.email ?? "—"}
-              </TD>
               <TD>
                 <Badge tone={statusTone}>{TASK_STATUS_LABELS[t.status] ?? t.status}</Badge>
               </TD>

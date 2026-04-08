@@ -6,7 +6,6 @@ import { Sidebar } from "./Sidebar";
 
 type SessionUser = {
   email?: string | null;
-  role?: string | null;
 };
 
 type AppShellProps = {
@@ -41,9 +40,6 @@ export function AppShell({ session, children }: AppShellProps) {
               <>
                 <span className="truncate text-sm text-muted-foreground">
                   {session.user.email}
-                </span>
-                <span className="rounded bg-surface-muted px-2 py-0.5 text-xs font-medium text-foreground">
-                  {session.user.role}
                 </span>
                 <form action={signOutAction}>
                   <button

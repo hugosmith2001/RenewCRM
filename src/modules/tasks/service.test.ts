@@ -8,7 +8,6 @@ import {
 } from "@/modules/tasks/service";
 
 const mockCustomerFindFirst = vi.fn();
-const mockUserFindFirst = vi.fn();
 const mockTaskFindFirst = vi.fn();
 const mockTaskFindMany = vi.fn();
 const mockTaskCreate = vi.fn();
@@ -19,9 +18,6 @@ vi.mock("@/lib/db", () => ({
   prisma: {
     customer: {
       findFirst: (...args: unknown[]) => mockCustomerFindFirst(...args),
-    },
-    user: {
-      findFirst: (...args: unknown[]) => mockUserFindFirst(...args),
     },
     task: {
       findFirst: (...args: unknown[]) => mockTaskFindFirst(...args),
@@ -36,7 +32,6 @@ vi.mock("@/lib/db", () => ({
 const tenantId = "tenant-1";
 const customerId = "cust-1";
 const taskId = "task-1";
-const userId = "user-1";
 const baseTask = {
   id: taskId,
   tenantId,
@@ -46,7 +41,6 @@ const baseTask = {
   dueDate: new Date("2025-04-01"),
   priority: "MEDIUM" as const,
   status: "PENDING" as const,
-  assignedToUserId: null as string | null,
 };
 
 beforeEach(() => {
@@ -54,10 +48,9 @@ beforeEach(() => {
 });
 
 /**
- * Phase 7: Tasks service (tenant- and customer-scoped CRUD, assignee validation).
+ * Phase 7: Tasks service (tenant- and customer-scoped CRUD).
  * Covers: list by customer (empty when customer missing), getById,
- * create (with/without assignee; null when assignee not in tenant), update partial,
- * update with new assignee (null when assignee not in tenant), delete. Tenant isolation.
+ * create, update partial, delete. Tenant isolation.
  * Does not cover: real DB or API layer.
  */
 describe("listTasksByCustomerId", () => {
@@ -74,23 +67,15 @@ describe("listTasksByCustomerId", () => {
     expect(result).toEqual([]);
   });
 
-  it("returns tasks with assignee when customer exists", async () => {
+  it("returns tasks when customer exists", async () => {
     mockCustomerFindFirst.mockResolvedValue({ id: customerId });
-    const tasks = [
-      {
-        ...baseTask,
-        assignedTo: { id: userId, name: "Broker", email: "b@t.local" },
-      },
-    ];
+    const tasks = [{ ...baseTask }];
     mockTaskFindMany.mockResolvedValue(tasks);
 
     const result = await listTasksByCustomerId(tenantId, customerId);
 
     expect(mockTaskFindMany).toHaveBeenCalledWith({
       where: { customerId, tenantId },
-      include: {
-        assignedTo: { select: { id: true, name: true, email: true } },
-      },
       orderBy: [{ status: "asc" }, { dueDate: "asc" }],
     });
     expect(result).toHaveLength(1);
@@ -100,21 +85,14 @@ describe("listTasksByCustomerId", () => {
 
 describe("getTaskById", () => {
   it("returns task when found for tenant", async () => {
-    const withAssignee = {
-      ...baseTask,
-      assignedTo: { id: userId, name: "Broker", email: "b@t.local" },
-    };
-    mockTaskFindFirst.mockResolvedValue(withAssignee);
+    mockTaskFindFirst.mockResolvedValue(baseTask);
 
     const result = await getTaskById(tenantId, taskId);
 
     expect(mockTaskFindFirst).toHaveBeenCalledWith({
       where: { id: taskId, tenantId },
-      include: {
-        assignedTo: { select: { id: true, name: true, email: true } },
-      },
     });
-    expect(result).toEqual(withAssignee);
+    expect(result).toEqual(baseTask);
   });
 
   it("returns null when task does not exist", async () => {
@@ -138,7 +116,7 @@ describe("createTask", () => {
     expect(result).toBeNull();
   });
 
-  it("creates task without assignee when assignedToUserId not provided", async () => {
+  it("creates task when customer exists", async () => {
     mockCustomerFindFirst.mockResolvedValue({ id: customerId });
     mockTaskCreate.mockResolvedValue({ ...baseTask, id: "task-new" });
 
@@ -147,7 +125,6 @@ describe("createTask", () => {
       description: "Details",
     });
 
-    expect(mockUserFindFirst).not.toHaveBeenCalled();
     expect(mockTaskCreate).toHaveBeenCalledWith({
       data: {
         tenantId,
@@ -157,44 +134,7 @@ describe("createTask", () => {
         dueDate: null,
         priority: "MEDIUM",
         status: "PENDING",
-        assignedToUserId: null,
       },
-    });
-    expect(result).not.toBeNull();
-  });
-
-  it("returns null when assignee user is not in tenant", async () => {
-    mockCustomerFindFirst.mockResolvedValue({ id: customerId });
-    mockUserFindFirst.mockResolvedValue(null);
-
-    const result = await createTask(tenantId, customerId, {
-      title: "New task",
-      assignedToUserId: "other-tenant-user",
-    });
-
-    expect(mockUserFindFirst).toHaveBeenCalledWith({
-      where: { id: "other-tenant-user", tenantId },
-      select: { id: true },
-    });
-    expect(mockTaskCreate).not.toHaveBeenCalled();
-    expect(result).toBeNull();
-  });
-
-  it("creates task with assignee when user exists in tenant", async () => {
-    mockCustomerFindFirst.mockResolvedValue({ id: customerId });
-    mockUserFindFirst.mockResolvedValue({ id: userId });
-    mockTaskCreate.mockResolvedValue({ ...baseTask, id: "task-new", assignedToUserId: userId });
-
-    const result = await createTask(tenantId, customerId, {
-      title: "Assigned task",
-      assignedToUserId: userId,
-    });
-
-    expect(mockTaskCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        title: "Assigned task",
-        assignedToUserId: userId,
-      }),
     });
     expect(result).not.toBeNull();
   });
@@ -224,51 +164,6 @@ describe("updateTask", () => {
       data: { title: "Updated title" },
     });
     expect(result).toEqual(updated);
-  });
-
-  it("returns null when updating assignee to user not in tenant", async () => {
-    mockTaskFindFirst.mockResolvedValue(baseTask);
-    mockUserFindFirst.mockResolvedValue(null);
-
-    const result = await updateTask(tenantId, taskId, {
-      assignedToUserId: "other-tenant-user",
-    });
-
-    expect(mockUserFindFirst).toHaveBeenCalledWith({
-      where: { id: "other-tenant-user", tenantId },
-      select: { id: true },
-    });
-    expect(mockTaskUpdate).not.toHaveBeenCalled();
-    expect(result).toBeNull();
-  });
-
-  it("updates assignee when user exists in tenant", async () => {
-    mockTaskFindFirst.mockResolvedValue(baseTask);
-    mockUserFindFirst.mockResolvedValue({ id: userId });
-    mockTaskUpdate.mockResolvedValue({ ...baseTask, assignedToUserId: userId });
-
-    await updateTask(tenantId, taskId, {
-      assignedToUserId: userId,
-    });
-
-    expect(mockTaskUpdate).toHaveBeenCalledWith({
-      where: { id: taskId },
-      data: { assignedToUserId: userId },
-    });
-  });
-
-  it("clears assignee when assignedToUserId is null", async () => {
-    mockTaskFindFirst.mockResolvedValue({ ...baseTask, assignedToUserId: userId });
-    mockTaskUpdate.mockResolvedValue({ ...baseTask, assignedToUserId: null });
-
-    await updateTask(tenantId, taskId, {
-      assignedToUserId: null,
-    });
-
-    expect(mockTaskUpdate).toHaveBeenCalledWith({
-      where: { id: taskId },
-      data: { assignedToUserId: null },
-    });
   });
 });
 

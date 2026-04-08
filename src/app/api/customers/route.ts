@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole } from "@/modules/auth";
+import { requireAuth } from "@/modules/auth";
 import { listCustomers, createCustomer } from "@/modules/customers";
 import { logAuditEvent } from "@/modules/audit";
 import { createCustomerSchema, listCustomersQuerySchema } from "@/lib/validations/customers";
 import { handleApiError } from "@/lib/api-error";
-import { Role } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER, Role.STAFF]);
+    const user = await requireAuth();
     const { searchParams } = new URL(request.url);
     const parsed = listCustomersQuerySchema.safeParse({
       search: searchParams.get("search") ?? undefined,
@@ -29,7 +28,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireRole([Role.ADMIN, Role.BROKER]);
+    const user = await requireAuth();
     const body = await request.json();
     const parsed = createCustomerSchema.safeParse(body);
     if (!parsed.success) {

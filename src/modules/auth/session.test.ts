@@ -3,11 +3,9 @@ import {
   getCurrentUser,
   getCurrentTenant,
   requireAuth,
-  requireRole,
   assertTenantAccess,
   type SessionUser,
 } from "@/modules/auth/session";
-import type { Role } from "@prisma/client";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -32,7 +30,6 @@ const sessionUser: SessionUser = {
   email: "admin@tenant.local",
   name: "Admin",
   tenantId: "tenant-1",
-  role: "ADMIN",
 };
 
 beforeEach(() => {
@@ -57,7 +54,7 @@ describe("getCurrentUser", () => {
 
   it("returns null when session user has no id", async () => {
     mockAuth.mockResolvedValue({
-      user: { email: "x@x.com", tenantId: "t1", role: "ADMIN" },
+      user: { email: "x@x.com", tenantId: "t1" },
       expires: "",
     });
     await expect(getCurrentUser()).resolves.toBeNull();
@@ -65,7 +62,7 @@ describe("getCurrentUser", () => {
 
   it("returns null when session user has no tenantId", async () => {
     mockAuth.mockResolvedValue({
-      user: { id: "u1", email: "x@x.com", role: "ADMIN" },
+      user: { id: "u1", email: "x@x.com" },
       expires: "",
     });
     await expect(getCurrentUser()).resolves.toBeNull();
@@ -78,7 +75,6 @@ describe("getCurrentUser", () => {
         email: sessionUser.email,
         name: sessionUser.name,
         tenantId: sessionUser.tenantId,
-        role: sessionUser.role,
       },
       expires: "2025-01-01",
     });
@@ -92,7 +88,6 @@ describe("getCurrentUser", () => {
         id: "u1",
         email: undefined,
         tenantId: "t1",
-        role: "STAFF",
       },
       expires: "",
     });
@@ -117,7 +112,6 @@ describe("getCurrentTenant", () => {
         id: sessionUser.id,
         email: sessionUser.email,
         tenantId: sessionUser.tenantId,
-        role: sessionUser.role,
       },
       expires: "",
     });
@@ -130,7 +124,7 @@ describe("getCurrentTenant", () => {
 
   it("returns null when tenant is not found in DB", async () => {
     mockAuth.mockResolvedValue({
-      user: { id: "u1", email: "x@x.com", tenantId: "t1", role: "ADMIN" },
+      user: { id: "u1", email: "x@x.com", tenantId: "t1" },
       expires: "",
     });
     mockTenantFindUnique.mockResolvedValue(null);
@@ -151,46 +145,11 @@ describe("requireAuth", () => {
         email: sessionUser.email,
         name: sessionUser.name,
         tenantId: sessionUser.tenantId,
-        role: sessionUser.role,
       },
       expires: "",
     });
     const user = await requireAuth();
     expect(user).toEqual(sessionUser);
-  });
-});
-
-describe("requireRole", () => {
-  it("throws Unauthorized when not authenticated", async () => {
-    mockAuth.mockResolvedValue(null);
-    await expect(requireRole(["ADMIN"])).rejects.toThrow("Unauthorized");
-  });
-
-  it("throws Forbidden when user role is not in allowed list", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "u1", email: "x@x.com", tenantId: "t1", role: "STAFF" },
-      expires: "",
-    });
-    await expect(requireRole(["ADMIN"])).rejects.toThrow("Forbidden");
-    await expect(requireRole(["BROKER"])).rejects.toThrow("Forbidden");
-  });
-
-  it("returns user when role is allowed", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "u1", email: "x@x.com", tenantId: "t1", role: "ADMIN" },
-      expires: "",
-    });
-    const user = await requireRole(["ADMIN"]);
-    expect(user.role).toBe("ADMIN");
-  });
-
-  it("allows multiple roles", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "u1", email: "x@x.com", tenantId: "t1", role: "BROKER" as Role },
-      expires: "",
-    });
-    const user = await requireRole(["ADMIN", "BROKER"]);
-    expect(user.role).toBe("BROKER");
   });
 });
 

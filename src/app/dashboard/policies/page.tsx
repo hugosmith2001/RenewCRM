@@ -4,10 +4,10 @@ import { listPolicies } from "@/modules/policies";
 import { listPoliciesQuerySchema } from "@/lib/validations/policies";
 import { redirect } from "next/navigation";
 import { PolicySearchForm } from "./PolicySearchForm";
+import { AddPolicyMenu } from "./AddPolicyMenu";
 import { PageHeader } from "@/components/layout";
 import {
   Badge,
-  ButtonLink,
   InlineState,
   ListToolbar,
   Table,
@@ -67,9 +67,7 @@ export default async function PoliciesPage({ searchParams }: Props) {
         title="Försäkringar"
         description="Alla försäkringar i ditt bestånd. Sök på försäkringsnummer, kund eller försäkringsbolag."
         actions={
-          <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
-            Kunder
-          </ButtonLink>
+          <AddPolicyMenu />
         }
       />
 

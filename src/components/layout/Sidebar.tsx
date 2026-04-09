@@ -32,7 +32,7 @@ export function Sidebar({ open = true, onClose }: SidebarProps) {
       <div className="flex h-topbar min-h-topbar items-center border-b border-border px-content-x">
         <Link
           href="/dashboard"
-          className="text-sm font-semibold text-foreground no-underline"
+          className="text-base font-semibold text-foreground no-underline"
         >
           Renew CRM
         </Link>

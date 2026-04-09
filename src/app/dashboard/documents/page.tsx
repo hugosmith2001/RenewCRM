@@ -7,7 +7,6 @@ import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout";
 import {
   Badge,
-  ButtonLink,
   InlineState,
   ListToolbar,
   Table,
@@ -20,6 +19,7 @@ import {
 } from "@/components/ui";
 import { DOCUMENT_TYPE_LABELS } from "@/lib/constants/labels";
 import { DocumentFilters } from "./DocumentFilters";
+import { AddDocumentMenu } from "./AddDocumentMenu";
 
 type Props = {
   searchParams: Promise<{
@@ -79,9 +79,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
         title="Dokument"
         description="Alla dokument i ditt bestånd. Filtrera på kund, typ eller datum. Ladda upp och koppla dokument från kundsidor."
         actions={
-          <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
-            Kunder
-          </ButtonLink>
+          <AddDocumentMenu />
         }
       />
 

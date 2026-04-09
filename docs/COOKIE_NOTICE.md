@@ -1,4 +1,14 @@
-# Cookie notice (Renew CRM)
+# Cookie notice (customer-friendly + operator details)
+
+## Plain-language summary
+
+- Renew CRM uses **essential cookies** to keep you signed in and protect your session.
+- The current codebase does **not** include analytics/advertising cookies by default.
+- Because only essential cookies are used, there is **no cookie consent banner** in this repository by default.
+
+---
+
+## Operator notes
 
 This notice describes cookie usage that is **actually implemented in this repository**.
 

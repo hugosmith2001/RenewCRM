@@ -1,4 +1,15 @@
-# Retention and purge (Phase 4)
+# Retention and purge (customer-friendly summary + operator details)
+
+## Plain-language summary
+
+- Renew CRM supports **soft deletion** and a **scheduled purge** process to remove data after retention windows.
+- **Legal hold** and **restriction of processing** can block destructive deletion when required.
+- Deleting data in the app may not immediately remove it from **infrastructure backups**; backups expire based on operator-configured backup retention.
+- Exact retention windows depend on (a) the system defaults in this repo and (b) any allowed tenant overrides.
+
+---
+
+## Operator notes
 
 Renew CRM implements **default retention policies** with optional **tenant/controller overrides**, plus an enforceable **scheduled purge** workflow.
 

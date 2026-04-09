@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout";
 import {
   Badge,
-  ButtonLink,
   InlineState,
   ListToolbar,
   Table,
@@ -17,6 +16,7 @@ import {
   TR,
 } from "@/components/ui";
 import { TASK_PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/lib/constants/labels";
+import { AddTaskMenu } from "./AddTaskMenu";
 
 const COMPLETED_STATUSES = ["DONE", "CANCELLED"];
 
@@ -162,9 +162,7 @@ export default async function TasksPage() {
         title="Att göra"
         description="Arbetskö för alla kunder. Hantera påminnelser och uppföljningar."
         actions={
-          <ButtonLink href="/dashboard/customers" variant="secondary" size="sm">
-            Kunder
-          </ButtonLink>
+          <AddTaskMenu />
         }
       />
 

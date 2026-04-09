@@ -1,4 +1,20 @@
-# Subprocessors (Renew CRM)
+# Subprocessors (operator-facing list)
+
+## Who this is for
+
+This document is for **operators/admins** to complete and maintain.
+
+For an **end-user view**, link users to the in-app **Privacy notice**: `Settings → Privacy notice (app users)`.
+
+## Plain-language summary
+
+- “Subprocessors” are **vendors** you use to host or operate Renew CRM (hosting, database, storage, logging, etc.).
+- This repo can tell you the **categories** you likely need, but **you must fill in the actual vendors and regions** for your deployment.
+- If you add analytics, support tools, error monitoring, or email/SMS providers, you must update this list and any customer disclosures.
+
+---
+
+## Operator notes
 
 This document is intended for the **Renew CRM operator** (service provider). It is a repository-grounded starting point for subprocessor transparency and should be completed with your actual deployment choices.
 

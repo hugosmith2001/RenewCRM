@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout";
 import {
   Badge,
-  ButtonLink,
   InlineState,
   ListToolbar,
   Table,
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui";
 import { ACTIVITY_TYPE_LABELS } from "@/lib/constants/labels";
 import { ActivityFilters } from "./ActivityFilters";
+import { AddActivityMenu } from "./AddActivityMenu";
 
 type Props = {
   searchParams: Promise<{ type?: string; range?: string; page?: string }>;
@@ -65,9 +65,7 @@ export default async function ActivitiesPage({ searchParams }: Props) {
         title="Aktiviteter"
         description="Senaste aktivitet för alla kunder. Samtal, möten, e-post, anteckningar och rådgivning."
         actions={
-          <ButtonLink href="/dashboard" variant="secondary" size="sm">
-            Tillbaka till översikt
-          </ButtonLink>
+          <AddActivityMenu />
         }
       />
 

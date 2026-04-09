@@ -1,8 +1,14 @@
-# GDPR plan for Renew CRM (repo-specific, no code yet)
+# GDPR plan (canonical)
 
-This plan is written for the current Renew CRM codebase (Next.js + NextAuth + Prisma/Postgres + local/S3-style document storage). It prioritizes what you need to become **GDPR-complete in practice**: product features + security controls + operational processes + documentation.
+The canonical, maintained GDPR plan for this repository is:
 
-> Scope note: GDPR compliance cannot be guaranteed by code alone. You must also implement operational controls (hosting, backups, DPAs, incident response, policies). This plan covers both.
+- `docs/GDPR_PLAN.md`
+
+If you’re looking for end-user privacy information inside the app, use:
+
+- `Settings → Privacy notice (app users)` (`src/app/dashboard/settings/privacy/page.tsx`)
+
+This root-level file is retained for history but may be stale.
 
 ---
 

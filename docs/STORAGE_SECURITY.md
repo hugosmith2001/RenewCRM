@@ -1,3 +1,17 @@
+## Who this is for
+
+This document is for **operators/admins and implementers** configuring storage securely.
+
+If you need a user-facing summary, link to the in-app **Privacy notice**: `Settings → Privacy notice (app users)`.
+
+## Plain-language summary
+
+- Documents you upload are stored securely and are **not publicly accessible by default**.
+- Access is mediated by the app after sign-in (no default “public link” behavior).
+- Production storage choices matter: use **encrypted-at-rest storage** and keep backup retention short and justified.
+
+---
+
 ## Current storage model
 
 Renew CRM stores document **metadata** in Postgres via Prisma (`Document` rows) and stores document **bytes** in a storage backend referenced by `Document.storageKey`.

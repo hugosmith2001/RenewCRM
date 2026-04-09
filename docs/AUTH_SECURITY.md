@@ -1,3 +1,17 @@
+## Who this is for
+
+This document is for **operators/admins and implementers** who need to understand how authentication and sessions work in this repository.
+
+For end users, this is usually too technical; link users to the in-app **Privacy notice**: `Settings → Privacy notice (app users)`.
+
+## Plain-language summary
+
+- Renew CRM uses **secure sign-in sessions** to keep accounts protected.
+- It uses **essential cookies** for session security (see `docs/COOKIE_NOTICE.md`).
+- It includes protections like **secure cookie flags**, **session invalidation on password change**, and **basic rate limiting**.
+
+---
+
 ## Auth/session model (current)
 
 Renew CRM uses **Auth.js / NextAuth v5** with the **Credentials provider** and **JWT-based sessions**.
@@ -36,7 +50,7 @@ Implemented via **session versioning**:
 - On every JWT callback after sign-in (`src/auth.ts`):
   - the current user is loaded from DB
   - if `sessionVersion` differs from the JWT’s `sessionVersion`, the token is rejected (user is effectively signed out)
-  - tenant/role are refreshed from DB to avoid stale privileges
+  - tenant membership is refreshed from DB to avoid stale access
 
 ## Rate limiting (Phase 1)
 
@@ -55,14 +69,15 @@ Applied in:
 - The limiter is **per runtime instance** (not shared across regions/containers), so it is a **best-effort first pass**.
   - For stronger guarantees, move to a shared store (Redis / Upstash / etc.) or a gateway/WAF.
 
-## Admin-only actions / privileged endpoints
+## Privileged endpoints and authorization (current repo)
 
-Admin-only backend enforcement is performed with `requireRole([Role.ADMIN])` (or other allowed role lists) in API routes.
+The current repository implements **authentication** and **tenant scoping** (`tenantId`) for access control. It does not
+currently include a complete, consistently enforced **role-based access control (RBAC)** layer.
 
 Key examples:
 
-- Tenant update: `PATCH /api/tenant` (admin-only)
-- Audit log access: `GET /api/audit` (admin + broker)
+- Tenant update: `PATCH /api/tenant` (authenticated; tenant-scoped)
+- Audit log access: `GET /api/audit` (authenticated; tenant-scoped)
 
 ## Guidance for future hardening
 

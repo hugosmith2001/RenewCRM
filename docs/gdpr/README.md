@@ -1,4 +1,8 @@
-## GDPR Phase 0 (Governance & prerequisites)
+## GDPR Phase 0 (Governance & prerequisites) — operator-facing
+
+These documents are **operator/governance artifacts** (RoPA, DPIA, incident response, backups). They are not intended to be customer-facing.
+
+For end users, link to the in-app **Privacy notice**: `Settings → Privacy notice (app users)`.
 
 This folder contains the **Phase 0 deliverables** referenced by `GDPR_PLAN.md`: governance artifacts and operational prerequisites that let Renew CRM operate legally while product features are built.
 

@@ -173,7 +173,7 @@ export async function listPurgeCandidatesForTenant(input: {
   const docs = await prisma.document.findMany({
     where: {
       tenantId: input.tenantId,
-      OR: [{ deletedAt: { not: null } }, { policy: { endDate: { not: null } } }],
+      OR: [{ deletedAt: { not: null } }, { policyId: { not: null } }],
     },
     select: {
       id: true,
@@ -263,7 +263,7 @@ export async function executePurgeForTenant(input: {
   const docs = await prisma.document.findMany({
     where: {
       tenantId: input.tenantId,
-      OR: [{ deletedAt: { not: null } }, { policy: { endDate: { not: null } } }],
+      OR: [{ deletedAt: { not: null } }, { policyId: { not: null } }],
       legalHold: false,
     },
     select: {

@@ -2,8 +2,6 @@
  * Edge-safe Auth.js config (no Prisma, no bcrypt).
  * Used by middleware. Full config with Credentials is in auth.ts.
  */
-import type { NextAuthConfig } from "next-auth";
-
 if (
   process.env.NODE_ENV === "production" &&
   (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32)
@@ -41,8 +39,8 @@ export const authConfig = {
     updateAge: 24 * 60 * 60, // re-issue JWT roughly daily
   },
   callbacks: {
-    jwt: ({ token }) => token,
-    session: ({ session, token }) => {
+    jwt: ({ token }: any) => token,
+    session: ({ session, token }: any) => {
       if (session.user && token && typeof token.id === "string" && typeof token.tenantId === "string") {
         session.user.id = token.id;
         session.user.tenantId = token.tenantId;
@@ -56,4 +54,4 @@ export const authConfig = {
     process.env.NODE_ENV !== "production" ||
     process.env.VERCEL === "1" ||
     process.env.AUTH_TRUST_HOST === "true",
-} satisfies NextAuthConfig;
+};

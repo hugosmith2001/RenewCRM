@@ -58,7 +58,7 @@ export default async function DashboardPage() {
   const [buckets, allTasks, { activities }, { documents }] = await Promise.all([
     listRenewalsBucketed(user.tenantId),
     listTasksForTenant(user.tenantId),
-    listActivitiesForTenant(user.tenantId, { limit: ACTIVITIES_PREVIEW, viewerRole: user.role }),
+    listActivitiesForTenant(user.tenantId, { limit: ACTIVITIES_PREVIEW }),
     listDocumentsForTenant(user.tenantId, { limit: DOCUMENTS_PREVIEW }),
   ]);
 
@@ -250,7 +250,6 @@ function TaskRow({ task }: { task: TaskForWorkQueue }) {
           </Link>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {task.customer.name}
-            {task.assignedTo ? ` · ${task.assignedTo.name ?? task.assignedTo.email}` : ""}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">

@@ -32,7 +32,7 @@ describe("PrivacySettingsPage", () => {
     const element = await PrivacySettingsPage();
     const html = renderToStaticMarkup(element as React.ReactElement);
 
-    expect(html).toContain("Privacy notice");
+    expect(html).toContain("Integritetspolicy");
     expect(html).toContain("Cookies");
     expect(mockGetCurrentUser).toHaveBeenCalled();
   });

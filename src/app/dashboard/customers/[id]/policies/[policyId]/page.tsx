@@ -150,8 +150,6 @@ export default async function PolicyDetailPage({ params }: Props) {
               <p className="font-medium text-foreground">{customer.name}</p>
               <p className="text-sm text-muted-foreground">
                 {customer.type}
-                {customer.owner &&
-                  ` · ${customer.owner.name ?? customer.owner.email}`}
               </p>
             </div>
             <ButtonLink

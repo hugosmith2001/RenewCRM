@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { signInSchema } from "@/lib/validations/auth";
 import { authConfig } from "./auth.config";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth } = (NextAuth as any)({
   ...authConfig,
   providers: [
     Credentials({
@@ -46,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user }: any) => {
       // On sign-in, populate the minimal JWT payload.
       if (user) {
         token.id = user.id as string;

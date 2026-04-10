@@ -5,9 +5,9 @@ import { getClientIp, rateLimit } from "@/lib/rate-limit";
 const publicPaths = ["/", "/login"];
 const authApiPrefix = "/api/auth";
 
-const { auth } = NextAuth(authConfig);
+const { auth } = (NextAuth as any)(authConfig);
 
-export default auth((req) => {
+export default auth((req: any) => {
   const { nextUrl } = req;
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;

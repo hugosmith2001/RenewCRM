@@ -19,7 +19,6 @@ export default async function DashboardLayout({
           user: session.user
             ? {
               email: session.user.email ?? null,
-              role: (session.user as { role?: string }).role ?? null,
             }
             : undefined,
         }}

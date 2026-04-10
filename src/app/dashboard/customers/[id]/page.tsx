@@ -43,7 +43,6 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
             <Badge tone={statusTone}>{customer.status}</Badge>
             <span className="text-muted-foreground">
               {customer.type}
-              {customer.owner && ` · ${customer.owner.name ?? customer.owner.email}`}
             </span>
           </span>
         }
@@ -72,9 +71,7 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
             <div>
               <dt className="font-medium text-muted-foreground">Ansvarig mäklare</dt>
               <dd className="mt-0.5 text-foreground">
-                {customer.owner
-                  ? customer.owner.name ?? customer.owner.email
-                  : "—"}
+                {"—"}
               </dd>
             </div>
             <div className="sm:col-span-2">

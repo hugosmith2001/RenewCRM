@@ -107,7 +107,7 @@ export default async function CustomersPage({ searchParams }: Props) {
                       <TD>
                         <Badge tone={tone}>{c.status}</Badge>
                       </TD>
-                      <TD className="text-muted-foreground">{c.owner?.name ?? c.owner?.email ?? "—"}</TD>
+                      <TD className="text-muted-foreground">{"—"}</TD>
                       <TD className="text-right">
                         <Link href={`/dashboard/customers/${c.id}`} className="text-sm text-primary hover:underline">
                           Visa

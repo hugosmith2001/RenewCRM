@@ -30,6 +30,7 @@ const sessionUser: SessionUser = {
   email: "admin@tenant.local",
   name: "Admin",
   tenantId: "tenant-1",
+  role: null,
 };
 
 beforeEach(() => {

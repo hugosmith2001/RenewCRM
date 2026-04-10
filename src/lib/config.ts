@@ -11,9 +11,9 @@ function loadEnvFilesIfNeeded(): void {
   // Avoid importing third-party dotenv in server bundles; Turbopack can trip over
   // it during HMR. We only need a minimal parser for local development.
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line
     const fs = require("node:fs") as typeof import("node:fs");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line
     const path = require("node:path") as typeof import("node:path");
 
     const candidates = [".env.local", ".env"];

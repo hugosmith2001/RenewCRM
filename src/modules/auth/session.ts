@@ -4,12 +4,14 @@
  */
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { Role } from "@prisma/client";
 
 export type SessionUser = {
   id: string;
   email: string;
   name?: string | null;
   tenantId: string;
+  role: Role | null;
 };
 
 /**
@@ -21,11 +23,19 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   if (!session?.user?.id || !session.user.tenantId) {
     return null;
   }
+
+  const rawRole = (session.user as { role?: unknown }).role;
+  const role =
+    typeof rawRole === "string" && (Object.values(Role) as string[]).includes(rawRole)
+      ? (rawRole as Role)
+      : null;
+
   return {
     id: session.user.id,
     email: session.user.email ?? "",
     name: session.user.name ?? null,
     tenantId: session.user.tenantId,
+    role,
   };
 }
 
@@ -49,6 +59,19 @@ export async function requireAuth(): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error("Unauthorized");
+  }
+  return user;
+}
+
+/**
+ * Throws if not authenticated or role is not in allowed list.
+ * Use for admin-only settings and privileged API routes.
+ */
+export async function requireRole(allowed: Role | Role[]): Promise<SessionUser> {
+  const user = await requireAuth();
+  const allowList = Array.isArray(allowed) ? allowed : [allowed];
+  if (!user.role || !allowList.includes(user.role)) {
+    throw new Error("Forbidden");
   }
   return user;
 }

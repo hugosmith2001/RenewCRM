@@ -9,6 +9,5 @@ export {
   createTask,
   updateTask,
   deleteTask,
-  type TaskWithAssignee,
   type TaskForWorkQueue,
 } from "./service";

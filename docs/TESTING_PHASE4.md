@@ -10,17 +10,17 @@
   Tenant-scoped CRUD with **mocked Prisma**: list by customer (empty when customer missing, ordered by type then name), get-by-id (found, not found), create (customer missing returns null, success with type/name/description, description omitted → null), update (not found returns null, partial fields, empty data object), delete (not found returns false, success returns true). All queries use `tenantId` in `where` for isolation.
 
 - **API routes**  
-  - **GET/POST /api/customers/[id]/insured-objects**: 401/403 when auth fails, 404 when customer not found, 200 with list (including empty), 201 with created object when valid; POST 400 on validation (missing type, empty name) and when `createInsuredObject` returns null. `assertTenantAccess` and correct `tenantId`/`customerId` passed to service.
+  - **GET/POST /api/customers/[id]/insured-objects**: 401 when unauthenticated, 404 when customer not found, 200 with list (including empty), 201 with created object when valid; POST 400 on validation (missing type, empty name) and when `createInsuredObject` returns null. `assertTenantAccess` and correct `tenantId`/`customerId` passed to service.
   - **PATCH/DELETE /api/customers/[id]/insured-objects/[objectId]**: 401 when not authenticated, 404 when object not found, 400 when object belongs to different customer, 400 on PATCH validation (e.g. empty name), 200 PATCH with updated object, 204 DELETE. Tenant and customer consistency asserted.
 
 ## What the tests do not cover
 
 - **Real database** – No PostgreSQL; Prisma is mocked. No integration tests or migrations.
-- **Real auth/session** – NextAuth and session are not exercised; `requireRole` and `assertTenantAccess` are mocked.
+- **Real auth/session** – NextAuth and session are not exercised; `requireAuth` and `assertTenantAccess` are mocked.
 - **UI** – No component or E2E tests for `InsuredObjectsSection`, `InsuredObjectForm`, or customer detail page.
 - **Middleware** – No tests for route protection or redirects.
 - **Concurrency** – No tests for simultaneous create/update/delete or list consistency.
-- **STAFF role** – GET allows ADMIN/BROKER/STAFF; only BROKER (and ADMIN) are used in POST/PATCH/DELETE tests; STAFF write behaviour is not asserted.
+- **Role matrix** – Not applicable; solo-broker app uses `requireAuth()` without per-user roles.
 - **Malformed JSON** – POST/PATCH with invalid JSON body is not explicitly tested (may throw before validation).
 
 ## Edge cases explicitly tested

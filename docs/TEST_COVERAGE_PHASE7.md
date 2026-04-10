@@ -9,7 +9,7 @@ This document describes what the Phase 7 tests cover, what they do not cover, an
 ### 1.1 API route tests (activities)
 
 - **`/api/customers/[id]/activities` (GET, POST)**
-  - **Auth:** 401 when `requireRole` throws `Unauthorized`, 403 when it throws `Forbidden`.
+  - **Auth:** 401 when `requireAuth` throws `Unauthorized`, 403 when `assertTenantAccess` or similar throws `Forbidden` (when mocked).
   - **Customer:** 404 when customer not found; 200 with activities array (or empty array); `assertTenantAccess` called with customer’s `tenantId`.
   - **POST:** 400 on validation failure (e.g. invalid `type`); 400 when `createActivity` returns `null`; 201 and created activity when valid, with `createActivity` called with `tenantId`, `customerId`, parsed data, and `user.id` as `createdById`.
 
@@ -74,8 +74,7 @@ This document describes what the Phase 7 tests cover, what they do not cover, an
 ## 2. What the tests do not cover
 
 - **Real database:** All DB access is mocked (Prisma). No integration tests against PostgreSQL.
-- **Real auth/session:** `requireRole` and `assertTenantAccess` are mocked; no NextAuth, cookies, or JWT.
-- **STAFF role on write:** POST/PATCH/DELETE use `requireRole([Role.ADMIN, Role.BROKER])`; we do not assert that STAFF is rejected (only that 401/403 are returned when the mock throws).
+- **Real auth/session:** `requireAuth` and `assertTenantAccess` are mocked; no NextAuth, cookies, or JWT.
 - **API response shape in depth:** We check status codes and key fields (e.g. `id`, `type`, `subject`), not every field or exact JSON shape.
 - **Concurrent updates / optimistic locking:** No tests for two users updating the same activity/task.
 - **UI / E2E:** No tests for ActivitiesSection, TaskForm, etc.; only API and server-side logic.
@@ -86,7 +85,7 @@ This document describes what the Phase 7 tests cover, what they do not cover, an
 
 ## 3. Edge cases and caveats
 
-- **401 short-circuit:** For GET one activity/task, when `requireRole` throws Unauthorized, the handler returns 401 **before** calling `getActivityById`/`getTaskById`. The tests assert that the get-by-id function is **not** called in that case.
+- **401 short-circuit:** For GET one activity/task, when `requireAuth` throws Unauthorized, the handler returns 401 **before** calling `getActivityById`/`getTaskById`. The tests assert that the get-by-id function is **not** called in that case.
 - **Invalid dueDate string:** The task validation uses a preprocess that turns invalid date strings into `undefined`, so `dueDate: "not-a-date"` is accepted and stored as undefined. The tests document this as “coerces invalid date string to undefined” rather than “rejects invalid date”.
 - **Clearing task assignee:** To clear assignee on update, the client must send `assignedToUserId: null`. Sending `""` is coerced to `undefined` by Zod, so the service never receives a “clear” instruction for empty string; the service test for clearing uses `null`.
 - **createActivity returns null:** Only happens when customer is missing (tenant/customer check in service). We don’t test “customer exists but create failed” (e.g. DB error) because that’s an implementation/DB detail.

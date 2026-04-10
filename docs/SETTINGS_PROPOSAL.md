@@ -1,5 +1,11 @@
 # Settings: Technical and Product Proposal
 
+**Current product (solo broker):** The live app treats every authenticated user as a broker for their tenant. There is **no** `User.role`, no `requireRole`, and **no** “ADMIN-only organisation” in code. Organisation (Mäklarkontor) and account settings are available to all signed-in users; see `README.md` and `docs/REMOVE_ROLES_SOLO_BROKER_PLAN.md`.
+
+The sections below mix **historical** product reasoning (written when RBAC was considered) with ideas that are only relevant if you **reintroduce** multi-role tenants. Use judgment when reading tables that mention ADMIN/BROKER/STAFF.
+
+---
+
 This document proposes a coherent information architecture and implementation plan for the **Settings** area of Renew CRM (multi-tenant B2B CRM for insurance brokers). It is based on analysis of the current codebase and does **not** include implementation—only the proposal.
 
 ---
@@ -12,10 +18,10 @@ This document proposes a coherent information architecture and implementation pl
 - **No sub-routes**: Everything would have to live on one long page, which does not scale and makes deep-linking and breadcrumbs impossible.
 - **Unclear scope**: The page description says “Manage your account and organization” but there is no way to manage either. Users cannot edit profile, change password, or manage the brokerage/team.
 
-### 1.2 Access and Roles
+### 1.2 Access (updated for solo broker)
 
-- **All-or-nothing access**: Settings is gated to `ADMIN` and `BROKER` only. If we add “Account → Profile” or “Account → Password,” **STAFF** users would have no way to manage their own account without being given broker-level access.
-- **No distinction by concern**: There is no separation between “my account” (all authenticated users) and “organization/configuration” (admins/brokers). That makes it harder to add account-level features without over-exposing Settings to STAFF.
+- **Today**: Account and organisation settings are available to **any authenticated user** (`requireAuth()`). There is no separate STAFF/BROKER/ADMIN matrix in the UI or session.
+- **If you reintroduce roles later**: You would again split “my account” vs “organisation admin” and gate APIs with explicit role checks plus schema support.
 
 ### 1.3 Missing Backend and Data
 
@@ -35,7 +41,7 @@ This document proposes a coherent information architecture and implementation pl
 |-------|--------|
 | Single page, no IA | Poor scalability and UX as features are added |
 | No sub-routes | No deep links, no clear mental model |
-| STAFF locked out | Cannot add “my account” without opening full Settings |
+| (Historical) STAFF locked out | Addressed by solo-broker model: no separate staff role |
 | No profile/password APIs | Cannot implement account management |
 | No tenant APIs | Cannot implement brokerage settings |
 | Users API read-only | Cannot implement team management |
@@ -47,11 +53,11 @@ This document proposes a coherent information architecture and implementation pl
 
 ### 2.1 Principles
 
-- **Account** = things the signed-in user does for themselves (profile, password). Available to **all roles** (ADMIN, BROKER, STAFF).
-- **Organization** = brokerage and team. Available to **ADMIN** and **BROKER** only.
-- **Configuration** = optional later (insurers, document types, workflow). **ADMIN** and **BROKER** (can be refined later).
+- **Account** = things the signed-in user does for themselves (profile, password). Available to **all authenticated users**.
+- **Organization** = brokerage (and optionally team in a multi-user future). In the **current** app, brokerage is available to all authenticated users; team flows are not implemented here.
+- **Configuration** = optional later (insurers, document types, workflow).
 
-Access control: keep using `requireRole` and existing session (`getCurrentUser()`). Add a Settings layout that restricts by role per section (e.g. sidebar hides “Organization” for STAFF).
+Access control **today**: `requireAuth()` and tenant scoping; **no** `requireRole`. If roles return, reintroduce guards consistently in API and UI.
 
 ### 2.2 URL and Section Structure
 
@@ -61,9 +67,9 @@ Use **nested routes** under `/dashboard/settings` so each area has a clear URL a
 /dashboard/settings                    → Settings index (overview / redirect)
 /dashboard/settings/profile            → Account → Profile
 /dashboard/settings/password            → Account → Password
-/dashboard/settings/brokerage           → Organization → Brokerage  (ADMIN/BROKER)
-/dashboard/settings/team                → Organization → Team        (ADMIN/BROKER)
-/dashboard/settings/insurers           → Configuration → Insurers   (later, ADMIN/BROKER)
+/dashboard/settings/brokerage           → Organization → Brokerage  (all authenticated)
+/dashboard/settings/team                → Organization → Team        (not in current tree; future if multi-user)
+/dashboard/settings/insurers           → Configuration → Insurers   (later; elsewhere in app today)
 ```
 
 Optional later: `/dashboard/settings/document-types`, `/dashboard/settings/workflow`, etc.
@@ -73,13 +79,13 @@ Optional later: `/dashboard/settings/document-types`, `/dashboard/settings/workf
 | Section | Sub-pages | Who can access | Purpose |
 |---------|------------|----------------|---------|
 | **Account** | Profile, Password | All authenticated users | Manage own identity and security |
-| **Organization** | Brokerage, Team | ADMIN, BROKER | Manage brokerage details and users |
-| **Configuration** | Insurers (later: document types, workflow) | ADMIN, BROKER | Tenant-level reference data and behaviour |
+| **Organization** | Brokerage (+ Team if built) | All authenticated (today) | Manage brokerage; team TBD |
+| **Configuration** | Insurers (later: document types, workflow) | All authenticated (today) | Tenant-level reference data—much of this lives outside Settings |
 
 ### 2.4 Settings Index Page
 
 - **Route**: `/dashboard/settings` (or `/dashboard/settings/profile` as default).
-- **Content**: Short overview with links to Profile, Password and (for ADMIN/BROKER) Brokerage and Team. No business logic; just navigation and maybe a “Quick links” card.
+- **Content**: Short overview with links to Profile, Password, Brokerage, etc. No business logic; just navigation and maybe a “Quick links” card.
 - **Layout**: Shared Settings layout with a **sidebar or tabs** for Account / Organization / Configuration so users always know where they are.
 
 ### 2.5 Section Descriptions (Product)
@@ -98,26 +104,26 @@ Optional later: `/dashboard/settings/document-types`, `/dashboard/settings/workf
 
 | Model | Use in Settings | Notes |
 |-------|-----------------|--------|
-| **User** | Profile, Password, Team | `id`, `email`, `name`, `passwordHash`, `role`, `tenantId`. No `emailVerified` or `inviteToken` yet. |
+| **User** | Profile, Password, (Team future) | `id`, `email`, `name`, `passwordHash`, `tenantId`, `isActive`, etc. **No `role`** in solo-broker schema. |
 | **Tenant** | Brokerage | `id`, `name`, `slug`. No tenant-level “settings” JSON. |
 | **Insurer** | Config → Insurers | `tenantId`, `name`. Already used by policies; CRUD exists for create, list; update/delete to be added. |
-| **Role** | Team, access control | Enum ADMIN, BROKER, STAFF. No change. |
+| **Role enum** | — | **Removed** for solo-broker deployments. |
 
-No new Prisma models are required for Phases 1–4. Optional later: invite tokens table if we add invite-by-email.
+No new Prisma models are required for basic settings. Optional later: invite tokens table if you add invite-by-email.
 
 ### 3.2 What Exists Today
 
 | Capability | Exists | Where |
 |------------|--------|-------|
-| Session + current user | Yes | `auth()`, `getCurrentUser()`, JWT with `id`, `email`, `name`, `tenantId`, `role` |
+| Session + current user | Yes | `auth()`, `getCurrentUser()`, JWT with `id`, `email`, `name`, `tenantId` |
 | Current tenant | Yes | `getCurrentTenant()` |
 | List tenant users | Yes | `listTenantUsers()`, `GET /api/users` (id, name, email only) |
-| Role guard | Yes | `requireRole([...])`, `assertTenantAccess()` |
+| Tenant guard | Yes | `requireAuth()`, `assertTenantAccess()` |
 | Insurers list/create | Yes | `GET/POST /api/insurers`, `listInsurers`, `createInsurer` |
 | Insurer update/delete | No | Only in policies module for some operations; no dedicated update/delete API |
-| Update user (name) | No | — |
-| Change password | No | — |
-| Update tenant | No | — |
+| Update user (name) | Yes | `PATCH /api/me/profile` |
+| Change password | Yes | `POST /api/me/password` |
+| Update tenant | Yes | `GET`/`PATCH /api/tenant` |
 | Create user (invite) | No | — |
 | Update user role | No | — |
 
@@ -128,11 +134,11 @@ No new Prisma models are required for Phases 1–4. Optional later: invite token
   - **Password**: Server action (or `POST /api/me/password`) to change password: body `{ currentPassword, newPassword }`, verify `currentPassword` with `compare()`, hash `newPassword` with `hash()`, update `passwordHash`. Use same `bcrypt` and validation pattern as login.
 
 - **Organization**
-  - **Brokerage**: `GET /api/tenant` (or use `getCurrentTenant()` in RSC) and `PATCH /api/tenant` to update `name` (and optionally `slug` if we allow it). Guard with `requireRole([ADMIN, BROKER])` and `assertTenantAccess` if needed.
+  - **Brokerage**: `GET /api/tenant` and `PATCH /api/tenant` to update `name`. Guard with `requireAuth()`; slug remains read-only in MVP.
   - **Team**:  
     - List: already `GET /api/users`; extend to include `role` for Settings.  
     - Invite: `POST /api/users` with email, role, optional name; create user with random temp password or invite token (Phase 3 can start with “create user with temp password” and email instructions).  
-    - Update: `PATCH /api/users/[id]` for name and role; tenant-scoped, ADMIN/BROKER only.  
+    - Update: `PATCH /api/users/[id]` for name (and role **only if** you restore RBAC); tenant-scoped.  
     - Optional: deactivate (e.g. `isActive` flag or no login); can be Phase 4.
 
 - **Configuration**
@@ -147,7 +153,7 @@ No new Prisma models are required for Phases 1–4. Optional later: invite token
 
 New pieces:
 
-- **Settings layout**: A layout under `src/app/dashboard/settings/` that wraps all settings pages and renders a small **sidebar or tab nav** (Account | Organization | Configuration) so the Settings area feels consistent. Role-based: hide Organization (and Configuration) for STAFF.
+- **Settings layout**: Implemented under `src/app/dashboard/settings/` with nav for Account and Organisation. No role-based hiding in solo-broker mode.
 - **Settings index**: One simple page with links to Profile, Password, Brokerage, Team (and later Insurers).
 
 ### 3.5 Auth and Session
@@ -162,7 +168,7 @@ New pieces:
   - `updateProfileSchema`: `name` optional string, max length.
   - `changePasswordSchema`: `currentPassword`, `newPassword`, `confirmNewPassword`; ensure new === confirm and strength rules if desired.
   - `updateTenantSchema`: `name`, optional `slug` with format rules.
-  - User invite/update: email, role enum, optional name; reuse existing role type.
+  - User invite/update: email, optional name; add role enum **only if** RBAC returns.
 
 ---
 
@@ -174,7 +180,7 @@ New pieces:
 - **Backend**: Server action (or `PATCH /api/me`) to update `User.name`; validation schema.
 - **UI**: `/dashboard/settings/profile` with one `DetailSection`, form (name field + save). Reuse `FormLayout` (card), `FormField`, `FormActions`.
 - **Access**: All authenticated users (no role check beyond `requireAuth()`).
-- **Deliverable**: Settings has a real first subsection; STAFF can use it.
+- **Deliverable**: Settings has a real first subsection for all authenticated users.
 
 ### Phase 2: Account → Password
 
@@ -187,17 +193,17 @@ New pieces:
 ### Phase 3: Organization → Team (Users)
 
 - **Scope**: List users, show role; invite (create user with email, role, optional name); edit user (name, role). No delete/deactivate in this phase if not needed.
-- **Backend**: Extend `GET /api/users` to include `role`. Add `POST /api/users` (invite) and `PATCH /api/users/[id]` (update name/role); tenant-scoped, `requireRole([ADMIN, BROKER])`.
+- **Backend**: Extend `GET /api/users` as needed. Add `POST`/`PATCH` user endpoints tenant-scoped with `requireAuth()` (and role fields **only if** RBAC exists).
 - **UI**: `/dashboard/settings/team` — list (table or list with role badges), “Invite user” button → form/modal; edit user → inline or small form. Reuse `DetailSection`, table or list styles, `FormLayout`/`FormField` for invite/edit.
-- **Access**: ADMIN, BROKER only.
+- **Access**: All authenticated users unless you reintroduce RBAC and tighten this.
 - **Deliverable**: Brokers can manage team members.
 
 ### Phase 4: Organization → Brokerage
 
 - **Scope**: View and edit tenant name (and optionally slug if product agrees).
-- **Backend**: `GET /api/tenant` (or rely on `getCurrentTenant()` in RSC) and `PATCH /api/tenant`; guard with `requireRole([ADMIN, BROKER])`.
+- **Backend**: `GET /api/tenant` (or rely on `getCurrentTenant()` in RSC) and `PATCH /api/tenant`; guard with `requireAuth()`.
 - **UI**: `/dashboard/settings/brokerage` with form (name, maybe slug). One `DetailSection`.
-- **Access**: ADMIN, BROKER only.
+- **Access**: All authenticated users (solo broker).
 - **Deliverable**: Organization settings are complete for MVP.
 
 ### Phase 5: Configuration (Optional Later)
@@ -208,13 +214,10 @@ New pieces:
 
 ---
 
-## 5. Recommended Next Step
+## 5. Recommended next steps (solo broker)
 
-1. **Decide and document** the exact access rules (e.g. STAFF sees only Account; ADMIN/BROKER see Account + Organization; Configuration later).
-2. **Introduce the Settings layout and routing** without new backend:
-   - Add `src/app/dashboard/settings/layout.tsx` that renders a Settings sub-nav (Account / Organization / Configuration) and conditionally hides Organization (and Configuration) for STAFF using `getCurrentUser()`.
-   - Add placeholder routes: `settings/page.tsx` (index with links), `settings/profile/page.tsx`, `settings/password/page.tsx`, `settings/team/page.tsx`, `settings/brokerage/page.tsx`.
-3. **Implement Phase 1 (Profile)** end-to-end: validation schema, server action (or API), and profile page with form. This validates the layout, reuse of components, and auth flow.
-4. Proceed with **Phase 2 (Password)**, then **Phase 3 (Team)**, then **Phase 4 (Brokerage)**, and optionally **Phase 5 (Insurers)** when needed.
+1. **Keep docs aligned** with `requireAuth()` and no `User.role` unless you ship a migration to bring RBAC back.
+2. **Settings layout** already lives at `src/app/dashboard/settings/layout.tsx`; extend with new links as you add pages (no role-based hiding unless product changes).
+3. **Team / invite flows** remain future work; if you add them, document tenant scoping and whether roles return.
 
-This keeps the plan realistic: no big refactors, tenant and role checks reuse existing patterns, and the UI stays consistent with the existing design system and layout primitives.
+Historical detail below (profile/password/brokerage phases) can still guide sequencing for new features, but access control should match the current codebase: **authentication + tenantId from session**, not ADMIN/BROKER/STAFF gates.

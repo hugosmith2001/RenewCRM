@@ -28,9 +28,9 @@ beforeEach(() => {
 
 /**
  * Phase 8: GET /api/audit.
- * Covers: 401/403 when requireRole fails, 400 on invalid query params,
- * 200 with events/total when authenticated (ADMIN/BROKER), tenantId passed to service.
- * Does not cover: STAFF forbidden (requireRole rejects), real DB, or validation schema edge cases.
+ * Covers: 401 when requireAuth fails, 400 on invalid query params,
+ * 200 with events/total when authenticated, tenantId passed to service.
+ * Does not cover: real DB or validation schema edge cases beyond these tests.
  */
 describe("GET /api/audit", () => {
   function request(url = "http://localhost/api/audit") {

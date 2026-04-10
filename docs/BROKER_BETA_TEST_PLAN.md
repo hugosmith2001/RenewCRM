@@ -85,7 +85,7 @@ For each broker tester:
 - **Create a tenant** for their brokerage (isolated data).
 - **Create at least 2 users**:
   - 1 Admin (for setup)
-  - 1 Broker/Staff (day-to-day role)
+  - 1 day-to-day user (broker workflow)
 - Provide:
   - Beta URL
   - Username(s)

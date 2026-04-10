@@ -44,8 +44,7 @@ function makeRequest(method: string, body?: unknown, url?: string) {
  *
  * PATCH:
  *  - 401 for unauthenticated requests
- *  - 403 for non-ADMIN (Forbidden)
- *  - ADMIN updates only current tenant's name
+ *  - authenticated user updates only current tenant's name
  *  - derives tenant scope from session user.tenantId
  *  - validation rejects empty/whitespace/overly long names
  *  - slug is read-only; payload slug is ignored

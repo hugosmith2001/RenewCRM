@@ -9,13 +9,13 @@
   Tenant-scoped CRUD with **mocked Prisma**: get-by-id (found, not found, wrong tenant), list with search/filters/pagination, create with minimal and full payloads, update (partial, not found, clearing owner), delete (success, not found). All calls are asserted to use the correct `tenantId` in queries.
 
 - **API routes**  
-  - **GET/POST /api/customers**: 401/403 when auth fails, 400 for invalid query or body, 200 with list and 201 with created customer when auth and validation succeed. List and create are called with the current user’s `tenantId`.
-  - **GET/PATCH/DELETE /api/customers/[id]**: 401/403, 404 when customer is missing, 400 on invalid PATCH body, 200/204 on success. `assertTenantAccess` is checked for GET; update/delete are called only after a successful tenant-scoped get.
+  - **GET/POST /api/customers**: 401 when `requireAuth` fails, 400 for invalid query or body, 200 with list and 201 with created customer when auth and validation succeed. List and create are called with the current user’s `tenantId`.
+  - **GET/PATCH/DELETE /api/customers/[id]**: 401 when unauthenticated; 404 when customer is missing; 400 on invalid PATCH body; 200/204 on success. `assertTenantAccess` is checked for GET; update/delete are called only after a successful tenant-scoped get.
 
 ## What the tests do not cover
 
 - **Real database** – No PostgreSQL; Prisma is mocked. No integration tests or migrations.
-- **Real auth/session** – NextAuth and session are not exercised; `requireRole` and `assertTenantAccess` are mocked.
+- **Real auth/session** – NextAuth and session are not exercised; `requireAuth` and `assertTenantAccess` are mocked.
 - **UI** – No component or E2E tests for the customer list, detail, or forms.
 - **Middleware** – No tests for route protection or redirects.
 - **Concurrency / race conditions** – No tests for simultaneous updates or deletes.

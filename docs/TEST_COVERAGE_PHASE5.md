@@ -32,22 +32,22 @@ All service tests use **mocked Prisma** (no real DB). Tenant isolation is assert
 
 | Route | Coverage |
 |-------|----------|
-| **GET/POST /api/insurers** | 401/403 on auth failure; 200 + insurers array (GET); 400 on validation (missing/empty name); 201 + created insurer (POST). |
-| **GET/POST /api/customers/[id]/policies** | 401/403; 404 when customer not found; 200 + policies (premium serialized to number); empty array; 400 on validation (missing policyNumber, endDate &lt; startDate); 400 when createPolicy returns null; 201 + created policy with serialized premium. |
+| **GET/POST /api/insurers** | 401 on auth failure; 200 + insurers array (GET); 400 on validation (missing/empty name); 201 + created insurer (POST). |
+| **GET/POST /api/customers/[id]/policies** | 401 when unauthenticated; 404 when customer not found; 200 + policies (premium serialized to number); empty array; 400 on validation (missing policyNumber, endDate &lt; startDate); 400 when createPolicy returns null; 201 + created policy with serialized premium. |
 | **GET/PATCH/DELETE /api/customers/[id]/policies/[policyId]** | 401; 404 when policy not found; 400 when policy belongs to different customer; 200 GET with insuredObjectIds and premium; 400 on PATCH validation (dates); 200 PATCH with updated policy; 204 DELETE and deletePolicy called. |
 
-Auth and dependencies are **mocked** (no real session, no real DB). Role checks are implied by `requireRole` being called; we do not assert STAFF vs BROKER vs ADMIN for insurers/policies in these tests.
+Auth and dependencies are **mocked** (no real session, no real DB). Routes use `requireAuth()`; tests assert 401 when auth fails.
 
 ---
 
 ## 2. What the tests do **not** cover
 
 - **Real database**: No integration tests against PostgreSQL. Prisma is fully mocked in service tests.
-- **Real auth/session**: No NextAuth or cookies; `requireRole` and `assertTenantAccess` are mocks.
+- **Real auth/session**: No NextAuth or cookies; `requireAuth` and `assertTenantAccess` are mocks.
 - **UI**: No tests for `PoliciesSection`, `PolicyForm`, or any React components.
 - **E2E**: No Playwright/Cypress or full user flows.
 - **Insurer update/delete**: No API or service tests for updating or deleting insurers (only create and list exist in the app).
-- **Policy list authorization by role**: We don’t assert that only ADMIN/BROKER/STAFF can GET policies; we only assert 401/403 when `requireRole` rejects.
+- **Policy list auth**: We assert 401 when `requireAuth` rejects; we do not run integration tests with real sessions.
 - **Decimal handling**: Premium is asserted as a number in API tests; we don’t test Prisma `Decimal` serialization edge cases (e.g. very large or precise values).
 - **Concurrency**: No tests for concurrent create/update of policies or insured object links.
 - **Audit**: No tests that policy create/update/delete are written to an audit log (audit is Phase 8).

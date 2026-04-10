@@ -46,27 +46,12 @@ describe("BrokerageSettingsPage access control", () => {
     expect(mockGetCurrentTenant).not.toHaveBeenCalled();
   });
 
-  it("redirects non-admin authenticated users to /dashboard/settings/profile", async () => {
+  it("allows authenticated users to view the Brokerage page", async () => {
     mockGetCurrentUser.mockResolvedValue({
-      id: "u-staff",
-      email: "staff@example.com",
-      name: "Staff",
+      id: "u1",
+      email: "user@example.com",
+      name: "User",
       tenantId: "t1",
-      role: "STAFF",
-    });
-
-    await expect(BrokerageSettingsPage()).rejects.toThrow("NEXT_REDIRECT");
-    expect(mockRedirect).toHaveBeenCalledWith("/dashboard/settings/profile");
-    expect(mockGetCurrentTenant).not.toHaveBeenCalled();
-  });
-
-  it("allows ADMIN users to view the Brokerage page", async () => {
-    mockGetCurrentUser.mockResolvedValue({
-      id: "u-admin",
-      email: "admin@example.com",
-      name: "Admin",
-      tenantId: "t1",
-      role: "ADMIN",
     });
     mockGetCurrentTenant.mockResolvedValue({
       id: "t1",

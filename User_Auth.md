@@ -444,14 +444,14 @@ Click Change password. Expected: Success message appears: Your password has been
 
 (done)
 
- Brokerage access control (non-admin) Step:
+ Brokerage access (authenticated) Step:
 
-Using a non-ADMIN account, open /dashboard/settings/brokerage directly. Expected: Redirects to /dashboard/settings/profile. Data integrity check: Brokerage section/link is not shown in the settings navigation.
+While signed in, open /dashboard/settings/brokerage (or use Organisation → Mäklarkontor in settings). Expected: The brokerage page loads (no redirect to profile solely based on role). Data integrity check: Organisation / Mäklarkontor appears in settings navigation for the same user.
 
 
 (done)
 
- Brokerage update (admin only) Step (admin user):
+ Brokerage update Step:
 
 Open /dashboard/settings/brokerage (or use the Brokerage link in settings navigation).
 Edit Brokerage name.

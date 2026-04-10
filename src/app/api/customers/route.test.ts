@@ -36,7 +36,7 @@ beforeEach(() => {
 
 /**
  * Phase 2: GET/POST /api/customers.
- * Covers: auth (401/403), query validation (400), list success (200),
+ * Covers: auth (401), query validation (400), list success (200),
  * create validation (400), create success (201).
  * Phase 8: POST success calls logAuditEvent with CREATE/Customer (audit wiring).
  * Does not cover: real session, DB, or listCustomersQuerySchema edge cases (tested in validations).
@@ -46,7 +46,7 @@ describe("GET /api/customers", () => {
     return new NextRequest(url);
   }
 
-  it("returns 401 when requireRole throws Unauthorized", async () => {
+  it("returns 401 when requireAuth throws Unauthorized", async () => {
     mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(request());
@@ -100,7 +100,7 @@ describe("GET /api/customers", () => {
 });
 
 describe("POST /api/customers", () => {
-  it("returns 401 when requireRole throws Unauthorized", async () => {
+  it("returns 401 when requireAuth throws Unauthorized", async () => {
     mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await POST(

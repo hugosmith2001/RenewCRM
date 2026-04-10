@@ -35,26 +35,12 @@ describe("DataProcessingSettingsPage access control", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/login");
   });
 
-  it("redirects non-admin authenticated users to /dashboard/settings/privacy", async () => {
+  it("allows authenticated users to view the page", async () => {
     mockGetCurrentUser.mockResolvedValue({
-      id: "u-staff",
-      email: "staff@example.com",
-      name: "Staff",
+      id: "u1",
+      email: "user@example.com",
+      name: "User",
       tenantId: "t1",
-      role: "STAFF",
-    });
-
-    await expect(DataProcessingSettingsPage()).rejects.toThrow("NEXT_REDIRECT");
-    expect(mockRedirect).toHaveBeenCalledWith("/dashboard/settings/privacy");
-  });
-
-  it("allows ADMIN users to view the page", async () => {
-    mockGetCurrentUser.mockResolvedValue({
-      id: "u-admin",
-      email: "admin@example.com",
-      name: "Admin",
-      tenantId: "t1",
-      role: "ADMIN",
     });
 
     const element = await DataProcessingSettingsPage();

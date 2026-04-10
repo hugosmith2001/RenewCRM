@@ -3,7 +3,7 @@ import { authConfig } from "@/auth.config";
 
 /**
  * Phase 1: Edge-safe auth config.
- * Covers: session callback adds id, tenantId, role to session when token has them;
+ * Covers: session callback adds id and tenantId to session when token has them;
  *         session callback does not mutate when token is missing fields.
  * Does not cover: full NextAuth flow, JWT encoding, or middleware.
  */
@@ -35,22 +35,6 @@ describe("authConfig", () => {
       expect(result.user).toBeDefined();
       expect(result.user!.id).toBe("user-123");
       expect(result.user!.tenantId).toBe("tenant-456");
-      expect(result.user!.role).toBe("ADMIN");
-    });
-
-    it("copies role from token when present", () => {
-      if (typeof sessionCallback !== "function") throw new Error("missing session callback");
-      const session = {
-        user: { email: "x@x.com", name: "X" },
-        expires: "",
-      };
-      const token = {
-        id: "user-123",
-        tenantId: "tenant-456",
-        role: "STAFF",
-      };
-      const result = sessionCallback({ session, token, user: {} as never });
-      expect(result.user!.role).toBe("STAFF");
     });
 
     it("returns session unchanged when token has no id", () => {

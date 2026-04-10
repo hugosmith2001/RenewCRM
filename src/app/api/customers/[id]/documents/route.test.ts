@@ -93,7 +93,7 @@ beforeEach(() => {
  * Does not cover: real storage, real DB, or FormData with very large file in Node.
  */
 describe("GET /api/customers/[id]/documents", () => {
-  it("returns 401 when requireRole throws Unauthorized", async () => {
+  it("returns 401 when requireAuth throws Unauthorized", async () => {
     mockRequireAuth.mockRejectedValue(new Error("Unauthorized"));
 
     const res = await GET(new NextRequest("http://localhost"), {

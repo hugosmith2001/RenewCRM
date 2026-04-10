@@ -192,8 +192,8 @@ Audit logging purpose:
 - `AuditEvent` is **not** for storing personal data.
 - Metadata must avoid PII (store **IDs** instead of names/emails; never store free-text notes/bodies).
 
-5) **Access controls and admin safeguards**
-- Add safeguards for ADMIN actions:
+5) **Access controls and safeguards**
+- Add safeguards for sensitive account actions (e.g. bulk export, purge, user management if multi-user returns):
   - optional MFA (if feasible)
   - session invalidation on password change
   - rate limiting for login and sensitive endpoints
@@ -215,8 +215,8 @@ Acceptance criteria:
   - Provide “structured fields” for common needs to avoid free-text.
 - **Optional content scanning / classification** (lightweight):
   - Flag likely sensitive entries (IDs, health terms, etc.) for review.
-- **Role-based access to notes/documents**:
-  - Ensure STAFF access is appropriate for your typical deployments.
+- **Access to notes/documents**:
+  - Ensure only appropriate people in your org can use broker accounts; the app does not implement separate staff/broker roles today.
 
 #### Free-text risk policy (treat as high-risk by default)
 

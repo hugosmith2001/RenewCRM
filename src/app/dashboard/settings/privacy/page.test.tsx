@@ -26,7 +26,6 @@ describe("PrivacySettingsPage", () => {
       email: "user@example.com",
       name: "User",
       tenantId: "t1",
-      role: "STAFF",
     });
 
     const element = await PrivacySettingsPage();

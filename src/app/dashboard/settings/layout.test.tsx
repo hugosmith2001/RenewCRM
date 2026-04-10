@@ -35,13 +35,12 @@ describe("SettingsLayout (Phase 0)", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/login");
   });
 
-  it("shows Account nav links for any authenticated role", async () => {
+  it("shows Account nav links for any authenticated user", async () => {
     mockGetCurrentUser.mockResolvedValue({
       id: "u1",
       email: "user@example.com",
       name: "User",
       tenantId: "t1",
-      role: "STAFF",
     });
 
     const children = <div>child</div>;
@@ -56,13 +55,12 @@ describe("SettingsLayout (Phase 0)", () => {
     expect(html).toContain("Integritet &amp; regelefterlevnad");
   });
 
-  it("shows Organization nav links only for ADMIN", async () => {
+  it("shows Organization nav links for any authenticated user", async () => {
     mockGetCurrentUser.mockResolvedValue({
-      id: "u-admin",
-      email: "admin@example.com",
-      name: "Admin",
+      id: "u1",
+      email: "user@example.com",
+      name: "User",
       tenantId: "t1",
-      role: "ADMIN",
     });
 
     const children = <div>child</div>;
@@ -71,44 +69,6 @@ describe("SettingsLayout (Phase 0)", () => {
     const html = renderToStaticMarkup(element as React.ReactElement);
     expect(html).toContain("/dashboard/settings/brokerage");
     expect(html).toContain("Mäklarkontor");
-    expect(html).not.toContain("/dashboard/settings/team");
-    expect(html).not.toContain("Team");
-  });
-
-  it("does not show Organization nav links for BROKER", async () => {
-    mockGetCurrentUser.mockResolvedValue({
-      id: "u-broker",
-      email: "broker@example.com",
-      name: "Broker",
-      tenantId: "t1",
-      role: "BROKER",
-    });
-
-    const children = <div>child</div>;
-    const element = await SettingsLayout({ children });
-
-    const html = renderToStaticMarkup(element as React.ReactElement);
-    expect(html).not.toContain("/dashboard/settings/brokerage");
-    expect(html).not.toContain("Mäklarkontor");
-    expect(html).not.toContain("/dashboard/settings/team");
-    expect(html).not.toContain("Team");
-  });
-
-  it("does not show Organization nav links for STAFF", async () => {
-    mockGetCurrentUser.mockResolvedValue({
-      id: "u-staff",
-      email: "staff@example.com",
-      name: "Staff",
-      tenantId: "t1",
-      role: "STAFF",
-    });
-
-    const children = <div>child</div>;
-    const element = await SettingsLayout({ children });
-
-    const html = renderToStaticMarkup(element as React.ReactElement);
-    expect(html).not.toContain("/dashboard/settings/brokerage");
-    expect(html).not.toContain("Mäklarkontor");
     expect(html).not.toContain("/dashboard/settings/team");
     expect(html).not.toContain("Team");
   });

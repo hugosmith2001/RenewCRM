@@ -11,10 +11,6 @@ export default async function BrokerageSettingsPage() {
     redirect("/login");
   }
 
-  if (user.role !== "ADMIN") {
-    redirect("/dashboard/settings/profile");
-  }
-
   const tenant = await getCurrentTenant();
 
   return (

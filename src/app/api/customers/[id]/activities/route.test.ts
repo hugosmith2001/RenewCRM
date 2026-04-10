@@ -59,7 +59,7 @@ beforeEach(() => {
  * Phase 7: GET/POST /api/customers/[id]/activities.
  * Covers: 401/403, 404 when customer not found, 200 list (empty and with data),
  * 201 create with createdById, 400 validation (POST), 400 when createActivity returns null.
- * Does not cover: real DB, session, or STAFF create (STAFF cannot create; POST uses requireRole ADMIN/BROKER).
+ * Does not cover: real DB or full session integration.
  */
 describe("GET /api/customers/[id]/activities", () => {
   it("returns 401 when requireAuth throws Unauthorized", async () => {

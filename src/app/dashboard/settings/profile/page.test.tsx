@@ -33,7 +33,6 @@ describe("ProfileSettingsPage (Phase 1)", () => {
       email: "user@example.com",
       name: "Existing Name",
       tenantId: "t1",
-      role: "STAFF",
     });
 
     const element = await ProfileSettingsPage();
@@ -48,7 +47,6 @@ describe("ProfileSettingsPage (Phase 1)", () => {
       email: "user@example.com",
       name: null,
       tenantId: "t1",
-      role: "ADMIN",
     });
 
     const element = await ProfileSettingsPage();

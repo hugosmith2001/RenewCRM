@@ -11,10 +11,6 @@ export default async function DataProcessingSettingsPage() {
     redirect("/login");
   }
 
-  if (user.role !== "ADMIN") {
-    redirect("/dashboard/settings/privacy");
-  }
-
   return (
     <div className="space-y-6">
       <div>

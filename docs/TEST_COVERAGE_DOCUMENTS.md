@@ -31,12 +31,12 @@ All service tests use **mocked** Prisma, storage, and customer/policy modules. N
 **GET/POST `/api/customers/[id]/documents`** (`route.test.ts`)
 
 - **GET:** 401 when unauthenticated; 404 when customer not found; 200 with documents array (or empty array); `assertTenantAccess` and `listDocumentsByCustomerId(tenantId, customerId)` called as expected.
-- **POST:** 401/403 (upload requires ADMIN or BROKER); 404 when customer not found; 400 when no file, file too large (>20 MB), or disallowed MIME type; 400 when metadata validation fails (e.g. invalid `documentType`); 400 when `createDocument` returns null; 201 with created document and correct args to `createDocument` when upload succeeds. FormData built with `File` and fields (name, documentType, optional policyId).
+- **POST:** 401 when unauthenticated; 404 when customer not found; 400 when no file, file too large (>20 MB), or disallowed MIME type; 400 when metadata validation fails (e.g. invalid `documentType`); 400 when `createDocument` returns null; 201 with created document and correct args to `createDocument` when upload succeeds. FormData built with `File` and fields (name, documentType, optional policyId).
 
 **GET/DELETE `/api/customers/[id]/documents/[documentId]`** (`[documentId]/route.test.ts`)
 
 - **GET:** 401 when unauthenticated; 404 when document not found; 400 when document’s `customerId` ≠ URL `id`; 200 with document body when authorized and customer matches.
-- **DELETE:** 401 when unauthenticated; 403 for STAFF (delete requires ADMIN or BROKER); 404 when document not found; 400 when document belongs to another customer; 204 and `deleteDocument(tenantId, documentId)` when authorized.
+- **DELETE:** 401 when unauthenticated; 404 when document not found; 400 when document belongs to another customer; 204 and `deleteDocument(tenantId, documentId)` when authorized.
 
 **GET `/api/customers/[id]/documents/[documentId]/download`** (`download/route.test.ts`)
 
@@ -80,11 +80,9 @@ All route tests mock auth, customer, and document services. No real HTTP, DB, or
 - **`formData.get("file")` not a File** – Route checks `file instanceof File`; no test with a string or blob in place of file.
 - **Stream errors after response start** – If `storageGetStream` succeeds but the stream errors mid-read, the client may see a truncated or failed response; not tested.
 
-### 3.3 Role behavior
+### 3.3 Auth behavior
 
-- **GET list/document/metadata/download** – Allowed for ADMIN, BROKER, STAFF (`requireRole([ADMIN, BROKER, STAFF])`). Tested via 401 when `requireRole` throws.
-- **POST upload** – Allowed only for ADMIN, BROKER. STAFF gets 403. Tested in route test.
-- **DELETE** – Allowed only for ADMIN, BROKER. STAFF gets 403. Tested in route test.
+- **GET/POST/DELETE/download** – Routes use `requireAuth()` and tenant/customer checks. Tests cover 401 when `requireAuth` throws and successful paths when mocked auth succeeds.
 
 ---
 

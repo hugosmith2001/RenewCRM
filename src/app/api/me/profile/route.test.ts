@@ -58,7 +58,6 @@ describe("PATCH /api/me/profile", () => {
       email: "user@example.com",
       name: "Old Name",
       tenantId: "tenant-1",
-      role: "ADMIN" as const,
     };
     mockRequireAuth.mockResolvedValue(sessionUser);
     mockPrismaUserUpdate.mockResolvedValue({
@@ -97,7 +96,6 @@ describe("PATCH /api/me/profile", () => {
       email: "user@example.com",
       name: "Old Name",
       tenantId: "tenant-1",
-      role: "STAFF" as const,
     };
     mockRequireAuth.mockResolvedValue(sessionUser);
     // prisma.select prevents passwordHash from ever being returned,
@@ -125,7 +123,6 @@ describe("PATCH /api/me/profile", () => {
       email: "user@example.com",
       name: "Old Name",
       tenantId: "tenant-1",
-      role: "BROKER" as const,
     };
     mockRequireAuth.mockResolvedValue(sessionUser);
 
@@ -148,7 +145,6 @@ describe("PATCH /api/me/profile", () => {
       email: "user@example.com",
       name: "Old Name",
       tenantId: "tenant-1",
-      role: "ADMIN" as const,
     };
     mockRequireAuth.mockResolvedValue(sessionUser);
     mockPrismaUserUpdate.mockResolvedValue({
@@ -163,7 +159,6 @@ describe("PATCH /api/me/profile", () => {
         // These should be ignored by the implementation
         id: "other-user",
         tenantId: "other-tenant",
-        role: "BROKER",
       })
     );
 

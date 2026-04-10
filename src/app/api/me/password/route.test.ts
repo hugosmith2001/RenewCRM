@@ -66,7 +66,6 @@ describe("POST /api/me/password", () => {
       email: "user@example.com",
       name: "User",
       tenantId: "tenant-1",
-      role: "ADMIN",
     });
 
     const res = await POST(
@@ -85,7 +84,6 @@ describe("POST /api/me/password", () => {
       email: "user@example.com",
       name: "User",
       tenantId: "tenant-1",
-      role: "ADMIN",
     });
 
     // The endpoint rate-limits before it parses/validates JSON, so use intentionally bad bodies.
@@ -110,7 +108,6 @@ describe("POST /api/me/password", () => {
       email: "user@example.com",
       name: "User",
       tenantId: "tenant-1",
-      role: "ADMIN",
     });
     mockPrismaUserFindUnique.mockResolvedValue({
       id: "user-1",
@@ -134,7 +131,6 @@ describe("POST /api/me/password", () => {
       email: "user@example.com",
       name: "User",
       tenantId: "tenant-1",
-      role: "ADMIN",
     });
     mockPrismaUserFindUnique.mockResolvedValue({
       id: "user-1",

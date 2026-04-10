@@ -169,7 +169,8 @@ export default async function PolicyDetailPage({ params }: Props) {
             </p>
           ) : (
             <ul className={sectionListClasses}>
-              {policy.insuredObjects.map(({ insuredObject }) => (
+              {policy.insuredObjects.map(
+                ({ insuredObject }: { insuredObject: { id: string; name: string; type: string } }) => (
                 <li
                   key={insuredObject.id}
                   className={`flex items-center justify-between gap-2 ${sectionListItemClasses}`}

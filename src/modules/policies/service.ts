@@ -60,7 +60,6 @@ export async function listPolicies(
           select: {
             id: true,
             name: true,
-            owner: { select: { id: true, name: true, email: true } },
           },
         },
         insurer: { select: { id: true, name: true } },
@@ -81,13 +80,12 @@ export async function listPolicies(
     const c = p.customer as {
       id: string;
       name: string;
-      owner: { id: string; name: string | null; email: string } | null;
     };
     return {
       ...p,
       customer: { id: c.id, name: c.name },
       insurer: p.insurer,
-      customerOwner: c.owner ?? null,
+      customerOwner: null,
       firstInsuredObjectType: p.insuredObjects[0]?.insuredObject?.type ?? null,
     };
   });

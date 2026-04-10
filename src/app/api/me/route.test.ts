@@ -32,7 +32,6 @@ describe("GET /api/me", () => {
       email: "admin@demo.local",
       name: "Demo Admin",
       tenantId: "tenant-1",
-      role: "ADMIN" as const,
     };
     mockGetCurrentUser.mockResolvedValue(user);
     const res = await GET();
@@ -43,7 +42,6 @@ describe("GET /api/me", () => {
       email: user.email,
       name: user.name,
       tenantId: user.tenantId,
-      role: user.role,
     });
   });
 
@@ -53,7 +51,6 @@ describe("GET /api/me", () => {
       email: "x@x.com",
       name: null,
       tenantId: "t1",
-      role: "STAFF",
     });
     const res = await GET();
     expect(res.status).toBe(200);

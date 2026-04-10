@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/modules/auth";
-import { Role } from "@prisma/client";
 
 type SettingsLayoutProps = {
   children: React.ReactNode;
@@ -15,8 +14,6 @@ export default async function SettingsLayout({ children }: SettingsLayoutProps) 
     redirect("/login");
   }
 
-  const isAdmin = user.role === Role.ADMIN;
-
   return (
     <div className="space-y-6">
       <header className="border-b border-border pb-4">
@@ -26,7 +23,7 @@ export default async function SettingsLayout({ children }: SettingsLayoutProps) 
               Inställningar
             </h1>
             <p className="text-sm text-muted-foreground">
-              Hantera ditt konto{isAdmin ? " och din organisation" : ""}.
+              Hantera ditt konto och din organisation.
             </p>
           </div>
         </div>
@@ -54,21 +51,17 @@ export default async function SettingsLayout({ children }: SettingsLayoutProps) 
               Integritet &amp; regelefterlevnad
             </Link>
           </div>
-          {isAdmin && (
-            <>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Organisation
-                </span>
-                <Link
-                  href="/dashboard/settings/brokerage"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Mäklarkontor
-                </Link>
-              </div>
-            </>
-          )}
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Organisation
+            </span>
+            <Link
+              href="/dashboard/settings/brokerage"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              Mäklarkontor
+            </Link>
+          </div>
         </nav>
       </header>
       {children}

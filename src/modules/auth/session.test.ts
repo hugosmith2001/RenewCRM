@@ -30,7 +30,6 @@ const sessionUser: SessionUser = {
   email: "admin@tenant.local",
   name: "Admin",
   tenantId: "tenant-1",
-  role: null,
 };
 
 beforeEach(() => {
@@ -39,7 +38,7 @@ beforeEach(() => {
 
 /**
  * Phase 1: Auth session helpers.
- * Covers: getCurrentUser, getCurrentTenant, requireAuth, requireRole, assertTenantAccess
+ * Covers: getCurrentUser, getCurrentTenant, requireAuth, assertTenantAccess
  * with mocked auth() and prisma. Does not cover real NextAuth or DB.
  */
 describe("getCurrentUser", () => {

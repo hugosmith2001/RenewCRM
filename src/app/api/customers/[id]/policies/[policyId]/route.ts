@@ -43,7 +43,7 @@ export async function GET(
     const out = {
       ...policy,
       insuredObjectIds:
-        policy.insuredObjects?.map((o) => o.insuredObject.id) ?? [],
+        policy.insuredObjects?.map((o: { insuredObject: { id: string } }) => o.insuredObject.id) ?? [],
     };
     return NextResponse.json(serializePolicy(out));
   } catch (err) {

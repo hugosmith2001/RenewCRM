@@ -6,7 +6,6 @@ export {
   getCurrentUser,
   getCurrentTenant,
   requireAuth,
-  requireRole,
   assertTenantAccess,
   listTenantUsers,
   type SessionUser,

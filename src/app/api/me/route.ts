@@ -15,6 +15,5 @@ export async function GET() {
     email: user.email,
     name: user.name,
     tenantId: user.tenantId,
-    role: user.role,
   });
 }

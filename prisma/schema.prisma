@@ -72,12 +72,19 @@ model AuditEvent {
   @@index([tenantId, entityType, entityId])
 }
 
+enum UserRole {
+  ADMIN
+  BROKER
+  STAFF
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String
   passwordHash String
   name         String?
   isActive     Boolean  @default(true)
+  role         UserRole @default(ADMIN)
   /**
    * Restriction of processing (GDPR Art. 18) / legal hold marker for DSAR workflows.
    * When set, non-admin access and processing should be limited.

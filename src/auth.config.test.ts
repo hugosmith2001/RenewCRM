@@ -35,6 +35,22 @@ describe("authConfig", () => {
       expect(result.user).toBeDefined();
       expect(result.user!.id).toBe("user-123");
       expect(result.user!.tenantId).toBe("tenant-456");
+      expect(result.user!.role).toBe("ADMIN");
+    });
+
+    it("copies role from token when present", () => {
+      if (typeof sessionCallback !== "function") throw new Error("missing session callback");
+      const session = {
+        user: { email: "x@x.com", name: "X" },
+        expires: "",
+      };
+      const token = {
+        id: "user-123",
+        tenantId: "tenant-456",
+        role: "STAFF",
+      };
+      const result = sessionCallback({ session, token, user: {} as never });
+      expect(result.user!.role).toBe("STAFF");
     });
 
     it("returns session unchanged when token has no id", () => {

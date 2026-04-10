@@ -44,6 +44,7 @@ export const authConfig = {
       if (session.user && token && typeof token.id === "string" && typeof token.tenantId === "string") {
         session.user.id = token.id;
         session.user.tenantId = token.tenantId;
+        session.user.role = token.role ?? "ADMIN";
       }
       return session;
     },

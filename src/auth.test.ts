@@ -44,6 +44,7 @@ describe("auth JWT callback (session invalidation)", () => {
       isActive: false,
       tenantId: "t1",
       sessionVersion: 1,
+      role: "ADMIN",
     });
 
     const out = await opts.callbacks.jwt({
@@ -67,6 +68,7 @@ describe("auth JWT callback (session invalidation)", () => {
       isActive: true,
       tenantId: "t1",
       sessionVersion: 2,
+      role: "ADMIN",
     });
 
     const out = await opts.callbacks.jwt({
@@ -90,6 +92,7 @@ describe("auth JWT callback (session invalidation)", () => {
       isActive: true,
       tenantId: "t-new",
       sessionVersion: 7,
+      role: "BROKER",
     });
 
     const out = await opts.callbacks.jwt({
@@ -105,6 +108,7 @@ describe("auth JWT callback (session invalidation)", () => {
       id: "u1",
       tenantId: "t-new",
       sessionVersion: 7,
+      role: "BROKER",
     });
   });
 });

@@ -51,17 +51,19 @@ export default async function SettingsLayout({ children }: SettingsLayoutProps) 
               Integritet &amp; regelefterlevnad
             </Link>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Organisation
-            </span>
-            <Link
-              href="/dashboard/settings/brokerage"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Mäklarkontor
-            </Link>
-          </div>
+          {user.role === "ADMIN" ? (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Organisation
+              </span>
+              <Link
+                href="/dashboard/settings/brokerage"
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Mäklarkontor
+              </Link>
+            </div>
+          ) : null}
         </nav>
       </header>
       {children}

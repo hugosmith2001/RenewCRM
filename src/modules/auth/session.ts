@@ -2,6 +2,7 @@
  * Current user and tenant helpers.
  * Use in Server Components, API routes, and Server Actions.
  */
+import type { UserRole } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 
@@ -10,6 +11,7 @@ export type SessionUser = {
   email: string;
   name?: string | null;
   tenantId: string;
+  role: UserRole;
 };
 
 /**
@@ -27,6 +29,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     email: session.user.email ?? "",
     name: session.user.name ?? null,
     tenantId: session.user.tenantId,
+    role: session.user.role,
   };
 }
 

@@ -1,3 +1,4 @@
+import type { UserRole } from "@prisma/client";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
@@ -40,6 +41,7 @@ export const { handlers, signIn, signOut, auth } = (NextAuth as any)({
           name: user.name,
           tenantId: user.tenantId,
           sessionVersion: user.sessionVersion,
+          role: user.role,
         };
       },
     }),
@@ -52,6 +54,7 @@ export const { handlers, signIn, signOut, auth } = (NextAuth as any)({
         token.id = user.id as string;
         token.tenantId = (user as { tenantId: string }).tenantId;
         token.sessionVersion = (user as { sessionVersion: number }).sessionVersion;
+        token.role = (user as { role: UserRole }).role;
         return token;
       }
 
@@ -64,6 +67,7 @@ export const { handlers, signIn, signOut, auth } = (NextAuth as any)({
             isActive: true,
             tenantId: true,
             sessionVersion: true,
+            role: true,
           },
         });
 
@@ -77,6 +81,7 @@ export const { handlers, signIn, signOut, auth } = (NextAuth as any)({
         // Keep tenant authoritative from DB to avoid stale session.
         token.tenantId = dbUser.tenantId;
         token.sessionVersion = dbUser.sessionVersion;
+        token.role = dbUser.role;
       }
 
       return token;

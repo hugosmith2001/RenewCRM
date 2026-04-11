@@ -66,28 +66,25 @@ export type StorageDriver = z.infer<typeof storageDriverSchema>;
 
 export type StorageConfig =
   | {
-    driver: "local";
-    rootPath: string;
-    allowInProduction: boolean;
-    localEncryption: {
-      enabled: boolean;
-      key?: string;
-      allowUnencryptedInProduction: boolean;
-    };
-  }
+      driver: "local";
+      rootPath: string;
+      allowInProduction: boolean;
+      localEncryption: {
+        enabled: boolean;
+        key?: string;
+        allowUnencryptedInProduction: boolean;
+      };
+    }
   | {
-    driver: "s3";
-    // Reserved for future S3-compatible implementation.
-    bucket: string;
-    region?: string;
-    endpoint?: string;
-    forcePathStyle?: boolean;
-    prefix?: string;
-    sse?: "AES256" | "aws:kms";
-    kmsKeyId?: string;
-    accessKeyId?: string;
-    secretAccessKey?: string;
-  };
+      driver: "s3";
+      bucket: string;
+      region: string;
+      endpoint?: string;
+      forcePathStyle: boolean;
+      keyPrefix: string;
+      accessKeyId?: string;
+      secretAccessKey?: string;
+    };
 
 export type RuntimeConfig = {
   env: NodeEnv;
@@ -106,14 +103,19 @@ const baseSchema = z.object({
   STORAGE_LOCAL_ENCRYPTION_KEY: z.string().optional(),
   STORAGE_LOCAL_ENCRYPTION_ENABLED: z.string().optional(),
   STORAGE_LOCAL_UNENCRYPTED_OK_IN_PROD: z.string().optional(),
-  // S3-compatible reserved fields (for validation/documentation only for now).
+  // S3 (canonical names)
+  S3_BUCKET: z.string().optional(),
+  AWS_REGION: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_ENDPOINT: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z.string().optional(),
+  // Legacy aliases (still supported)
   STORAGE_S3_BUCKET: z.string().optional(),
   STORAGE_S3_REGION: z.string().optional(),
   STORAGE_S3_ENDPOINT: z.string().optional(),
   STORAGE_S3_FORCE_PATH_STYLE: z.string().optional(),
   STORAGE_S3_PREFIX: z.string().optional(),
-  STORAGE_S3_SSE: z.string().optional(),
-  STORAGE_S3_KMS_KEY_ID: z.string().optional(),
   STORAGE_S3_ACCESS_KEY_ID: z.string().optional(),
   STORAGE_S3_SECRET_ACCESS_KEY: z.string().optional(),
 });
@@ -192,14 +194,61 @@ export function getRuntimeConfig(): RuntimeConfig {
     return cachedConfig;
   }
 
-  // "s3" reserved validation: fail fast until implementation lands.
-  const bucket = parsed.data.STORAGE_S3_BUCKET?.trim();
-  if (!bucket) {
-    throw new Error("STORAGE_S3_BUCKET is required when STORAGE_DRIVER=s3.");
+  const bucket =
+    parsed.data.S3_BUCKET?.trim() || parsed.data.STORAGE_S3_BUCKET?.trim() || "";
+  const region =
+    parsed.data.AWS_REGION?.trim() || parsed.data.STORAGE_S3_REGION?.trim() || "";
+
+  const accessKeyId =
+    parsed.data.AWS_ACCESS_KEY_ID?.trim() ||
+    parsed.data.STORAGE_S3_ACCESS_KEY_ID?.trim();
+  const secretAccessKey =
+    parsed.data.AWS_SECRET_ACCESS_KEY?.trim() ||
+    parsed.data.STORAGE_S3_SECRET_ACCESS_KEY?.trim();
+
+  if ((accessKeyId && !secretAccessKey) || (!accessKeyId && secretAccessKey)) {
+    throw new Error(
+      "When using explicit credentials, set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY (or both STORAGE_S3_* legacy vars), or omit both to use the default AWS credential chain."
+    );
   }
-  throw new Error(
-    "STORAGE_DRIVER=s3 is configured but S3-compatible storage is not implemented in this codebase yet."
+
+  const endpoint =
+    parsed.data.S3_ENDPOINT?.trim() || parsed.data.STORAGE_S3_ENDPOINT?.trim() || "";
+  const forcePathStyle = isTruthy(
+    parsed.data.S3_FORCE_PATH_STYLE || parsed.data.STORAGE_S3_FORCE_PATH_STYLE
   );
+  const keyPrefix = (parsed.data.STORAGE_S3_PREFIX?.trim() || "").replace(/^\/+/, "").replace(/\/+$/, "");
+
+  if (!bucket && !isNextBuild()) {
+    throw new Error(
+      "S3_BUCKET (or STORAGE_S3_BUCKET) is required when STORAGE_DRIVER=s3."
+    );
+  }
+  if (!region && !isNextBuild()) {
+    throw new Error(
+      "AWS_REGION (or STORAGE_S3_REGION) is required when STORAGE_DRIVER=s3."
+    );
+  }
+
+  const effectiveBucket = bucket || "__s3_build_placeholder__";
+  const effectiveRegion = region || "us-east-1";
+
+  cachedConfig = {
+    env,
+    databaseUrl: parsed.data.DATABASE_URL,
+    authSecret: parsed.data.AUTH_SECRET,
+    storage: {
+      driver: "s3",
+      bucket: effectiveBucket,
+      region: effectiveRegion,
+      endpoint: endpoint || undefined,
+      forcePathStyle,
+      keyPrefix,
+      accessKeyId: accessKeyId || undefined,
+      secretAccessKey: secretAccessKey || undefined,
+    },
+  };
+  return cachedConfig;
 }
 
 export function assertRuntimeConfig(): void {

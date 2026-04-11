@@ -106,7 +106,7 @@ describe("GET /api/customers/[id]/documents/[documentId]/download", () => {
     mockGetDocumentById.mockResolvedValue(document);
     mockAssertTenantAccess.mockImplementation(() => {});
     const nodeStream = Readable.from(Buffer.from("pdf content"));
-    mockGetDocumentStream.mockReturnValue(nodeStream);
+    mockGetDocumentStream.mockResolvedValue(nodeStream);
 
     const res = await GET(new NextRequest("http://localhost"), {
       params: params(customerId, documentId),

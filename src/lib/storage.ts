@@ -1,34 +1,43 @@
 /**
  * Object storage abstraction – Phase 6.
- * Local filesystem by default; S3-compatible when env vars are set.
+ * Local filesystem for development; Amazon S3 in production when configured.
  */
 import { createReadStream, mkdirSync, unlinkSync, existsSync } from "fs";
 import { readFile } from "fs/promises";
 import path from "path";
 import { Readable } from "stream";
 import crypto from "crypto";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+  S3ServiceException,
+} from "@aws-sdk/client-s3";
+import type { StorageConfig } from "@/lib/config";
 import { getRuntimeConfig } from "@/lib/config";
 import { logger } from "@/lib/logger";
 
-const cfg = getRuntimeConfig();
-const localStorage = (() => {
-  if (cfg.storage.driver !== "local") {
-    // Until S3 support is implemented, config validation will throw before this module is used.
-    throw new Error("Unsupported storage driver");
-  }
-  return cfg.storage;
-})();
+function getStorageConfig(): StorageConfig {
+  return getRuntimeConfig().storage;
+}
 
-const STORAGE_ROOT = localStorage.rootPath;
+function isLocalStorage(cfg: StorageConfig): cfg is Extract<StorageConfig, { driver: "local" }> {
+  return cfg.driver === "local";
+}
 
-function localPath(storageKey: string): string {
+function isS3Storage(cfg: StorageConfig): cfg is Extract<StorageConfig, { driver: "s3" }> {
+  return cfg.driver === "s3";
+}
+
+/** Validates storageKey for both local paths and S3 object keys (relative, no traversal). */
+function validateRelativeStorageKey(storageKey: string): void {
   if (!storageKey || storageKey.length > 1024) {
     throw new Error("Invalid storage key");
   }
   if (path.isAbsolute(storageKey)) {
     throw new Error("Invalid storage key");
   }
-  // Prevent traversal and surprising separators.
   const normalized = storageKey.replaceAll("\\", "/");
   if (
     normalized.includes("..") ||
@@ -38,9 +47,12 @@ function localPath(storageKey: string): string {
   ) {
     throw new Error("Invalid storage key");
   }
+}
 
-  const fullPath = path.join(STORAGE_ROOT, storageKey);
-  const resolvedRoot = path.resolve(STORAGE_ROOT);
+function localFullPath(storageKey: string, rootPath: string): string {
+  validateRelativeStorageKey(storageKey);
+  const fullPath = path.join(rootPath, storageKey);
+  const resolvedRoot = path.resolve(rootPath);
   const resolvedFull = path.resolve(fullPath);
   if (!resolvedFull.startsWith(resolvedRoot + path.sep) && resolvedFull !== resolvedRoot) {
     throw new Error("Invalid storage key");
@@ -48,34 +60,77 @@ function localPath(storageKey: string): string {
   return fullPath;
 }
 
-/**
- * Ensure directory exists for a storage key (e.g. tenantId/documentId).
- */
-export function ensureDirForKey(storageKey: string): void {
-  const dir = path.dirname(localPath(storageKey));
-  mkdirSync(dir, { recursive: true, mode: 0o700 });
+let s3Client: S3Client | null = null;
+let s3ClientSignature: string | null = null;
+
+function getS3Client(): S3Client {
+  const cfg = getStorageConfig();
+  if (!isS3Storage(cfg)) {
+    throw new Error("S3 client requested but STORAGE_DRIVER is not s3");
+  }
+  const sig = [
+    cfg.region,
+    cfg.bucket,
+    cfg.endpoint ?? "",
+    String(cfg.forcePathStyle),
+    cfg.accessKeyId ?? "",
+  ].join("|");
+  if (s3Client && s3ClientSignature === sig) {
+    return s3Client;
+  }
+  s3Client = new S3Client({
+    region: cfg.region,
+    endpoint: cfg.endpoint,
+    forcePathStyle: cfg.forcePathStyle,
+    credentials:
+      cfg.accessKeyId && cfg.secretAccessKey
+        ? { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey }
+        : undefined,
+  });
+  s3ClientSignature = sig;
+  return s3Client;
+}
+
+function s3ObjectKey(storageKey: string, cfg: Extract<StorageConfig, { driver: "s3" }>): string {
+  validateRelativeStorageKey(storageKey);
+  return cfg.keyPrefix ? `${cfg.keyPrefix}/${storageKey}` : storageKey;
+}
+
+function mapS3Failure(err: unknown, storageKey: string, op: string): never {
+  if (err instanceof S3ServiceException) {
+    const code = err.name;
+    const status = err.$metadata?.httpStatusCode;
+    if (code === "NoSuchKey" || code === "NotFound" || status === 404) {
+      throw new Error("File not found");
+    }
+  }
+  logger.error(`S3 ${op} failed`, {
+    storageKeyHash: hashKey(storageKey),
+    code: err instanceof S3ServiceException ? err.name : undefined,
+    message: err instanceof Error ? err.message : "unknown",
+  });
+  throw new Error("Storage operation failed");
 }
 
 type EncryptedBlob = {
   v: 1;
   alg: "aes-256-gcm";
-  iv: string; // base64
-  tag: string; // base64
-  data: string; // base64
+  iv: string;
+  tag: string;
+  data: string;
 };
 
 const ENCRYPTION_PREFIX = "SKENC1:";
 
-function getEncryptionKey(): Buffer | null {
-  const raw = localStorage.localEncryption.key;
+function getEncryptionKey(localCfg: Extract<StorageConfig, { driver: "local" }>): Buffer | null {
+  const raw = localCfg.localEncryption.key;
   if (!raw) return null;
-  // Derive a stable 32-byte key from the provided secret material.
   return crypto.createHash("sha256").update(raw, "utf8").digest();
 }
 
-function encryptIfEnabled(plain: Buffer): Buffer {
-  if (!localStorage.localEncryption.enabled) return plain;
-  const key = getEncryptionKey();
+function encryptIfEnabled(plain: Buffer, localCfg: Extract<StorageConfig, { driver: "local" }>): Buffer {
+  if (!localCfg.localEncryption.enabled) return plain;
+  const key = getEncryptionKey(localCfg);
   if (!key) return plain;
 
   const iv = crypto.randomBytes(12);
@@ -94,15 +149,13 @@ function encryptIfEnabled(plain: Buffer): Buffer {
   return Buffer.from(ENCRYPTION_PREFIX + JSON.stringify(blob), "utf8");
 }
 
-function decryptIfEnabled(raw: Buffer): Buffer {
-  const key = getEncryptionKey();
+function decryptIfEnabled(raw: Buffer, localCfg: Extract<StorageConfig, { driver: "local" }>): Buffer {
+  const key = getEncryptionKey(localCfg);
   const text = raw.toString("utf8");
   if (!text.startsWith(ENCRYPTION_PREFIX)) {
     return raw;
   }
   if (!key) {
-    // Encrypted blob present but we can't decrypt (missing key).
-    // Failing loudly avoids "random text file" downloads of ciphertext/metadata.
     throw new Error("Encrypted file cannot be decrypted (missing key)");
   }
 
@@ -122,67 +175,157 @@ function decryptIfEnabled(raw: Buffer): Buffer {
 }
 
 /**
+ * Ensure directory exists for a storage key (local driver only; no-op for S3).
+ */
+export function ensureDirForKey(storageKey: string): void {
+  const cfg = getStorageConfig();
+  if (!isLocalStorage(cfg)) return;
+  const dir = path.dirname(localFullPath(storageKey, cfg.rootPath));
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+}
+
+/**
  * Upload buffer to storage. Overwrites if key exists.
  */
 export async function storagePut(storageKey: string, buffer: Buffer): Promise<void> {
-  ensureDirForKey(storageKey);
-  const fullPath = localPath(storageKey);
-  const { writeFile } = await import("fs/promises");
-  const payload = encryptIfEnabled(buffer);
-  await writeFile(fullPath, payload, { mode: 0o600 });
+  const cfg = getStorageConfig();
+  if (isLocalStorage(cfg)) {
+    ensureDirForKey(storageKey);
+    const fullPath = localFullPath(storageKey, cfg.rootPath);
+    const { writeFile } = await import("fs/promises");
+    const payload = encryptIfEnabled(buffer, cfg);
+    await writeFile(fullPath, payload, { mode: 0o600 });
+    return;
+  }
+
+  const client = getS3Client();
+  const key = s3ObjectKey(storageKey, cfg);
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Body: buffer,
+        ServerSideEncryption: "AES256",
+      })
+    );
+  } catch (err) {
+    mapS3Failure(err, storageKey, "put");
+  }
 }
 
 /**
  * Get file as Buffer. Throws if not found.
  */
 export async function storageGet(storageKey: string): Promise<Buffer> {
-  const fullPath = localPath(storageKey);
-  if (!existsSync(fullPath)) {
-    throw new Error("File not found");
+  const cfg = getStorageConfig();
+  if (isLocalStorage(cfg)) {
+    const fullPath = localFullPath(storageKey, cfg.rootPath);
+    if (!existsSync(fullPath)) {
+      throw new Error("File not found");
+    }
+    const raw = await readFile(fullPath);
+    return decryptIfEnabled(raw, cfg);
   }
-  const raw = await readFile(fullPath);
-  return decryptIfEnabled(raw);
+
+  const client = getS3Client();
+  const key = s3ObjectKey(storageKey, cfg);
+  try {
+    const out = await client.send(
+      new GetObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+      })
+    );
+    if (!out.Body) {
+      throw new Error("File not found");
+    }
+    return Buffer.from(await out.Body.transformToByteArray());
+  } catch (err) {
+    if (err instanceof Error && err.message === "File not found") {
+      throw err;
+    }
+    mapS3Failure(err, storageKey, "get");
+  }
 }
 
 /**
  * Get readable stream for download (e.g. for piping to response).
  */
-export function storageGetStream(storageKey: string): Readable {
-  const fullPath = localPath(storageKey);
-  if (!existsSync(fullPath)) {
-    throw new Error("File not found");
+export async function storageGetStream(storageKey: string): Promise<Readable> {
+  const cfg = getStorageConfig();
+  if (isLocalStorage(cfg)) {
+    const fullPath = localFullPath(storageKey, cfg.rootPath);
+    if (!existsSync(fullPath)) {
+      throw new Error("File not found");
+    }
+    if (cfg.localEncryption.key) {
+      return Readable.from(
+        (async function* () {
+          const raw = await readFile(fullPath);
+          const plain = decryptIfEnabled(raw, cfg);
+          yield plain;
+        })()
+      );
+    }
+    return createReadStream(fullPath);
   }
-  // If we have a key configured, we can transparently decrypt encrypted blobs.
-  // Files are limited to 20MB by API constraints, so buffering is acceptable.
-  if (localStorage.localEncryption.key) {
-    return Readable.from(
-      (async function* () {
-        const raw = await readFile(fullPath);
-        const plain = decryptIfEnabled(raw);
-        yield plain;
-      })()
+
+  const client = getS3Client();
+  const key = s3ObjectKey(storageKey, cfg);
+  try {
+    const out = await client.send(
+      new GetObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+      })
     );
+    if (!out.Body) {
+      throw new Error("File not found");
+    }
+    const bytes = await out.Body.transformToByteArray();
+    return Readable.from([Buffer.from(bytes)]);
+  } catch (err) {
+    if (err instanceof Error && err.message === "File not found") {
+      throw err;
+    }
+    mapS3Failure(err, storageKey, "getStream");
   }
-  return createReadStream(fullPath);
 }
 
 /**
- * Delete file by storage key. No-op if not found.
+ * Delete file by storage key. No-op if not found (local); S3 delete is idempotent.
  */
 export async function storageDelete(storageKey: string): Promise<void> {
-  const fullPath = localPath(storageKey);
-  if (existsSync(fullPath)) {
-    try {
-      unlinkSync(fullPath);
-    } catch (err) {
-      logger.error("Storage delete failed", { err, storageKeyHash: hashKey(storageKey) });
-      throw new Error("Storage delete failed");
+  const cfg = getStorageConfig();
+  if (isLocalStorage(cfg)) {
+    const fullPath = localFullPath(storageKey, cfg.rootPath);
+    if (existsSync(fullPath)) {
+      try {
+        unlinkSync(fullPath);
+      } catch (err) {
+        logger.error("Storage delete failed", { err, storageKeyHash: hashKey(storageKey) });
+        throw new Error("Storage delete failed");
+      }
     }
+    return;
+  }
+
+  const client = getS3Client();
+  const key = s3ObjectKey(storageKey, cfg);
+  try {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+      })
+    );
+  } catch (err) {
+    mapS3Failure(err, storageKey, "delete");
   }
 }
 
 function hashKey(storageKey: string): string {
-  // Avoid logging the actual path/key.
   return crypto.createHash("sha256").update(storageKey, "utf8").digest("hex").slice(0, 16);
 }
 
@@ -191,6 +334,5 @@ function hashKey(storageKey: string): string {
  */
 export function buildStorageKey(tenantId: string, documentId: string, originalFilename: string): string {
   const safe = originalFilename.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200) || "file";
-  // Use POSIX-style keys regardless of OS to keep storageKey stable.
   return [tenantId, documentId, safe].join("/");
 }

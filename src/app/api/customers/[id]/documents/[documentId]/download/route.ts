@@ -49,7 +49,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     }
     assertTenantAccess(user, doc.tenantId);
 
-    const nodeStream = getDocumentStream(doc.storageKey);
+    const nodeStream = await getDocumentStream(doc.storageKey);
     const webStream = Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>;
     const headers = new Headers();
     const downloadName = buildDownloadFilename(doc.name, doc.storageKey);

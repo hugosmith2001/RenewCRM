@@ -3,6 +3,7 @@
  * Document CRUD with tenant isolation; links to customer and optional policy.
  */
 import path from "path";
+import type { Readable } from "stream";
 import { prisma } from "@/lib/db";
 import type { Document, DocumentType } from "@prisma/client";
 import type { CreateDocumentMetadataInput, ListDocumentsQuery } from "@/lib/validations/documents";
@@ -174,7 +175,7 @@ export async function createDocument(
   });
 }
 
-export function getDocumentStream(storageKey: string): ReturnType<typeof storageGetStream> {
+export async function getDocumentStream(storageKey: string): Promise<Readable> {
   return storageGetStream(storageKey);
 }
 

@@ -38,10 +38,11 @@ vi.mock("@/lib/db", () => ({
 const mockStorageDelete = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("@/lib/storage", () => ({
-  storageDelete: (...args: unknown[]) => mockStorageDelete(...args),
-  buildStorageKey: (...args: unknown[]) => mockBuildStorageKey(...args),
-  storagePut: (...args: unknown[]) => mockStoragePut(...args),
-  storageGetStream: (...args: unknown[]) => mockStorageGetStream(...args),
+  storageDelete: (storageKey: string) => mockStorageDelete(storageKey),
+  buildStorageKey: (tenantId: string, documentId: string, originalFilename: string) =>
+    mockBuildStorageKey(tenantId, documentId, originalFilename),
+  storagePut: (storageKey: string, buffer: Buffer) => mockStoragePut(storageKey, buffer),
+  storageGetStream: (storageKey: string) => mockStorageGetStream(storageKey),
 }));
 
 const mockGetCustomerById = vi.fn();
@@ -300,10 +301,10 @@ describe("createDocument", () => {
 });
 
 describe("getDocumentStream", () => {
-  it("returns result of storageGetStream for given key", () => {
+  it("returns result of storageGetStream for given key", async () => {
     const stream = { _read: () => {} };
-    mockStorageGetStream.mockReturnValue(stream);
-    const result = getDocumentStream("tenant-1/doc-1/file.pdf");
+    mockStorageGetStream.mockResolvedValue(stream);
+    const result = await getDocumentStream("tenant-1/doc-1/file.pdf");
     expect(result).toBe(stream);
     expect(mockStorageGetStream).toHaveBeenCalledWith("tenant-1/doc-1/file.pdf");
   });

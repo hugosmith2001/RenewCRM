@@ -30,7 +30,11 @@ describe("handleApiError", () => {
     const res = handleApiError(err);
     expect(res.status).toBe(500);
     const body = await res.json();
-    expect(body).toEqual({ error: "Internal Server Error" });
+    // In non-production envs we include a safe `details` string for faster debugging.
+    expect(body).toEqual({
+      error: "Internal Server Error",
+      details: "Something went wrong",
+    });
   });
 
   it("returns 500 when value is not an Error instance", async () => {

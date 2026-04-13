@@ -16,6 +16,13 @@ export function handleApiError(err: unknown): NextResponse {
   }
 
   logger.error("Unhandled API error", { err });
+  const isProd = process.env.NODE_ENV === "production";
+  if (!isProd && err instanceof Error) {
+    return NextResponse.json(
+      { error: "Internal Server Error", details: err.message },
+      { status: 500 }
+    );
+  }
   return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
 }
 

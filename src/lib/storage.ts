@@ -100,14 +100,28 @@ function mapS3Failure(err: unknown, storageKey: string, op: string): never {
   if (err instanceof S3ServiceException) {
     const code = err.name;
     const status = err.$metadata?.httpStatusCode;
-    if (code === "NoSuchKey" || code === "NotFound" || status === 404) {
+    // "File not found" is only a sensible mapping for read operations.
+    // Some S3-compatible endpoints (or missing buckets) can return 404 on PUT as well.
+    const isReadOp = op === "get" || op === "getStream";
+    if (isReadOp && (code === "NoSuchKey" || code === "NotFound" || status === 404)) {
       throw new Error("File not found");
+    }
+
+    if (!isReadOp && (code === "NoSuchBucket" || status === 404)) {
+      throw new Error("S3 bucket not found");
+    }
+    if (code === "AccessDenied" || status === 403) {
+      throw new Error("S3 access denied");
+    }
+    if (code === "InvalidAccessKeyId" || code === "SignatureDoesNotMatch") {
+      throw new Error("Invalid S3 credentials");
     }
   }
   logger.error(`S3 ${op} failed`, {
     storageKeyHash: hashKey(storageKey),
     code: err instanceof S3ServiceException ? err.name : undefined,
-    message: err instanceof Error ? err.message : "unknown",
+    httpStatus: err instanceof S3ServiceException ? err.$metadata?.httpStatusCode : undefined,
+    errText: err instanceof Error ? err.message : "unknown",
   });
   throw new Error("Storage operation failed");
 }

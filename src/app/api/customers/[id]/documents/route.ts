@@ -17,7 +17,7 @@ function serializeDocument(doc: { [k: string]: unknown }) {
   return doc;
 }
 
-export const preferredRegion = "fra1";
+export const preferredRegion = "arn1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {

@@ -17,8 +17,8 @@ import { PageHeader, DetailSection } from "@/components/layout";
 import { Badge, ButtonLink } from "@/components/ui";
 import { PurgeCustomerButton } from "./PurgeCustomerButton";
 
-// Neon is in eu-central-1; prefer Vercel Frankfurt (fra1) to avoid cross-region DB RTT.
-export const preferredRegion = "fra1";
+// Prefer Vercel Stockholm (arn1) to keep compute close to EU North data.
+export const preferredRegion = "arn1";
 
 const CUSTOMER_TYPE_LABELS: Record<string, string> = {
   PRIVATE: "Privat",

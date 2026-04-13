@@ -8,7 +8,7 @@ import { isBlockedByRestriction } from "@/lib/restriction";
 
 type Params = { params: Promise<{ id: string }> };
 
-export const preferredRegion = "fra1";
+export const preferredRegion = "arn1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {

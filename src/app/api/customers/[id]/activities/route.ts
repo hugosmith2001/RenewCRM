@@ -9,7 +9,7 @@ import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
-export const preferredRegion = "fra1";
+export const preferredRegion = "arn1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {

@@ -17,7 +17,7 @@ function toBlockedResponse(reason: string): NextResponse {
   return NextResponse.json({ error: "Purge failed" }, { status: 500 });
 }
 
-export const preferredRegion = "fra1";
+export const preferredRegion = "arn1";
 
 export async function POST(_request: NextRequest, { params }: Params) {
   try {

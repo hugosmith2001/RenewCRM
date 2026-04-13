@@ -1,9 +1,19 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ContactForm } from "./ContactForm";
+import dynamic from "next/dynamic";
 import { DetailSection, sectionListClasses, sectionListItemClasses, sectionInnerGapClass } from "@/components/layout";
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
+
+const ContactForm = dynamic(
+  () => import("./ContactForm").then((m) => m.ContactForm),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-muted-foreground">Laddar formulär…</p>
+    ),
+  }
+);
 
 type Contact = {
   id: string;
@@ -16,11 +26,11 @@ type Contact = {
   updatedAt: string;
 };
 
-type Props = { customerId: string };
+type Props = { customerId: string; initialContacts?: Contact[] };
 
-export function ContactPersonsSection({ customerId }: Props) {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(true);
+export function ContactPersonsSection({ customerId, initialContacts }: Props) {
+  const [contacts, setContacts] = useState<Contact[]>(initialContacts ?? []);
+  const [loading, setLoading] = useState(initialContacts ? false : true);
   const [showForm, setShowForm] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -39,8 +49,8 @@ export function ContactPersonsSection({ customerId }: Props) {
   }, [customerId]);
 
   useEffect(() => {
-    fetchContacts();
-  }, [fetchContacts]);
+    if (!initialContacts) fetchContacts();
+  }, [fetchContacts, initialContacts]);
 
   function openAdd() {
     setEditingContact(null);

@@ -2,6 +2,7 @@
  * Policies service – Phase 5.
  * Policy and insurer CRUD, tenant-scoped; policies linked to customers and insured objects.
  */
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { Insurer, Policy } from "@prisma/client";
 import type {
@@ -13,6 +14,7 @@ import type {
   CreateInsurerInput,
   UpdateInsurerInput,
 } from "@/lib/validations/insurers";
+import { CACHE_REVALIDATE_SECONDS, customerPoliciesTag } from "@/lib/cache-tags";
 
 // ---------------------------------------------------------------------------
 // Global policy list (tenant-scoped, for Policies workspace)
@@ -188,6 +190,19 @@ export async function listPoliciesByCustomerId(
   });
   return policies as PolicyWithInsurerAndObjects[];
 }
+
+export const listPoliciesByCustomerIdCached = (
+  tenantId: string,
+  customerId: string
+): Promise<PolicyWithInsurerAndObjects[]> =>
+  unstable_cache(
+    () => listPoliciesByCustomerId(tenantId, customerId),
+    ["policiesByCustomerId", tenantId, customerId],
+    {
+      revalidate: CACHE_REVALIDATE_SECONDS,
+      tags: [customerPoliciesTag(tenantId, customerId)],
+    }
+  )();
 
 export async function getPolicyById(
   tenantId: string,

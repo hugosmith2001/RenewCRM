@@ -9,6 +9,7 @@ export {
   updateInsurer,
   deleteInsurer,
   listPoliciesByCustomerId,
+  listPoliciesByCustomerIdCached,
   listPolicies,
   getPolicyById,
   createPolicy,

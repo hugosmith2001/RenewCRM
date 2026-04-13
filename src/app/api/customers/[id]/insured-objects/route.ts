@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
 import {
-  listInsuredObjectsByCustomerId,
+  listInsuredObjectsByCustomerIdCached,
   createInsuredObject,
 } from "@/modules/insured-objects";
 import { logAuditEvent } from "@/modules/audit";
 import { createInsuredObjectSchema } from "@/lib/validations/insured-objects";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
+
+export const preferredRegion = "fra1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -20,7 +23,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, customer.tenantId);
-    const objects = await listInsuredObjectsByCustomerId(user.tenantId, customerId);
+    const objects = await listInsuredObjectsByCustomerIdCached(user.tenantId, customerId);
     return NextResponse.json(objects);
   } catch (err) {
     return handleApiError(err);
@@ -59,6 +62,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       entityId: obj.id,
       metadata: { customerId, type: obj.type },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return NextResponse.json(obj, { status: 201 });
   } catch (err) {
     return handleApiError(err);

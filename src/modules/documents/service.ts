@@ -4,6 +4,7 @@
  */
 import path from "path";
 import type { Readable } from "stream";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { Document, DocumentType } from "@prisma/client";
 import type { CreateDocumentMetadataInput, ListDocumentsQuery } from "@/lib/validations/documents";
@@ -15,6 +16,7 @@ import {
 } from "@/lib/storage";
 import { getCustomerById } from "@/modules/customers";
 import { getPolicyById } from "@/modules/policies";
+import { CACHE_REVALIDATE_SECONDS, customerDocumentsTag } from "@/lib/cache-tags";
 
 export type DocumentWithPolicy = Document & {
   policy: { id: string; policyNumber: string } | null;
@@ -104,6 +106,19 @@ export async function listDocumentsByCustomerId(
     orderBy: { createdAt: "desc" },
   }) as Promise<DocumentWithPolicy[]>;
 }
+
+export const listDocumentsByCustomerIdCached = (
+  tenantId: string,
+  customerId: string
+): Promise<DocumentWithPolicy[]> =>
+  unstable_cache(
+    () => listDocumentsByCustomerId(tenantId, customerId),
+    ["documentsByCustomerId", tenantId, customerId],
+    {
+      revalidate: CACHE_REVALIDATE_SECONDS,
+      tags: [customerDocumentsTag(tenantId, customerId)],
+    }
+  )();
 
 export async function listDocumentsByPolicyId(
   tenantId: string,

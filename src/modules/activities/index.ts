@@ -4,6 +4,7 @@
  */
 export {
   listActivitiesByCustomerId,
+  listActivitiesByCustomerIdCached,
   listActivitiesForTenant,
   getActivityById,
   createActivity,

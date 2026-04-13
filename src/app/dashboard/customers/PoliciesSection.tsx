@@ -2,10 +2,20 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { PolicyForm } from "./PolicyForm";
+import dynamic from "next/dynamic";
 import { DetailSection, sectionListClasses, sectionListItemClasses, sectionInnerGapClass } from "@/components/layout";
 import { FormError } from "@/components/forms";
 import { Badge, Button, ButtonLink, ConfirmDialog } from "@/components/ui";
+
+const PolicyForm = dynamic(
+  () => import("./PolicyForm").then((m) => m.PolicyForm),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-muted-foreground">Laddar formulär…</p>
+    ),
+  }
+);
 
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Aktiv",
@@ -36,12 +46,21 @@ type Policy = {
 type Props = {
   customerId: string;
   editPolicyId?: string | null;
+  initialPolicies?: Policy[];
+  initialInsuredObjects?: InsuredObject[];
 };
 
-export function PoliciesSection({ customerId, editPolicyId }: Props) {
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [insuredObjects, setInsuredObjects] = useState<InsuredObject[]>([]);
-  const [loading, setLoading] = useState(true);
+export function PoliciesSection({
+  customerId,
+  editPolicyId,
+  initialPolicies,
+  initialInsuredObjects,
+}: Props) {
+  const [policies, setPolicies] = useState<Policy[]>(initialPolicies ?? []);
+  const [insuredObjects, setInsuredObjects] = useState<InsuredObject[]>(
+    initialInsuredObjects ?? []
+  );
+  const [loading, setLoading] = useState(initialPolicies ? false : true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null);
@@ -71,14 +90,16 @@ export function PoliciesSection({ customerId, editPolicyId }: Props) {
   }, [customerId]);
 
   useEffect(() => {
-    fetchPolicies();
-  }, [fetchPolicies]);
+    if (!initialPolicies) fetchPolicies();
+  }, [fetchPolicies, initialPolicies]);
 
   useEffect(() => {
     if (showForm || editingPolicy) {
-      fetchInsuredObjects();
+      if (!initialInsuredObjects || initialInsuredObjects.length === 0) {
+        fetchInsuredObjects();
+      }
     }
-  }, [showForm, editingPolicy, fetchInsuredObjects]);
+  }, [showForm, editingPolicy, fetchInsuredObjects, initialInsuredObjects]);
 
   useEffect(() => {
     if (!editPolicyId || loading || policies.length === 0) return;

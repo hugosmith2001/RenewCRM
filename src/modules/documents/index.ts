@@ -4,6 +4,7 @@
  */
 export {
   listDocumentsByCustomerId,
+  listDocumentsByCustomerIdCached,
   listDocumentsByPolicyId,
   listDocumentsForTenant,
   getDocumentById,

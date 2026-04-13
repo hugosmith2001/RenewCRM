@@ -4,7 +4,9 @@
  */
 export {
   listTasksForTenant,
+  listTasksDueTodayForTenant,
   listTasksByCustomerId,
+  listTasksByCustomerIdCached,
   getTaskById,
   createTask,
   updateTask,

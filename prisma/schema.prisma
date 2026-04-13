@@ -159,6 +159,8 @@ model Customer {
   @@index([tenantId, name])
   @@index([tenantId, deletedAt])
   @@index([tenantId, legalHold])
+  // Common list pattern: tenant + not-deleted ordered by name
+  @@index([tenantId, deletedAt, name])
 }
 
 // ---------------------------------------------------------------------------
@@ -190,6 +192,8 @@ model Activity {
   @@index([tenantId])
   @@index([customerId])
   @@index([tenantId, createdAt(sort: Desc)])
+  // Customer timeline: tenant + customer ordered by newest
+  @@index([tenantId, customerId, createdAt(sort: Desc)])
 }
 
 enum TaskPriority {
@@ -222,6 +226,9 @@ model Task {
   @@index([customerId])
   @@index([tenantId, status])
   @@index([dueDate])
+  // Work queue / customer task lists (status + dueDate ordering)
+  @@index([tenantId, status, dueDate])
+  @@index([tenantId, customerId, status, dueDate])
 }
 
 // ---------------------------------------------------------------------------
@@ -252,6 +259,8 @@ model CustomerContact {
 
   @@index([tenantId])
   @@index([customerId])
+  // Customer contacts: primary first, then name
+  @@index([tenantId, customerId, isPrimary(sort: Desc), name])
 }
 
 // ---------------------------------------------------------------------------
@@ -334,6 +343,11 @@ model Policy {
   @@index([customerId])
   @@index([tenantId, status])
   @@index([tenantId, renewalDate])
+  // Common lists by customer / workspace sorted by end date recency
+  @@index([tenantId, customerId, endDate(sort: Desc), createdAt(sort: Desc)])
+  @@index([tenantId, endDate(sort: Desc), createdAt(sort: Desc)])
+  // Renewals queue: renewalDate window, then most-recent endDate
+  @@index([tenantId, renewalDate, endDate(sort: Desc)])
 }
 
 // ---------------------------------------------------------------------------
@@ -377,6 +391,12 @@ model Document {
   @@index([policyId])
   @@index([tenantId, deletedAt])
   @@index([tenantId, legalHold])
+  // Primary documents list: tenant + not-deleted ordered by newest
+  @@index([tenantId, deletedAt, createdAt(sort: Desc)])
+  // Customer detail documents tab: tenant + customer + not-deleted ordered by newest
+  @@index([tenantId, customerId, deletedAt, createdAt(sort: Desc)])
+  // Policy documents tab: tenant + policy + not-deleted ordered by newest
+  @@index([tenantId, policyId, deletedAt, createdAt(sort: Desc)])
 }
 
 model RetentionPolicyOverride {

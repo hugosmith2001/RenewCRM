@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
-import { listActivitiesByCustomerId, createActivity } from "@/modules/activities";
+import { listActivitiesByCustomerIdCached, createActivity } from "@/modules/activities";
 import { logAuditEvent } from "@/modules/audit";
 import { createActivitySchema } from "@/lib/validations/activities";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
+
+export const preferredRegion = "fra1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -17,7 +20,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, customer.tenantId);
-    const activities = await listActivitiesByCustomerId(user.tenantId, customerId);
+    const activities = await listActivitiesByCustomerIdCached(user.tenantId, customerId);
     return NextResponse.json(activities);
   } catch (err) {
     return handleApiError(err);
@@ -53,6 +56,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       entityId: activity.id,
       metadata: { customerId, type: activity.type },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return NextResponse.json(activity, { status: 201 });
   } catch (err) {
     return handleApiError(err);

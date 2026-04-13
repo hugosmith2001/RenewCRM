@@ -4,6 +4,7 @@
  */
 export {
   listInsuredObjectsByCustomerId,
+  listInsuredObjectsByCustomerIdCached,
   getInsuredObjectById,
   createInsuredObject,
   updateInsuredObject,

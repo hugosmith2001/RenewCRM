@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TaskForm } from "./TaskForm";
+import dynamic from "next/dynamic";
 import { DetailSection, sectionListClasses, sectionListItemClasses, sectionInnerGapClass } from "@/components/layout";
 import { FormError } from "@/components/forms";
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
+
+const TaskForm = dynamic(() => import("./TaskForm").then((m) => m.TaskForm), {
+  ssr: false,
+  loading: () => <p className="text-sm text-muted-foreground">Laddar formulär…</p>,
+});
 
 const TASK_PRIORITY_LABELS: Record<string, string> = {
   LOW: "Låg",
@@ -28,11 +33,11 @@ type Task = {
   status: string;
 };
 
-type Props = { customerId: string };
+type Props = { customerId: string; initialTasks?: Task[] };
 
-export function TasksSection({ customerId }: Props) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+export function TasksSection({ customerId, initialTasks }: Props) {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks ?? []);
+  const [loading, setLoading] = useState(initialTasks ? false : true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -54,8 +59,8 @@ export function TasksSection({ customerId }: Props) {
   }, [customerId]);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    if (!initialTasks) fetchTasks();
+  }, [fetchTasks, initialTasks]);
 
   function openAdd() {
     setEditingTask(null);

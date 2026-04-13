@@ -9,6 +9,7 @@ import path from "path";
 type Params = { params: Promise<{ id: string; documentId: string }> };
 
 export const runtime = "nodejs";
+export const preferredRegion = "fra1";
 
 function buildDownloadFilename(displayName: string, storageKey: string): string {
   const name = (displayName || "").trim() || "document";

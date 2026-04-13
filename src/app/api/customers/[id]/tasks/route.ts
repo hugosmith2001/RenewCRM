@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
-import { listTasksByCustomerId, createTask } from "@/modules/tasks";
+import { listTasksByCustomerIdCached, createTask } from "@/modules/tasks";
 import { logAuditEvent } from "@/modules/audit";
 import { createTaskSchema } from "@/lib/validations/tasks";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
+
+export const preferredRegion = "fra1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -17,7 +20,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, customer.tenantId);
-    const tasks = await listTasksByCustomerId(user.tenantId, customerId);
+    const tasks = await listTasksByCustomerIdCached(user.tenantId, customerId);
     return NextResponse.json(tasks);
   } catch (err) {
     return handleApiError(err);
@@ -53,6 +56,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       entityId: task.id,
       metadata: { customerId, status: task.status },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return NextResponse.json(task, { status: 201 });
   } catch (err) {
     return handleApiError(err);

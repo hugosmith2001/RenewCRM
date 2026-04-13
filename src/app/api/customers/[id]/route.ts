@@ -8,6 +8,8 @@ import { isBlockedByRestriction } from "@/lib/restriction";
 
 type Params = { params: Promise<{ id: string }> };
 
+export const preferredRegion = "fra1";
+
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
     const user = await requireAuth();

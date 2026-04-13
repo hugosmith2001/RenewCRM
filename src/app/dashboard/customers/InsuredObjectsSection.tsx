@@ -1,9 +1,19 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { InsuredObjectForm } from "./InsuredObjectForm";
+import dynamic from "next/dynamic";
 import { DetailSection, sectionListClasses, sectionListItemClasses, sectionInnerGapClass } from "@/components/layout";
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
+
+const InsuredObjectForm = dynamic(
+  () => import("./InsuredObjectForm").then((m) => m.InsuredObjectForm),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-muted-foreground">Laddar formulär…</p>
+    ),
+  }
+);
 
 const TYPE_LABELS: Record<string, string> = {
   PROPERTY: "Fastighet",
@@ -23,11 +33,11 @@ type InsuredObject = {
   updatedAt: string;
 };
 
-type Props = { customerId: string };
+type Props = { customerId: string; initialObjects?: InsuredObject[] };
 
-export function InsuredObjectsSection({ customerId }: Props) {
-  const [objects, setObjects] = useState<InsuredObject[]>([]);
-  const [loading, setLoading] = useState(true);
+export function InsuredObjectsSection({ customerId, initialObjects }: Props) {
+  const [objects, setObjects] = useState<InsuredObject[]>(initialObjects ?? []);
+  const [loading, setLoading] = useState(initialObjects ? false : true);
   const [showForm, setShowForm] = useState(false);
   const [editingObject, setEditingObject] = useState<InsuredObject | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -46,8 +56,8 @@ export function InsuredObjectsSection({ customerId }: Props) {
   }, [customerId]);
 
   useEffect(() => {
-    fetchObjects();
-  }, [fetchObjects]);
+    if (!initialObjects) fetchObjects();
+  }, [fetchObjects, initialObjects]);
 
   function openAdd() {
     setEditingObject(null);

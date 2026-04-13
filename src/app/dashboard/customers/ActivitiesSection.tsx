@@ -1,10 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ActivityForm } from "./ActivityForm";
+import dynamic from "next/dynamic";
 import { DetailSection, sectionListClasses, sectionListItemClasses, sectionInnerGapClass } from "@/components/layout";
 import { FormError } from "@/components/forms";
 import { Badge, Button, ConfirmDialog } from "@/components/ui";
+
+const ActivityForm = dynamic(
+  () => import("./ActivityForm").then((m) => m.ActivityForm),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-muted-foreground">Laddar formulär…</p>
+    ),
+  }
+);
 
 const ACTIVITY_TYPE_LABELS: Record<string, string> = {
   CALL: "Samtal",
@@ -23,11 +33,11 @@ type Activity = {
   createdBy: { id: string; name: string | null; email: string } | null;
 };
 
-type Props = { customerId: string };
+type Props = { customerId: string; initialActivities?: Activity[] };
 
-export function ActivitiesSection({ customerId }: Props) {
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
+export function ActivitiesSection({ customerId, initialActivities }: Props) {
+  const [activities, setActivities] = useState<Activity[]>(initialActivities ?? []);
+  const [loading, setLoading] = useState(initialActivities ? false : true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
@@ -49,8 +59,8 @@ export function ActivitiesSection({ customerId }: Props) {
   }, [customerId]);
 
   useEffect(() => {
-    fetchActivities();
-  }, [fetchActivities]);
+    if (!initialActivities) fetchActivities();
+  }, [fetchActivities, initialActivities]);
 
   function openAdd() {
     setEditingActivity(null);

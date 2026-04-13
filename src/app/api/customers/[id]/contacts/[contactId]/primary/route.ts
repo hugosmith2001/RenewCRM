@@ -3,6 +3,7 @@ import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getContactById, setPrimaryContact } from "@/modules/contacts";
 import { logAuditEvent } from "@/modules/audit";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string; contactId: string }> };
 
@@ -29,6 +30,7 @@ export async function POST(_request: NextRequest, { params }: Params) {
         metadata: { customerId, isPrimary: true },
       });
     }
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return NextResponse.json(updated);
   } catch (err) {
     return handleApiError(err);

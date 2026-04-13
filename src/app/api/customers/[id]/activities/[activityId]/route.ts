@@ -4,6 +4,7 @@ import { getActivityById, updateActivity, deleteActivity } from "@/modules/activ
 import { logAuditEvent } from "@/modules/audit";
 import { updateActivitySchema } from "@/lib/validations/activities";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string; activityId: string }> };
 
@@ -56,6 +57,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         metadata: { customerId, type: updated.type },
       });
     }
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return NextResponse.json(updated);
   } catch (err) {
     return handleApiError(err);
@@ -83,6 +85,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       entityId: activityId,
       metadata: { type: activity.type },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return new NextResponse(null, { status: 204 });
   } catch (err) {
     return handleApiError(err);

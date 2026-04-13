@@ -2,9 +2,11 @@
  * Activities service – Phase 7.
  * Activity CRUD scoped by tenant and customer (calls, meetings, notes, etc.).
  */
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { Activity, ActivityType } from "@prisma/client";
 import type { CreateActivityInput, UpdateActivityInput } from "@/lib/validations/activities";
+import { CACHE_REVALIDATE_SECONDS, customerActivitiesTag } from "@/lib/cache-tags";
 
 export type ActivityWithCreator = Activity & {
   createdBy: { id: string; name: string | null; email: string } | null;
@@ -73,6 +75,19 @@ export async function listActivitiesByCustomerId(
     orderBy: { createdAt: "desc" },
   }) as Promise<ActivityWithCreator[]>;
 }
+
+export const listActivitiesByCustomerIdCached = (
+  tenantId: string,
+  customerId: string
+): Promise<ActivityWithCreator[]> =>
+  unstable_cache(
+    () => listActivitiesByCustomerId(tenantId, customerId),
+    ["activitiesByCustomerId", tenantId, customerId],
+    {
+      revalidate: CACHE_REVALIDATE_SECONDS,
+      tags: [customerActivitiesTag(tenantId, customerId)],
+    }
+  )();
 
 export async function getActivityById(
   tenantId: string,

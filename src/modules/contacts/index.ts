@@ -4,6 +4,7 @@
  */
 export {
   listContactsByCustomerId,
+  listContactsByCustomerIdCached,
   getContactById,
   createContact,
   updateContact,

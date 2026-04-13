@@ -37,6 +37,50 @@ function startOfDay(d: Date): Date {
   return out;
 }
 
+export async function listRenewalsDueWithinDays(
+  tenantId: string,
+  days: number,
+  opts: { status?: PolicyStatus; limit?: number } = {}
+): Promise<RenewalItem[]> {
+  const { status, limit = 25 } = opts;
+  const today = startOfDay(new Date());
+  const end = new Date(today);
+  end.setUTCDate(end.getUTCDate() + days);
+
+  const where: Prisma.PolicyWhereInput = {
+    tenantId,
+    renewalDate: { not: null, lte: end },
+    ...(status && { status }),
+  };
+
+  const rows = await prisma.policy.findMany({
+    where,
+    include: {
+      customer: { select: { id: true, name: true } },
+      insurer: { select: { name: true } },
+      insuredObjects: {
+        take: 1,
+        orderBy: { insuredObjectId: "asc" },
+        include: { insuredObject: { select: { type: true } } },
+      },
+    },
+    orderBy: [{ renewalDate: "asc" }, { endDate: "desc" }],
+    take: limit,
+  });
+
+  return rows.map((row) =>
+    toRenewalItem({
+      id: row.id,
+      policyNumber: row.policyNumber,
+      status: row.status,
+      renewalDate: row.renewalDate,
+      customer: row.customer,
+      insurer: row.insurer,
+      insuredObjects: row.insuredObjects,
+    })
+  );
+}
+
 function toRenewalItem(row: {
   id: string;
   policyNumber: string;

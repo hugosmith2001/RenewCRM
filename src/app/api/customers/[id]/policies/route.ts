@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
 import {
-  listPoliciesByCustomerId,
+  listPoliciesByCustomerIdCached,
   createPolicy,
 } from "@/modules/policies";
 import { logAuditEvent } from "@/modules/audit";
 import { createPolicySchema } from "@/lib/validations/policies";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -18,6 +19,8 @@ function serializePolicy(policy: { premium?: unknown; [k: string]: unknown }) {
     premium: premium != null ? Number(premium) : null,
   };
 }
+
+export const preferredRegion = "fra1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -31,7 +34,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       );
     }
     assertTenantAccess(user, customer.tenantId);
-    const policies = await listPoliciesByCustomerId(user.tenantId, customerId);
+    const policies = await listPoliciesByCustomerIdCached(user.tenantId, customerId);
     return NextResponse.json(policies.map((p) => serializePolicy(p)));
   } catch (err) {
     return handleApiError(err);
@@ -73,6 +76,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       entityId: policy.id,
       metadata: { customerId },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return NextResponse.json(serializePolicy(policy), { status: 201 });
   } catch (err) {
     return handleApiError(err);

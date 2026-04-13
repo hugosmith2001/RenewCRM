@@ -2,12 +2,14 @@
  * Insured objects service – tenant-scoped CRUD.
  * Objects belong to a customer; all operations enforce tenant isolation.
  */
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { InsuredObject } from "@prisma/client";
 import type {
   CreateInsuredObjectInput,
   UpdateInsuredObjectInput,
 } from "@/lib/validations/insured-objects";
+import { CACHE_REVALIDATE_SECONDS, customerInsuredObjectsTag } from "@/lib/cache-tags";
 
 export async function listInsuredObjectsByCustomerId(
   tenantId: string,
@@ -24,6 +26,19 @@ export async function listInsuredObjectsByCustomerId(
     orderBy: [{ type: "asc" }, { name: "asc" }],
   });
 }
+
+export const listInsuredObjectsByCustomerIdCached = (
+  tenantId: string,
+  customerId: string
+): Promise<InsuredObject[]> =>
+  unstable_cache(
+    () => listInsuredObjectsByCustomerId(tenantId, customerId),
+    ["insuredObjectsByCustomerId", tenantId, customerId],
+    {
+      revalidate: CACHE_REVALIDATE_SECONDS,
+      tags: [customerInsuredObjectsTag(tenantId, customerId)],
+    }
+  )();
 
 export async function getInsuredObjectById(
   tenantId: string,

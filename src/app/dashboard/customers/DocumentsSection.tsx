@@ -26,12 +26,20 @@ type Document = {
   policy: { id: string; policyNumber: string } | null;
 };
 
-type Props = { customerId: string };
+type Props = {
+  customerId: string;
+  initialDocuments?: Document[];
+  initialPolicies?: Policy[];
+};
 
-export function DocumentsSection({ customerId }: Props) {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [loading, setLoading] = useState(true);
+export function DocumentsSection({
+  customerId,
+  initialDocuments,
+  initialPolicies,
+}: Props) {
+  const [documents, setDocuments] = useState<Document[]>(initialDocuments ?? []);
+  const [policies, setPolicies] = useState<Policy[]>(initialPolicies ?? []);
+  const [loading, setLoading] = useState(initialDocuments ? false : true);
   const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,12 +69,14 @@ export function DocumentsSection({ customerId }: Props) {
   }, [customerId]);
 
   useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+    if (!initialDocuments) fetchDocuments();
+  }, [fetchDocuments, initialDocuments]);
 
   useEffect(() => {
-    if (showForm) fetchPolicies();
-  }, [showForm, fetchPolicies]);
+    if (!showForm) return;
+    if (policies.length > 0) return;
+    fetchPolicies();
+  }, [showForm, fetchPolicies, policies.length]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

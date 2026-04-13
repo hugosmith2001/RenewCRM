@@ -3,6 +3,7 @@ import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getDocumentById, deleteDocument } from "@/modules/documents";
 import { logAuditEvent } from "@/modules/audit";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string; documentId: string }> };
 
@@ -57,6 +58,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       entityId: documentId,
       metadata: { customerId },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return new NextResponse(null, { status: 204 });
   } catch (err) {
     return handleApiError(err);

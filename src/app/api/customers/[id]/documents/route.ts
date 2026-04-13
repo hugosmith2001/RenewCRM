@@ -3,17 +3,21 @@ import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
 import {
   listDocumentsByCustomerId,
+  listDocumentsByCustomerIdCached,
   createDocument,
 } from "@/modules/documents";
 import { logAuditEvent } from "@/modules/audit";
 import { createDocumentMetadataSchema } from "@/lib/validations/documents";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
 function serializeDocument(doc: { [k: string]: unknown }) {
   return doc;
 }
+
+export const preferredRegion = "fra1";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -27,7 +31,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       );
     }
     assertTenantAccess(user, customer.tenantId);
-    const documents = await listDocumentsByCustomerId(user.tenantId, customerId);
+    const documents = await listDocumentsByCustomerIdCached(user.tenantId, customerId);
     return NextResponse.json(documents.map((d) => serializeDocument(d)));
   } catch (err) {
     return handleApiError(err);
@@ -125,6 +129,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       entityId: doc.id,
       metadata: { documentType: doc.documentType, customerId },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
 
     return NextResponse.json(serializeDocument(doc), { status: 201 });
   } catch (err) {

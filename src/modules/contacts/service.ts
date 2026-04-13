@@ -2,9 +2,11 @@
  * Contact persons service – tenant-scoped CRUD and primary flag.
  * Contacts belong to a customer; all operations enforce tenant isolation.
  */
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { CustomerContact } from "@prisma/client";
 import type { CreateContactInput, UpdateContactInput } from "@/lib/validations/contacts";
+import { CACHE_REVALIDATE_SECONDS, customerContactsTag } from "@/lib/cache-tags";
 
 export async function listContactsByCustomerId(
   tenantId: string,
@@ -21,6 +23,19 @@ export async function listContactsByCustomerId(
     orderBy: [{ isPrimary: "desc" }, { name: "asc" }],
   });
 }
+
+export const listContactsByCustomerIdCached = (
+  tenantId: string,
+  customerId: string
+): Promise<CustomerContact[]> =>
+  unstable_cache(
+    () => listContactsByCustomerId(tenantId, customerId),
+    ["contactsByCustomerId", tenantId, customerId],
+    {
+      revalidate: CACHE_REVALIDATE_SECONDS,
+      tags: [customerContactsTag(tenantId, customerId)],
+    }
+  )();
 
 export async function getContactById(
   tenantId: string,

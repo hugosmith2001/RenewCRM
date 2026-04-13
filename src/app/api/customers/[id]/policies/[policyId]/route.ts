@@ -8,6 +8,7 @@ import {
 import { logAuditEvent } from "@/modules/audit";
 import { updatePolicySchema } from "@/lib/validations/policies";
 import { handleApiError } from "@/lib/api-error";
+import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string; policyId: string }> };
 
@@ -88,6 +89,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         metadata: { customerId },
       });
     }
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return NextResponse.json(serializePolicy(updated!));
   } catch (err) {
     return handleApiError(err);
@@ -121,6 +123,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       entityId: policyId,
       metadata: { customerId },
     });
+    revalidateCustomerDetailCaches(user.tenantId, customerId);
     return new NextResponse(null, { status: 204 });
   } catch (err) {
     return handleApiError(err);

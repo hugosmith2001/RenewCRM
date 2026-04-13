@@ -3,6 +3,7 @@
  */
 export {
   listRenewalsBucketed,
+  listRenewalsDueWithinDays,
   type RenewalItem,
   type RenewalsBuckets,
   type RenewalsQuery,

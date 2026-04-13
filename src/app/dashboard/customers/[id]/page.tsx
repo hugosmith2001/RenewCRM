@@ -1,5 +1,11 @@
 import { getCurrentUser } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
+import { listContactsByCustomerIdCached } from "@/modules/contacts";
+import { listInsuredObjectsByCustomerIdCached } from "@/modules/insured-objects";
+import { listPoliciesByCustomerIdCached } from "@/modules/policies";
+import { listDocumentsByCustomerIdCached } from "@/modules/documents";
+import { listActivitiesByCustomerIdCached } from "@/modules/activities";
+import { listTasksByCustomerIdCached } from "@/modules/tasks";
 import { redirect, notFound } from "next/navigation";
 import { ContactPersonsSection } from "../ContactPersonsSection";
 import { InsuredObjectsSection } from "../InsuredObjectsSection";
@@ -10,6 +16,9 @@ import { TasksSection } from "../TasksSection";
 import { PageHeader, DetailSection } from "@/components/layout";
 import { Badge, ButtonLink } from "@/components/ui";
 import { PurgeCustomerButton } from "./PurgeCustomerButton";
+
+// Neon is in eu-central-1; prefer Vercel Frankfurt (fra1) to avoid cross-region DB RTT.
+export const preferredRegion = "fra1";
 
 const CUSTOMER_TYPE_LABELS: Record<string, string> = {
   PRIVATE: "Privat",
@@ -35,6 +44,59 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
   const resolvedSearchParams = await searchParams;
   const customer = await getCustomerById(user.tenantId, id);
   if (!customer) notFound();
+
+  const [
+    contacts,
+    insuredObjects,
+    policies,
+    documents,
+    activities,
+    tasks,
+  ] = await Promise.all([
+    listContactsByCustomerIdCached(user.tenantId, id),
+    listInsuredObjectsByCustomerIdCached(user.tenantId, id),
+    listPoliciesByCustomerIdCached(user.tenantId, id),
+    listDocumentsByCustomerIdCached(user.tenantId, id),
+    listActivitiesByCustomerIdCached(user.tenantId, id),
+    listTasksByCustomerIdCached(user.tenantId, id),
+  ]);
+
+  const initialContacts = contacts.map((c) => ({
+    ...c,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
+  }));
+
+  const initialInsuredObjects = insuredObjects.map((o) => ({
+    ...o,
+    createdAt: o.createdAt.toISOString(),
+    updatedAt: o.updatedAt.toISOString(),
+  }));
+
+  const initialPolicies = policies.map((p) => ({
+    ...p,
+    premium: p.premium != null ? Number(p.premium) : null,
+    startDate: p.startDate.toISOString(),
+    endDate: p.endDate.toISOString(),
+    renewalDate: p.renewalDate ? p.renewalDate.toISOString() : null,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  }));
+
+  const initialDocuments = documents.map((d) => ({
+    ...d,
+    createdAt: d.createdAt.toISOString(),
+  }));
+
+  const initialActivities = activities.map((a) => ({
+    ...a,
+    createdAt: a.createdAt.toISOString(),
+  }));
+
+  const initialTasks = tasks.map((t) => ({
+    ...t,
+    dueDate: t.dueDate ? t.dueDate.toISOString() : null,
+  }));
 
   const statusTone =
     customer.status === "ACTIVE"
@@ -102,15 +164,21 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
           </dl>
         </DetailSection>
 
-        <ContactPersonsSection customerId={id} />
-        <InsuredObjectsSection customerId={id} />
+        <ContactPersonsSection customerId={id} initialContacts={initialContacts} />
+        <InsuredObjectsSection customerId={id} initialObjects={initialInsuredObjects} />
         <PoliciesSection
           customerId={id}
           editPolicyId={resolvedSearchParams?.editPolicy}
+          initialPolicies={initialPolicies}
+          initialInsuredObjects={initialInsuredObjects.map((o) => ({
+            id: o.id,
+            name: o.name,
+            type: o.type,
+          }))}
         />
-        <DocumentsSection customerId={id} />
-        <ActivitiesSection customerId={id} />
-        <TasksSection customerId={id} />
+        <DocumentsSection customerId={id} initialDocuments={initialDocuments} initialPolicies={initialPolicies.map((p) => ({ id: p.id, policyNumber: p.policyNumber }))} />
+        <ActivitiesSection customerId={id} initialActivities={initialActivities} />
+        <TasksSection customerId={id} initialTasks={initialTasks} />
 
         <div className="rounded-card border border-border bg-surface p-modal">
           <div className="text-sm font-semibold text-foreground">Ta bort kund</div>

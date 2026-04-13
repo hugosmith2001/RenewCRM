@@ -11,6 +11,17 @@ import { PageHeader, DetailSection } from "@/components/layout";
 import { Badge, ButtonLink } from "@/components/ui";
 import { PurgeCustomerButton } from "./PurgeCustomerButton";
 
+const CUSTOMER_TYPE_LABELS: Record<string, string> = {
+  PRIVATE: "Privat",
+  COMPANY: "Företag",
+};
+
+const CUSTOMER_STATUS_LABELS: Record<string, string> = {
+  ACTIVE: "Aktiv",
+  INACTIVE: "Inaktiv",
+  PROSPECT: "Prospekt",
+};
+
 type Props = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ editPolicy?: string } | undefined>;
@@ -40,9 +51,11 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
         backLabel="Kunder"
         description={
           <span className="flex items-center gap-2">
-            <Badge tone={statusTone}>{customer.status}</Badge>
+            <Badge tone={statusTone}>
+              {CUSTOMER_STATUS_LABELS[customer.status] ?? customer.status}
+            </Badge>
             <span className="text-muted-foreground">
-              {customer.type}
+              {CUSTOMER_TYPE_LABELS[customer.type] ?? customer.type}
             </span>
           </span>
         }
@@ -58,7 +71,9 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
           <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="font-medium text-muted-foreground">Typ</dt>
-              <dd className="mt-0.5 text-foreground">{customer.type}</dd>
+              <dd className="mt-0.5 text-foreground">
+                {CUSTOMER_TYPE_LABELS[customer.type] ?? customer.type}
+              </dd>
             </div>
             <div>
               <dt className="font-medium text-muted-foreground">E-post</dt>
@@ -98,7 +113,7 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
         <TasksSection customerId={id} />
 
         <div className="rounded-card border border-border bg-surface p-modal">
-          <div className="text-sm font-semibold text-foreground">Riskzon</div>
+          <div className="text-sm font-semibold text-foreground">Ta bort kund</div>
           <div className="mt-1 text-sm text-muted-foreground">
             Radera kunden permanent och relaterade poster.
           </div>

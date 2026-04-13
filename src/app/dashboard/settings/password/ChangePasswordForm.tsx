@@ -37,10 +37,10 @@ export function ChangePasswordForm() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error ?? "Failed to change password");
+        throw new Error(data.error ?? "Kunde inte byta lösenord");
       }
 
-      setSuccess("Your password has been updated.");
+      setSuccess("Ditt lösenord har uppdaterats.");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
@@ -48,7 +48,7 @@ export function ChangePasswordForm() {
       setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong. Please try again."
+          : "Något gick fel. Försök igen."
       );
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ export function ChangePasswordForm() {
         {success && (
           <p className="text-sm font-medium text-emerald-600">{success}</p>
         )}
-        <FormField id="currentPassword" label="Current password" required>
+        <FormField id="currentPassword" label="Nuvarande lösenord" required>
           <input
             id="currentPassword"
             type="password"
@@ -73,7 +73,7 @@ export function ChangePasswordForm() {
             className={formInputClasses}
           />
         </FormField>
-        <FormField id="newPassword" label="New password" required>
+        <FormField id="newPassword" label="Nytt lösenord" required>
           <input
             id="newPassword"
             type="password"
@@ -86,7 +86,7 @@ export function ChangePasswordForm() {
         </FormField>
         <FormField
           id="confirmNewPassword"
-          label="Confirm new password"
+          label="Bekräfta nytt lösenord"
           required
         >
           <input
@@ -105,7 +105,7 @@ export function ChangePasswordForm() {
           className="mt-2 w-full sm:w-auto"
           disabled={loading}
         >
-          {loading ? "Saving…" : "Change password"}
+          {loading ? "Sparar…" : "Byt lösenord"}
         </Button>
       </FormLayout>
     </form>

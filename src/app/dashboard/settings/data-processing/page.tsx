@@ -18,75 +18,75 @@ export default async function DataProcessingSettingsPage() {
           href="/dashboard/settings/privacy"
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          ← Privacy &amp; compliance
+          ← Integritet &amp; regelefterlevnad
         </Link>
       </div>
-      <DetailSection title="Data processing overview (single-broker deployments)">
+      <DetailSection title="Översikt av databehandling (för enskilda mäklarkontor)">
         <div className="space-y-4 text-sm text-muted-foreground">
           <p className="text-foreground">
-            This page is a practical transparency overview for single-broker deployments. It is grounded in the current
-            Renew CRM repository and is not a substitute for your own privacy notices to your customers.
+            Den här sidan är en praktisk översikt för transparens i installationer för enskilda mäklarkontor. Den bygger
+            på nuvarande Renew CRM-kodbas och ersätter inte dina egna integritetsmeddelanden till dina kunder.
           </p>
           <div className="space-y-2">
             <p>
-              <span className="font-medium text-foreground">You as controller:</span> when you store and manage your
-              customers’ data in Renew CRM (customers, contacts, policies, documents, tasks, and activities), you
-              generally determine the purposes and means of that processing.
+              <span className="font-medium text-foreground">Du som personuppgiftsansvarig:</span> när du lagrar och
+              hanterar kunddata i Renew CRM (kunder, kontakter, försäkringar, dokument, uppgifter och aktiviteter)
+              bestämmer du normalt ändamål och medel för behandlingen.
             </p>
             <p>
-              <span className="font-medium text-foreground">Renew CRM operator as processor (where applicable):</span>{" "}
-              the Renew CRM operator processes your customers’ data to provide the service, maintain availability, and
-              protect the platform (security and audit).
+              <span className="font-medium text-foreground">Operatören av Renew CRM som personuppgiftsbiträde (i tillämpliga fall):</span>{" "}
+              operatören behandlar kunddata för att leverera tjänsten, upprätthålla tillgänglighet och skydda plattformen
+              (säkerhet och revision).
             </p>
             <p>
-              <span className="font-medium text-foreground">Operational/platform data:</span>{" "}
-              the platform also processes user account and security data (authentication, sessions, and audit/security
-              logs) to run the service.
+              <span className="font-medium text-foreground">Drift-/plattformdata:</span>{" "}
+              plattformen behandlar även konto- och säkerhetsdata för användare (autentisering, sessioner samt
+              revisions-/säkerhetsloggar) för att driva tjänsten.
             </p>
           </div>
         </div>
       </DetailSection>
 
-      <DetailSection title="What data the product processes (by feature)">
+      <DetailSection title="Vilka uppgifter produkten behandlar (per funktion)">
         <div className="space-y-3 text-sm text-muted-foreground">
           <ul className={sectionListClasses}>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Accounts & access</span>: user accounts, password hashes, and
-              session tokens (Auth.js / NextAuth).
+              <span className="font-medium text-foreground">Konton &amp; åtkomst</span>: användarkonton,
+              lösenordshashar och sessionstoken (Auth.js / NextAuth).
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">CRM records</span>: customers and contacts (names and contact
-              details), policies and insurers, insured objects.
+              <span className="font-medium text-foreground">CRM-poster</span>: kunder och kontakter (namn och
+              kontaktuppgifter), försäkringar och försäkringsgivare samt försäkrade objekt.
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Work management</span>: tasks and activities (including
-              optional free-text that can contain personal data).
+              <span className="font-medium text-foreground">Arbetsflöde</span>: uppgifter och aktiviteter (inklusive
+              frivillig fritext som kan innehålla personuppgifter).
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Documents</span>: uploaded files plus metadata (filename,
-              type, MIME type, size, and storage key). Bytes are stored in a backend referenced by `storageKey`.
+              <span className="font-medium text-foreground">Dokument</span>: uppladdade filer samt metadata (filnamn,
+              typ, MIME-typ, storlek och lagringsnyckel). Filinnehållet lagras i en backend som refereras av `storageKey`.
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Security & audit</span>: audit events (action type, entity
-              type/ID, user ID, timestamps). Metadata is intended to avoid embedding personal data.
+              <span className="font-medium text-foreground">Säkerhet &amp; revision</span>: revisionshändelser (åtgärdstyp,
+              entitetstyp/ID, användar-ID, tidsstämplar). Metadata är avsedd att undvika att bädda in personuppgifter.
             </li>
           </ul>
         </div>
       </DetailSection>
 
-      <DetailSection title="Privacy & security documents (what to share)">
+      <DetailSection title="Integritets- och säkerhetsdokument (vad du kan dela)">
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
-            Most users only need the in-app{" "}
+            De flesta användare behöver bara{" "}
             <Link className="underline underline-offset-4 hover:text-foreground" href="/dashboard/settings/privacy">
-              Privacy notice (app users)
+              Integritetsmeddelande (appanvändare)
             </Link>
-            . If a customer asks for vendor documentation, share the overview below. Deeper operator/admin documentation
-            can be provided on request (it is not linked from inside the app).
+            . Om en kund efterfrågar leverantörsdokumentation kan du dela översikten nedan. Mer fördjupad
+            operatörs-/administratörsdokumentation kan tillhandahållas vid behov (den är inte länkad från appen).
           </p>
           <ul className={sectionListClasses}>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Customer-facing overview (recommended)</span>:{" "}
+              <span className="font-medium text-foreground">Översikt för kunder (rekommenderas)</span>:{" "}
               <Link
                 className="font-mono underline underline-offset-4 hover:text-foreground"
                 href="/dashboard/settings/docs/CUSTOMER_PRIVACY_SECURITY_OVERVIEW.md"
@@ -95,7 +95,7 @@ export default async function DataProcessingSettingsPage() {
               </Link>
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Subprocessors (vendors)</span>:{" "}
+              <span className="font-medium text-foreground">Underbiträden (leverantörer)</span>:{" "}
               <Link
                 className="font-mono underline underline-offset-4 hover:text-foreground"
                 href="/dashboard/settings/docs/SUBPROCESSORS.md"
@@ -104,7 +104,7 @@ export default async function DataProcessingSettingsPage() {
               </Link>
             </li>
             <li className={sectionListItemClasses}>
-              <span className="font-medium text-foreground">Retention & deletion (summary)</span>:{" "}
+              <span className="font-medium text-foreground">Gallring &amp; radering (sammanfattning)</span>:{" "}
               <Link
                 className="font-mono underline underline-offset-4 hover:text-foreground"
                 href="/dashboard/settings/docs/RETENTION_AND_PURGE.md"

@@ -6,17 +6,16 @@ import {
   FormField,
   FormError,
   FormActions,
-  SensitiveDataWarning,
   formInputClasses,
   formSelectClasses,
 } from "@/components/forms";
 
 const ACTIVITY_TYPE_LABELS: Record<string, string> = {
-  CALL: "Call",
-  MEETING: "Meeting",
-  EMAIL: "Email",
-  NOTE: "Note",
-  ADVICE: "Advice",
+  CALL: "Samtal",
+  MEETING: "Möte",
+  EMAIL: "E-post",
+  NOTE: "Anteckning",
+  ADVICE: "Rådgivning",
 };
 
 export type ActivityFormData = {
@@ -80,7 +79,7 @@ export function ActivityForm({ customerId, activity, onSuccess, onCancel }: Prop
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to update activity");
+          throw new Error(data.error ?? "Det gick inte att uppdatera aktiviteten.");
         }
       } else {
         const res = await fetch(`/api/customers/${customerId}/activities`, {
@@ -90,12 +89,12 @@ export function ActivityForm({ customerId, activity, onSuccess, onCancel }: Prop
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to add activity");
+          throw new Error(data.error ?? "Det gick inte att lägga till aktiviteten.");
         }
       }
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Något gick fel.");
     } finally {
       setLoading(false);
     }
@@ -105,7 +104,7 @@ export function ActivityForm({ customerId, activity, onSuccess, onCancel }: Prop
     <form onSubmit={handleSubmit}>
       <FormLayout variant="embedded">
         {error && <FormError message={error} />}
-        <FormField id="activity-type" label="Type">
+        <FormField id="activity-type" label="Typ">
           <select
             id="activity-type"
             value={form.type}
@@ -119,30 +118,28 @@ export function ActivityForm({ customerId, activity, onSuccess, onCancel }: Prop
             ))}
           </select>
         </FormField>
-        <FormField id="activity-subject" label="Subject">
+        <FormField id="activity-subject" label="Ämne">
           <input
             id="activity-subject"
             type="text"
             value={form.subject}
             onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
-            placeholder="Brief subject"
+            placeholder="Kort rubrik"
             className={formInputClasses}
           />
-          <SensitiveDataWarning />
         </FormField>
-        <FormField id="activity-body" label="Notes">
+        <FormField id="activity-body" label="Anteckningar">
           <textarea
             id="activity-body"
             rows={4}
             value={form.body}
             onChange={(e) => setForm((p) => ({ ...p, body: e.target.value }))}
-            placeholder="Details of the call, meeting, or note…"
+            placeholder="Detaljer om samtalet, mötet eller anteckningen…"
             className={formInputClasses}
           />
-          <SensitiveDataWarning />
         </FormField>
         <FormActions
-          submitLabel={isEdit ? "Save changes" : "Add activity"}
+          submitLabel={isEdit ? "Spara ändringar" : "Lägg till aktivitet"}
           onCancel={onCancel}
           loading={loading}
         />

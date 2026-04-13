@@ -62,7 +62,7 @@ describe("BrokerageSettingsPage access control", () => {
     const element = await BrokerageSettingsPage();
     const html = renderToStaticMarkup(element as React.ReactElement);
 
-    expect(html).toContain("Brokerage");
+    expect(html).toContain("Mäklarkontor");
     expect(html).toContain("Acme Brokerage");
     expect(mockRedirect).not.toHaveBeenCalled();
   });

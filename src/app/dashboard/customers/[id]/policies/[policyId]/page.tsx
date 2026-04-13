@@ -15,6 +15,11 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Avbruten",
 };
 
+const CUSTOMER_TYPE_LABELS: Record<string, string> = {
+  PRIVATE: "Privat",
+  COMPANY: "Företag",
+};
+
 const INSURED_OBJECT_TYPE_LABELS: Record<string, string> = {
   PROPERTY: "Fastighet",
   VEHICLE: "Fordon",
@@ -149,7 +154,7 @@ export default async function PolicyDetailPage({ params }: Props) {
             <div>
               <p className="font-medium text-foreground">{customer.name}</p>
               <p className="text-sm text-muted-foreground">
-                {customer.type}
+                {CUSTOMER_TYPE_LABELS[customer.type] ?? customer.type}
               </p>
             </div>
             <ButtonLink

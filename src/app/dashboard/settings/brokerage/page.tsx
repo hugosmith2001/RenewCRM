@@ -15,7 +15,7 @@ export default async function BrokerageSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <DetailSection title="Brokerage">
+      <DetailSection title="Mäklarkontor">
         <BrokerageForm
           initialName={tenant?.name ?? ""}
         />

@@ -7,6 +7,17 @@ import { CustomerSearchForm } from "./CustomerSearchForm";
 import { PageHeader } from "@/components/layout";
 import { Badge, ButtonLink, InlineState, ListToolbar, Table, TableShell, TBody, TD, TH, THead, TR } from "@/components/ui";
 
+const CUSTOMER_TYPE_LABELS: Record<string, string> = {
+  PRIVATE: "Privat",
+  COMPANY: "Företag",
+};
+
+const CUSTOMER_STATUS_LABELS: Record<string, string> = {
+  ACTIVE: "Aktiv",
+  INACTIVE: "Inaktiv",
+  PROSPECT: "Prospekt",
+};
+
 type Props = {
   searchParams: Promise<{ search?: string; status?: string; type?: string; page?: string }>;
 };
@@ -102,10 +113,14 @@ export default async function CustomersPage({ searchParams }: Props) {
                           {c.name}
                         </Link>
                       </TD>
-                      <TD className="text-muted-foreground">{c.type}</TD>
+                      <TD className="text-muted-foreground">
+                        {CUSTOMER_TYPE_LABELS[c.type] ?? c.type}
+                      </TD>
                       <TD className="text-muted-foreground">{c.email ?? c.phone ?? "—"}</TD>
                       <TD>
-                        <Badge tone={tone}>{c.status}</Badge>
+                        <Badge tone={tone}>
+                          {CUSTOMER_STATUS_LABELS[c.status] ?? c.status}
+                        </Badge>
                       </TD>
                       <TD className="text-muted-foreground">{"—"}</TD>
                       <TD className="text-right">

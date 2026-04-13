@@ -8,7 +8,7 @@ export default async function ProfileSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <DetailSection title="Profile">
+      <DetailSection title="Profil">
         <ProfileForm
           initialName={user?.name ?? ""}
           email={user?.email ?? ""}

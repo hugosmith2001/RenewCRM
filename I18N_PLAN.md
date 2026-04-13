@@ -326,7 +326,6 @@ This is a proposed baseline glossary for the “core product vocabulary” I saw
 | Essential cookies | Nödvändiga cookies | |
 | Auth session cookie | Sessionscookie för inloggning | |
 | Sensitive personal data | Känsliga personuppgifter | |
-| “Please avoid entering sensitive personal data unless necessary.” | “Undvik att ange känsliga personuppgifter om det inte är nödvändigt.” | `SensitiveDataWarning` default text |
 
 ### Data retention / deletion terms (based on purge + retention modules)
 

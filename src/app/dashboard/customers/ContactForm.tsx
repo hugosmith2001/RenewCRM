@@ -74,7 +74,7 @@ export function ContactForm({ customerId, contact, onSuccess, onCancel }: Props)
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to update contact");
+          throw new Error(data.error ?? "Det gick inte att uppdatera kontakten");
         }
       } else {
         const res = await fetch(`/api/customers/${customerId}/contacts`, {
@@ -84,12 +84,12 @@ export function ContactForm({ customerId, contact, onSuccess, onCancel }: Props)
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to add contact");
+          throw new Error(data.error ?? "Det gick inte att lägga till kontakten");
         }
       }
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Något gick fel");
     } finally {
       setLoading(false);
     }
@@ -100,7 +100,7 @@ export function ContactForm({ customerId, contact, onSuccess, onCancel }: Props)
       <FormLayout variant="embedded">
         {error && <FormError message={error} />}
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField id="contact-name" label="Name" required>
+          <FormField id="contact-name" label="Namn" required>
             <input
               id="contact-name"
               type="text"
@@ -110,7 +110,7 @@ export function ContactForm({ customerId, contact, onSuccess, onCancel }: Props)
               className={formInputClasses}
             />
           </FormField>
-          <FormField id="contact-email" label="Email">
+          <FormField id="contact-email" label="E-post">
             <input
               id="contact-email"
               type="email"
@@ -121,7 +121,7 @@ export function ContactForm({ customerId, contact, onSuccess, onCancel }: Props)
           </FormField>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField id="contact-phone" label="Phone">
+          <FormField id="contact-phone" label="Telefon">
             <input
               id="contact-phone"
               type="text"
@@ -130,7 +130,7 @@ export function ContactForm({ customerId, contact, onSuccess, onCancel }: Props)
               className={formInputClasses}
             />
           </FormField>
-          <FormField id="contact-title" label="Title / role">
+          <FormField id="contact-title" label="Titel/roll">
             <input
               id="contact-title"
               type="text"
@@ -149,11 +149,11 @@ export function ContactForm({ customerId, contact, onSuccess, onCancel }: Props)
             className={formCheckboxClasses}
           />
           <label htmlFor="contact-primary" className="text-sm text-foreground">
-            Primary contact
+            Primär kontaktperson
           </label>
         </div>
         <FormActions
-          submitLabel={isEdit ? "Save changes" : "Add contact"}
+          submitLabel={isEdit ? "Spara ändringar" : "Lägg till kontakt"}
           onCancel={onCancel}
           loading={loading}
         />

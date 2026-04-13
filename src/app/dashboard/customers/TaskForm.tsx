@@ -6,21 +6,20 @@ import {
   FormField,
   FormError,
   FormActions,
-  SensitiveDataWarning,
   formInputClasses,
 } from "@/components/forms";
 
 const TASK_PRIORITY_LABELS: Record<string, string> = {
-  LOW: "Low",
-  MEDIUM: "Medium",
-  HIGH: "High",
+  LOW: "Låg",
+  MEDIUM: "Medel",
+  HIGH: "Hög",
 };
 
 const TASK_STATUS_LABELS: Record<string, string> = {
-  PENDING: "Pending",
-  IN_PROGRESS: "In progress",
-  DONE: "Done",
-  CANCELLED: "Cancelled",
+  PENDING: "Pågående",
+  IN_PROGRESS: "Pågår",
+  DONE: "Klar",
+  CANCELLED: "Avbruten",
 };
 
 export type TaskFormData = {
@@ -100,7 +99,7 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to update task");
+          throw new Error(data.error ?? "Det gick inte att uppdatera att göra.");
         }
       } else {
         const res = await fetch(`/api/customers/${customerId}/tasks`, {
@@ -110,12 +109,12 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to create task");
+          throw new Error(data.error ?? "Det gick inte att skapa att göra.");
         }
       }
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Något gick fel.");
     } finally {
       setLoading(false);
     }
@@ -125,31 +124,29 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
     <form onSubmit={handleSubmit}>
       <FormLayout variant="embedded">
         {error && <FormError message={error} />}
-        <FormField id="task-title" label="Title" required>
+        <FormField id="task-title" label="Titel" required>
           <input
             id="task-title"
             type="text"
             required
             value={form.title}
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-            placeholder="e.g. Follow up on quote"
+            placeholder="t.ex. Följ upp offert"
             className={formInputClasses}
           />
-          <SensitiveDataWarning />
         </FormField>
-        <FormField id="task-description" label="Description">
+        <FormField id="task-description" label="Beskrivning">
           <textarea
             id="task-description"
             rows={2}
             value={form.description}
             onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-            placeholder="Optional details"
+            placeholder="Valfria detaljer"
             className={formInputClasses}
           />
-          <SensitiveDataWarning />
         </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField id="task-due" label="Due date">
+          <FormField id="task-due" label="Förfallodatum">
             <input
               id="task-due"
               type="date"
@@ -158,7 +155,7 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
               className={formInputClasses}
             />
           </FormField>
-          <FormField id="task-priority" label="Priority">
+          <FormField id="task-priority" label="Prioritet">
             <select
               id="task-priority"
               value={form.priority}
@@ -190,7 +187,7 @@ export function TaskForm({ customerId, task, onSuccess, onCancel }: Props) {
           </FormField>
         </div>
         <FormActions
-          submitLabel={isEdit ? "Save changes" : "Create task"}
+          submitLabel={isEdit ? "Spara ändringar" : "Skapa att göra"}
           onCancel={onCancel}
           loading={loading}
         />

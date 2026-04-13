@@ -283,8 +283,23 @@ export async function storageGetStream(storageKey: string): Promise<Readable> {
     if (!out.Body) {
       throw new Error("File not found");
     }
-    const bytes = await out.Body.transformToByteArray();
-    return Readable.from([Buffer.from(bytes)]);
+    // In Node.js, S3 GetObject `Body` is typically a Node Readable stream.
+    // Prefer streaming to avoid buffering large files in memory (which can cause 500/timeouts).
+    const bodyAny = out.Body as unknown as {
+      transformToByteArray?: () => Promise<Uint8Array>;
+      on?: (...args: any[]) => any;
+      pipe?: (...args: any[]) => any;
+    };
+    if (typeof bodyAny.pipe === "function" || typeof bodyAny.on === "function") {
+      return out.Body as unknown as Readable;
+    }
+
+    if (typeof bodyAny.transformToByteArray === "function") {
+      const bytes = await bodyAny.transformToByteArray();
+      return Readable.from([Buffer.from(bytes)]);
+    }
+
+    throw new Error("Storage operation failed");
   } catch (err) {
     if (err instanceof Error && err.message === "File not found") {
       throw err;

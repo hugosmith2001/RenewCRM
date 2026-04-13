@@ -40,13 +40,15 @@ export function BrokerageForm({ initialName }: BrokerageFormProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Failed to update brokerage settings");
+        throw new Error(
+          data.error ?? "Kunde inte uppdatera inställningarna för mäklarkontoret"
+        );
       }
 
-      setSuccess("Brokerage name updated");
+      setSuccess("Mäklarkontorets namn uppdaterades");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Something went wrong"
+        err instanceof Error ? err.message : "Något gick fel"
       );
     } finally {
       setLoading(false);
@@ -62,7 +64,7 @@ export function BrokerageForm({ initialName }: BrokerageFormProps) {
             {success}
           </p>
         )}
-        <FormField id="brokerage-name" label="Brokerage name" required>
+        <FormField id="brokerage-name" label="Mäklarkontorets namn" required>
           <input
             id="brokerage-name"
             type="text"
@@ -73,8 +75,8 @@ export function BrokerageForm({ initialName }: BrokerageFormProps) {
           />
         </FormField>
         <FormActions
-          submitLabel="Save changes"
-          loadingLabel="Saving…"
+          submitLabel="Spara ändringar"
+          loadingLabel="Sparar…"
           loading={loading}
         />
       </FormLayout>

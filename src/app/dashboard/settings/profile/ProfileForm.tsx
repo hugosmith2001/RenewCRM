@@ -37,12 +37,12 @@ export function ProfileForm({ initialName, email }: ProfileFormProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Failed to update profile");
+        throw new Error(data.error ?? "Kunde inte uppdatera profilen");
       }
 
-      setSuccess("Profile updated");
+      setSuccess("Profilen uppdaterades");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Något gick fel");
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export function ProfileForm({ initialName, email }: ProfileFormProps) {
             {success}
           </p>
         )}
-        <FormField id="profile-email" label="Email">
+        <FormField id="profile-email" label="E-post">
           <input
             id="profile-email"
             type="email"
@@ -67,7 +67,7 @@ export function ProfileForm({ initialName, email }: ProfileFormProps) {
             className={formInputClasses}
           />
         </FormField>
-        <FormField id="profile-name" label="Display name" required>
+        <FormField id="profile-name" label="Visningsnamn" required>
           <input
             id="profile-name"
             type="text"
@@ -78,8 +78,8 @@ export function ProfileForm({ initialName, email }: ProfileFormProps) {
           />
         </FormField>
         <FormActions
-          submitLabel="Save changes"
-          loadingLabel="Saving…"
+          submitLabel="Spara ändringar"
+          loadingLabel="Sparar…"
           loading={loading}
         />
       </FormLayout>

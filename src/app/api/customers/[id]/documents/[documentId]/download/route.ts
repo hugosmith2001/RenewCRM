@@ -8,6 +8,8 @@ import path from "path";
 
 type Params = { params: Promise<{ id: string; documentId: string }> };
 
+export const runtime = "nodejs";
+
 function buildDownloadFilename(displayName: string, storageKey: string): string {
   const name = (displayName || "").trim() || "document";
   const storageBase = path.posix.basename(storageKey || "");
@@ -56,7 +58,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const disposition = contentDispositionAttachment(downloadName);
     headers.set("Content-Type", doc.mimeType || "application/octet-stream");
     headers.set("Content-Disposition", disposition);
-    headers.set("Content-Length", String(doc.sizeBytes));
+    if (doc.sizeBytes != null) {
+      headers.set("Content-Length", String(doc.sizeBytes));
+    }
 
     logger.info("Document download served", {
       tenantId: user.tenantId,

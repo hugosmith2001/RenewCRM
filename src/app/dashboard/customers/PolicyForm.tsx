@@ -13,10 +13,10 @@ import {
 } from "@/components/forms";
 
 const STATUS_OPTIONS = [
-  { value: "ACTIVE", label: "Active" },
-  { value: "PENDING", label: "Pending" },
-  { value: "EXPIRED", label: "Expired" },
-  { value: "CANCELLED", label: "Cancelled" },
+  { value: "ACTIVE", label: "Aktiv" },
+  { value: "PENDING", label: "Pågående" },
+  { value: "EXPIRED", label: "Utgången" },
+  { value: "CANCELLED", label: "Avbruten" },
 ] as const;
 
 type Insurer = { id: string; name: string };
@@ -130,14 +130,16 @@ export function PolicyForm({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Failed to add insurer");
+        throw new Error(data.error ?? "Kunde inte lägga till försäkringsbolag");
       }
       const created = await res.json();
       setInsurers((prev) => [...prev, created]);
       setForm((p) => ({ ...p, insurerId: created.id }));
       setNewInsurerName("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add insurer");
+      setError(
+        err instanceof Error ? err.message : "Kunde inte lägga till försäkringsbolag"
+      );
     } finally {
       setAddingInsurer(false);
     }
@@ -169,7 +171,7 @@ export function PolicyForm({
         );
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to update policy");
+          throw new Error(data.error ?? "Kunde inte uppdatera försäkringen");
         }
       } else {
         const res = await fetch(`/api/customers/${customerId}/policies`, {
@@ -179,13 +181,13 @@ export function PolicyForm({
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to add policy");
+          throw new Error(data.error ?? "Kunde inte lägga till försäkring");
         }
       }
       onSuccess();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Something went wrong"
+        err instanceof Error ? err.message : "Något gick fel"
       );
     } finally {
       setLoading(false);
@@ -207,7 +209,7 @@ export function PolicyForm({
 
         <div className="flex flex-wrap items-end gap-2">
           <div className="min-w-[200px] flex-1">
-            <FormField id="policy-insurer" label="Insurer" required>
+            <FormField id="policy-insurer" label="Försäkringsbolag" required>
               <select
                 id="policy-insurer"
                 required
@@ -217,7 +219,7 @@ export function PolicyForm({
                 }
                 className={formSelectClasses}
               >
-                <option value="">Select insurer</option>
+                <option value="">Välj försäkringsbolag</option>
                 {insurers.map((i) => (
                   <option key={i.id} value={i.id}>
                     {i.name}
@@ -229,7 +231,7 @@ export function PolicyForm({
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="New insurer name"
+              placeholder="Nytt försäkringsbolag"
               value={newInsurerName}
               onChange={(e) => setNewInsurerName(e.target.value)}
               className={`${formInputClasses} min-w-[140px]`}
@@ -241,13 +243,13 @@ export function PolicyForm({
               onClick={handleAddInsurer}
               disabled={addingInsurer || !newInsurerName.trim()}
             >
-              {addingInsurer ? "Adding…" : "Add insurer"}
+              {addingInsurer ? "Lägger till…" : "Lägg till"}
             </Button>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField id="policy-number" label="Policy number" required>
+          <FormField id="policy-number" label="Policynummer" required>
             <input
               id="policy-number"
               type="text"
@@ -256,11 +258,11 @@ export function PolicyForm({
               onChange={(e) =>
                 setForm((p) => ({ ...p, policyNumber: e.target.value }))
               }
-              placeholder="e.g. POL-2024-001"
+              placeholder="t.ex. POL-2024-001"
               className={formInputClasses}
             />
           </FormField>
-          <FormField id="policy-premium" label="Premium">
+          <FormField id="policy-premium" label="Premie">
             <input
               id="policy-premium"
               type="number"
@@ -277,7 +279,7 @@ export function PolicyForm({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <FormField id="policy-start" label="Start date" required>
+          <FormField id="policy-start" label="Startdatum" required>
             <input
               id="policy-start"
               type="date"
@@ -289,7 +291,7 @@ export function PolicyForm({
               className={formInputClasses}
             />
           </FormField>
-          <FormField id="policy-end" label="End date" required>
+          <FormField id="policy-end" label="Slutdatum" required>
             <input
               id="policy-end"
               type="date"
@@ -301,7 +303,7 @@ export function PolicyForm({
               className={formInputClasses}
             />
           </FormField>
-          <FormField id="policy-renewal" label="Renewal date">
+          <FormField id="policy-renewal" label="Förnyelsedatum">
             <input
               id="policy-renewal"
               type="date"
@@ -332,7 +334,7 @@ export function PolicyForm({
         {insuredObjects.length > 0 && (
           <div className="space-y-form-group">
             <span className="block text-sm font-medium text-foreground">
-              Link to insured objects
+              Koppla till försäkrade objekt
             </span>
             <ul className="space-y-2">
               {insuredObjects.map((obj) => (
@@ -360,7 +362,7 @@ export function PolicyForm({
         )}
 
         <FormActions
-          submitLabel={isEdit ? "Save changes" : "Add policy"}
+          submitLabel={isEdit ? "Spara ändringar" : "Lägg till försäkring"}
           onCancel={onCancel}
           loading={loading}
         />

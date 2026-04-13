@@ -6,18 +6,17 @@ import {
   FormField,
   FormError,
   FormActions,
-  SensitiveDataWarning,
   formInputClasses,
   formSelectClasses,
 } from "@/components/forms";
 
 const OBJECT_TYPES = [
-  { value: "PROPERTY", label: "Property" },
-  { value: "VEHICLE", label: "Vehicle" },
+  { value: "PROPERTY", label: "Fastighet" },
+  { value: "VEHICLE", label: "Fordon" },
   { value: "PERSON", label: "Person" },
-  { value: "BUSINESS", label: "Business" },
-  { value: "EQUIPMENT", label: "Equipment" },
-  { value: "OTHER", label: "Other" },
+  { value: "BUSINESS", label: "Företag" },
+  { value: "EQUIPMENT", label: "Utrustning" },
+  { value: "OTHER", label: "Annat" },
 ] as const;
 
 export type InsuredObjectFormData = {
@@ -124,7 +123,7 @@ export function InsuredObjectForm({
       <FormLayout variant="embedded">
         {error && <FormError message={error} />}
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField id="insured-object-type" label="Type" required>
+          <FormField id="insured-object-type" label="Typ" required>
             <select
               id="insured-object-type"
               required
@@ -141,7 +140,7 @@ export function InsuredObjectForm({
               ))}
             </select>
           </FormField>
-          <FormField id="insured-object-name" label="Name" required>
+          <FormField id="insured-object-name" label="Namn" required>
             <input
               id="insured-object-name"
               type="text"
@@ -150,12 +149,12 @@ export function InsuredObjectForm({
               onChange={(e) =>
                 setForm((p) => ({ ...p, name: e.target.value }))
               }
-              placeholder="e.g. 2019 Honda Civic, Main office"
+              placeholder="t.ex. Volvo V60 2019"
               className={formInputClasses}
             />
           </FormField>
         </div>
-        <FormField id="insured-object-description" label="Description">
+        <FormField id="insured-object-description" label="Beskrivning">
           <textarea
             id="insured-object-description"
             rows={3}
@@ -165,10 +164,9 @@ export function InsuredObjectForm({
             }
             className={formInputClasses}
           />
-          <SensitiveDataWarning />
         </FormField>
         <FormActions
-          submitLabel={isEdit ? "Save changes" : "Add insured object"}
+          submitLabel={isEdit ? "Spara ändringar" : "Lägg till försäkrat objekt"}
           onCancel={onCancel}
           loading={loading}
         />

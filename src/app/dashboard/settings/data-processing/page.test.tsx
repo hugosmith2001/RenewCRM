@@ -46,7 +46,7 @@ describe("DataProcessingSettingsPage access control", () => {
     const element = await DataProcessingSettingsPage();
     const html = renderToStaticMarkup(element as React.ReactElement);
 
-    expect(html).toContain("Data processing overview");
+    expect(html).toContain("Översikt av databehandling");
     expect(mockRedirect).not.toHaveBeenCalled();
   });
 });

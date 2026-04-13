@@ -40,6 +40,13 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  const iso = (value: unknown): string => {
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === "string") return value;
+    if (value == null) return new Date(0).toISOString();
+    return new Date(value as any).toISOString();
+  };
+
   const { id } = await params;
   const resolvedSearchParams = await searchParams;
   const customer = await getCustomerById(user.tenantId, id);
@@ -63,39 +70,39 @@ export default async function CustomerDetailPage({ params, searchParams }: Props
 
   const initialContacts = contacts.map((c) => ({
     ...c,
-    createdAt: c.createdAt.toISOString(),
-    updatedAt: c.updatedAt.toISOString(),
+    createdAt: iso((c as any).createdAt),
+    updatedAt: iso((c as any).updatedAt),
   }));
 
   const initialInsuredObjects = insuredObjects.map((o) => ({
     ...o,
-    createdAt: o.createdAt.toISOString(),
-    updatedAt: o.updatedAt.toISOString(),
+    createdAt: iso((o as any).createdAt),
+    updatedAt: iso((o as any).updatedAt),
   }));
 
   const initialPolicies = policies.map((p) => ({
     ...p,
     premium: p.premium != null ? Number(p.premium) : null,
-    startDate: p.startDate.toISOString(),
-    endDate: p.endDate.toISOString(),
-    renewalDate: p.renewalDate ? p.renewalDate.toISOString() : null,
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
+    startDate: iso((p as any).startDate),
+    endDate: iso((p as any).endDate),
+    renewalDate: (p as any).renewalDate ? iso((p as any).renewalDate) : null,
+    createdAt: iso((p as any).createdAt),
+    updatedAt: iso((p as any).updatedAt),
   }));
 
   const initialDocuments = documents.map((d) => ({
     ...d,
-    createdAt: d.createdAt.toISOString(),
+    createdAt: iso((d as any).createdAt),
   }));
 
   const initialActivities = activities.map((a) => ({
     ...a,
-    createdAt: a.createdAt.toISOString(),
+    createdAt: iso((a as any).createdAt),
   }));
 
   const initialTasks = tasks.map((t) => ({
     ...t,
-    dueDate: t.dueDate ? t.dueDate.toISOString() : null,
+    dueDate: (t as any).dueDate ? iso((t as any).dueDate) : null,
   }));
 
   const statusTone =

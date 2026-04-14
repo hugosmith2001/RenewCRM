@@ -119,7 +119,6 @@ export default async function PoliciesPage({ searchParams }: Props) {
                   <TH>Start</TH>
                   <TH>Slut</TH>
                   <TH>Förnyelse</TH>
-                  <TH>Mäklare</TH>
                   <TH className="min-w-[5rem] text-right">Åtgärd</TH>
                 </tr>
               </THead>
@@ -159,9 +158,6 @@ export default async function PoliciesPage({ searchParams }: Props) {
                     </TD>
                     <TD className="text-muted-foreground whitespace-nowrap">
                       {p.renewalDate ? formatDate(p.renewalDate) : "—"}
-                    </TD>
-                    <TD className="text-muted-foreground">
-                      {p.customerOwner?.name ?? p.customerOwner?.email ?? "—"}
                     </TD>
                     <TD className="min-w-[5rem] text-right">
                       <Link

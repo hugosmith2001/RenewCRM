@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui";
+import { PRODUCT_TYPE_LABELS } from "@/lib/constants/labels";
 import {
   FormLayout,
   FormField,
@@ -352,7 +353,7 @@ export function PolicyForm({
                   >
                     {obj.name}
                     <span className="ml-1 text-muted-foreground">
-                      ({obj.type})
+                      ({PRODUCT_TYPE_LABELS[obj.type] ?? obj.type})
                     </span>
                   </label>
                 </li>

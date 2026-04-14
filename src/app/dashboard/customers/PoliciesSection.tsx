@@ -95,11 +95,9 @@ export function PoliciesSection({
 
   useEffect(() => {
     if (showForm || editingPolicy) {
-      if (!initialInsuredObjects || initialInsuredObjects.length === 0) {
-        fetchInsuredObjects();
-      }
+      fetchInsuredObjects();
     }
-  }, [showForm, editingPolicy, fetchInsuredObjects, initialInsuredObjects]);
+  }, [showForm, editingPolicy, fetchInsuredObjects]);
 
   useEffect(() => {
     if (!editPolicyId || loading || policies.length === 0) return;
@@ -198,9 +196,6 @@ export function PoliciesSection({
                   >
                     {p.policyNumber}
                   </Link>
-                  <span className="text-sm text-muted-foreground">
-                    {p.insurer?.name ?? "—"}
-                  </span>
                   <Badge
                     tone={
                       p.status === "ACTIVE"

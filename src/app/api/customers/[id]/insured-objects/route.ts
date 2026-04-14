@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
 import {
-  listInsuredObjectsByCustomerIdCached,
+  listInsuredObjectsByCustomerId,
   createInsuredObject,
 } from "@/modules/insured-objects";
 import { logAuditEvent } from "@/modules/audit";
@@ -13,6 +13,7 @@ import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 type Params = { params: Promise<{ id: string }> };
 
 export const preferredRegion = "arn1";
+export const dynamic = "force-dynamic";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -23,8 +24,8 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, customer.tenantId);
-    const objects = await listInsuredObjectsByCustomerIdCached(user.tenantId, customerId);
-    return NextResponse.json(objects);
+    const objects = await listInsuredObjectsByCustomerId(user.tenantId, customerId);
+    return NextResponse.json(objects, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
     return handleApiError(err);
   }

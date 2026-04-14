@@ -3,7 +3,6 @@ import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
 import {
   listDocumentsByCustomerId,
-  listDocumentsByCustomerIdCached,
   createDocument,
 } from "@/modules/documents";
 import { logAuditEvent } from "@/modules/audit";
@@ -18,6 +17,7 @@ function serializeDocument(doc: { [k: string]: unknown }) {
 }
 
 export const preferredRegion = "arn1";
+export const dynamic = "force-dynamic";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -31,8 +31,10 @@ export async function GET(_request: NextRequest, { params }: Params) {
       );
     }
     assertTenantAccess(user, customer.tenantId);
-    const documents = await listDocumentsByCustomerIdCached(user.tenantId, customerId);
-    return NextResponse.json(documents.map((d) => serializeDocument(d)));
+    const documents = await listDocumentsByCustomerId(user.tenantId, customerId);
+    return NextResponse.json(documents.map((d) => serializeDocument(d)), {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     return handleApiError(err);
   }

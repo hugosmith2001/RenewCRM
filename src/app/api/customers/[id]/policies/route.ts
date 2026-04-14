@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
 import {
-  listPoliciesByCustomerIdCached,
+  listPoliciesByCustomerId,
   createPolicy,
 } from "@/modules/policies";
 import { logAuditEvent } from "@/modules/audit";
@@ -21,6 +21,7 @@ function serializePolicy(policy: { premium?: unknown; [k: string]: unknown }) {
 }
 
 export const preferredRegion = "arn1";
+export const dynamic = "force-dynamic";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -34,8 +35,10 @@ export async function GET(_request: NextRequest, { params }: Params) {
       );
     }
     assertTenantAccess(user, customer.tenantId);
-    const policies = await listPoliciesByCustomerIdCached(user.tenantId, customerId);
-    return NextResponse.json(policies.map((p) => serializePolicy(p)));
+    const policies = await listPoliciesByCustomerId(user.tenantId, customerId);
+    return NextResponse.json(policies.map((p) => serializePolicy(p)), {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (err) {
     return handleApiError(err);
   }

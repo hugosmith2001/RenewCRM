@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, assertTenantAccess } from "@/modules/auth";
 import { getCustomerById } from "@/modules/customers";
-import { listTasksByCustomerIdCached, createTask } from "@/modules/tasks";
+import { listTasksByCustomerId, createTask } from "@/modules/tasks";
 import { logAuditEvent } from "@/modules/audit";
 import { createTaskSchema } from "@/lib/validations/tasks";
 import { handleApiError } from "@/lib/api-error";
@@ -10,6 +10,7 @@ import { revalidateCustomerDetailCaches } from "@/lib/revalidate";
 type Params = { params: Promise<{ id: string }> };
 
 export const preferredRegion = "arn1";
+export const dynamic = "force-dynamic";
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
@@ -20,8 +21,8 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
     assertTenantAccess(user, customer.tenantId);
-    const tasks = await listTasksByCustomerIdCached(user.tenantId, customerId);
-    return NextResponse.json(tasks);
+    const tasks = await listTasksByCustomerId(user.tenantId, customerId);
+    return NextResponse.json(tasks, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
     return handleApiError(err);
   }

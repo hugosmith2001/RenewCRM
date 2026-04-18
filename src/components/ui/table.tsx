@@ -1,7 +1,7 @@
 export function TableShell({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={["overflow-hidden rounded-card border border-border bg-surface", className].filter(Boolean).join(" ")}>
-      {children}
+      <div className="min-w-0 overflow-x-auto">{children}</div>
     </div>
   );
 }
